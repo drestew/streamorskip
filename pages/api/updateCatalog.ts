@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../utils/supabase';
 import { options } from '../../utils/unogs';
+import { decodeHTML } from 'entities';
 
 type unogsAPI = {
   id?: number;
@@ -12,7 +13,7 @@ type unogsAPI = {
   avgrating?: number;
   year: number;
   runtime: number;
-  imdbid?: string;
+  imdbid: string;
   poster: string;
   imdbrating?: number;
   top250?: number;
@@ -25,7 +26,7 @@ const lookbackDate = () => {
   const dateToday = new Date();
   const fromDate = dateToday.setDate(dateToday.getDate() - 2);
   const fromDateInMS = new Date(fromDate);
-  const day = fromDateInMS.getDay();
+  const day = fromDateInMS.getDate();
   const month = fromDateInMS.getMonth() + 1;
   const year = fromDateInMS.getFullYear();
 
@@ -41,29 +42,44 @@ const fetchNewContent = async () => {
 };
 
 const addNewContentToDB = async () => {
-  // const newContent: unogsAPI[] = await fetchNewContent();
-  let newContent = await fetchNewContent();
-  newContent = newContent.results;
+  const resp = await fetchNewContent();
+  const newContent: unogsAPI[] = resp.results;
+  const itemsNotAddedToDb = [];
 
   for (let i = 0; i < newContent.length; i++) {
-    const item = newContent[i];
+    const item: unogsAPI = newContent[i];
     const { error } = await supabaseService.from('catalog').insert({
       nfid: item.nfid,
-      title: item.title,
+      title: decodeHTML(item.title),
       img: item.img,
       vtype: item.vtype,
-      synopsis: item.synopsis,
+      synopsis: decodeHTML(item.synopsis),
       year: item.year,
       runtime: item.runtime,
-      poster: item.poster,
+      imdbid: item.imdbid,
       titledate: item.titledate,
     });
+
+    if (error) {
+      itemsNotAddedToDb.push({
+        nfid: item.nfid,
+        title: decodeHTML(item.title),
+      });
+      console.log('Error:', {
+        message: error.message,
+        details: error.details,
+      });
+    }
   }
+
+  return itemsNotAddedToDb.length === 0
+    ? { success: 201 }
+    : { Error: [...itemsNotAddedToDb] };
 };
 
 const newMedia = async (req: NextApiRequest, res: NextApiResponse) => {
-  const dbData = await addNewContentToDB();
-  res.json(dbData);
+  const result = await addNewContentToDB();
+  res.json(result);
 };
 
 export default newMedia;

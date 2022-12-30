@@ -22,6 +22,7 @@ export interface Database {
           titledate: string | null;
           on_Nflix: boolean | null;
           year: number | null;
+          runtime: number | null;
         };
         Insert: {
           id?: number;
@@ -35,6 +36,7 @@ export interface Database {
           titledate?: string | null;
           on_Nflix?: boolean | null;
           year?: number | null;
+          runtime?: number | null;
         };
         Update: {
           id?: number;
@@ -48,6 +50,7 @@ export interface Database {
           titledate?: string | null;
           on_Nflix?: boolean | null;
           year?: number | null;
+          runtime?: number | null;
         };
       };
     };

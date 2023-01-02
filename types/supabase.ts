@@ -18,11 +18,12 @@ export interface Database {
           img: string | null;
           vtype: string | null;
           nfid: number;
-          poster: string | null;
           titledate: string | null;
           on_Nflix: boolean | null;
           year: number | null;
           runtime: number | null;
+          imdbid: number | null;
+          rating: number | null;
         };
         Insert: {
           id?: number;
@@ -32,11 +33,12 @@ export interface Database {
           img?: string | null;
           vtype?: string | null;
           nfid: number;
-          poster?: string | null;
           titledate?: string | null;
           on_Nflix?: boolean | null;
           year?: number | null;
           runtime?: number | null;
+          imdbid?: number | null;
+          rating?: number | null;
         };
         Update: {
           id?: number;
@@ -46,11 +48,12 @@ export interface Database {
           img?: string | null;
           vtype?: string | null;
           nfid?: number;
-          poster?: string | null;
           titledate?: string | null;
           on_Nflix?: boolean | null;
           year?: number | null;
           runtime?: number | null;
+          imdbid?: number | null;
+          rating?: number | null;
         };
       };
     };

@@ -1,26 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseService } from '../../utils/supabase';
-import { options } from '../../utils/unogs';
+import { supabaseService } from '../../../utils/supabase';
+import { options } from '../../../utils/unogs';
 import { decodeHTML } from 'entities';
-
-type unogsAPI = {
-  id?: number;
-  title: string;
-  img: string;
-  vtype: string;
-  nfid: number;
-  synopsis: string;
-  avgrating?: number;
-  year: number;
-  runtime: number;
-  imdbid: string;
-  poster: string;
-  imdbrating?: number;
-  top250?: number;
-  top250tv?: number;
-  clist?: string;
-  titledate: string;
-};
+import { unogsAPI } from './types';
 
 const lookbackDate = () => {
   const dateToday = new Date();
@@ -77,9 +59,9 @@ const addNewContentToDB = async () => {
     : { Error: [...itemsNotAddedToDb] };
 };
 
-const newMedia = async (req: NextApiRequest, res: NextApiResponse) => {
+const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
   const result = await addNewContentToDB();
   res.json(result);
 };
 
-export default newMedia;
+export default apiResponse;

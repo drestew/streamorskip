@@ -2,11 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/unogs';
 import { decodeHTML } from 'entities';
-import { unogsAPI } from './types';
+import { ContentItem, ContentItems } from './types';
 
 const lookbackDate = () => {
   const dateToday = new Date();
-  const fromDate = dateToday.setDate(dateToday.getDate() - 2);
+  const fromDate = dateToday.setDate(dateToday.getDate() - 1);
   const fromDateInMS = new Date(fromDate);
   const day = fromDateInMS.getDate();
   const month = fromDateInMS.getMonth() + 1;
@@ -24,39 +24,42 @@ const fetchNewContent = async () => {
 };
 
 const addNewContentToDB = async () => {
-  const resp = await fetchNewContent();
-  const newContent: unogsAPI[] = resp.results;
-  const itemsNotAddedToDb = [];
+  let { results } = await fetchNewContent();
+  results = ContentItems.check(results); // type-check api response
+  const newContent: ContentItem = results;
+  const itemsNotAddedToDb: any = []; // Pick from ContentItem
 
-  for (let i = 0; i < newContent.length; i++) {
-    const item: unogsAPI = newContent[i];
-    const { error } = await supabaseService.from('catalog').insert({
-      nfid: item.nfid,
-      title: decodeHTML(item.title),
-      img: item.img,
-      vtype: item.vtype,
-      synopsis: decodeHTML(item.synopsis),
-      year: item.year,
-      runtime: item.runtime,
-      imdbid: item.imdbid,
-      titledate: item.titledate,
-    });
+  // for (let i = 0; i < newContent.length; i++) {
+  //   const item = newContent[i];
+  //   const { error } = await supabaseService.from('catalog').insert({
+  //     nfid: item.nfid,
+  //     title: decodeHTML(item.title),
+  //     img: item.img,
+  //     vtype: item.vtype,
+  //     synopsis: decodeHTML(item.synopsis),
+  //     year: item.year,
+  //     runtime: item.runtime,
+  //     imdbid: item.imdbid,
+  //     titledate: item.titledate,
+  //   });
 
-    if (error) {
-      itemsNotAddedToDb.push({
-        nfid: item.nfid,
-        title: decodeHTML(item.title),
-      });
-      console.log('Error:', {
-        message: error.message,
-        details: error.details,
-      });
-    }
-  }
+  // if (error) {
+  //   itemsNotAddedToDb.push({
+  //     nfid: item.nfid,
+  //     title: decodeHTML(item.title),
+  //   });
+  //   console.log('Error:', {
+  //     message: error.message,
+  //     details: error.details,
+  //   });
+  // }
+  //}
 
-  return itemsNotAddedToDb.length === 0
-    ? { success: 201 }
-    : { Error: [...itemsNotAddedToDb] };
+  // return itemsNotAddedToDb.length === 0
+  //   ? { success: 201 }
+  //   : { Error: [...itemsNotAddedToDb] };
+
+  return newContent;
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {

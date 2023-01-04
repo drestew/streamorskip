@@ -26,40 +26,38 @@ const fetchNewContent = async () => {
 const addNewContentToDB = async () => {
   let { results } = await fetchNewContent();
   results = ContentItems.check(results); // type-check api response
-  const newContent: ContentItem = results;
-  const itemsNotAddedToDb: any = []; // Pick from ContentItem
+  const newContent: ContentItem[] = results;
+  const itemsNotAddedToDb: Pick<ContentItem, 'nfid' | 'title'>[] = [];
 
-  // for (let i = 0; i < newContent.length; i++) {
-  //   const item = newContent[i];
-  //   const { error } = await supabaseService.from('catalog').insert({
-  //     nfid: item.nfid,
-  //     title: decodeHTML(item.title),
-  //     img: item.img,
-  //     vtype: item.vtype,
-  //     synopsis: decodeHTML(item.synopsis),
-  //     year: item.year,
-  //     runtime: item.runtime,
-  //     imdbid: item.imdbid,
-  //     titledate: item.titledate,
-  //   });
+  for (let i = 0; i < newContent.length; i++) {
+    const item = newContent[i];
+    const { error } = await supabaseService.from('catalog').insert({
+      nfid: item.nfid,
+      title: decodeHTML(item.title),
+      img: item.img,
+      vtype: item.vtype,
+      synopsis: decodeHTML(item.synopsis),
+      year: item.year,
+      runtime: item.runtime,
+      imdbid: item.imdbid,
+      titledate: item.titledate,
+    });
 
-  // if (error) {
-  //   itemsNotAddedToDb.push({
-  //     nfid: item.nfid,
-  //     title: decodeHTML(item.title),
-  //   });
-  //   console.log('Error:', {
-  //     message: error.message,
-  //     details: error.details,
-  //   });
-  // }
-  //}
+    if (error) {
+      itemsNotAddedToDb.push({
+        nfid: item.nfid,
+        title: decodeHTML(item.title),
+      });
+      console.log('Error:', {
+        message: error.message,
+        details: error.details,
+      });
+    }
+  }
 
-  // return itemsNotAddedToDb.length === 0
-  //   ? { success: 201 }
-  //   : { Error: [...itemsNotAddedToDb] };
-
-  return newContent;
+  return itemsNotAddedToDb.length === 0
+    ? { success: 201 }
+    : { Error: [...itemsNotAddedToDb] };
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {

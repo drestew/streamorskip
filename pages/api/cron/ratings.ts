@@ -15,6 +15,22 @@ import { supabaseService } from '../../../utils/supabase';
  *
  * */
 
+const nullRatingsFromDB = async () => {
+  const { data, error } = await supabaseService
+    .from('catalog')
+    .select('title, imdbid, year, rating')
+    .is('rating', null);
+
+  if (error) {
+    console.log('Error:', {
+      message: error.message,
+      details: error.details,
+    });
+  }
+
+  return data;
+};
+
 const getRatings = async () => {
   const url = `https://imdb-api.com/en/API/Ratings/${process.env.IMDB_KEY}/tt1375666`;
   const ratingsData = await fetch(url);
@@ -23,7 +39,7 @@ const getRatings = async () => {
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const results = await getRatings();
+  const results = await nullRatingsFromDB();
   res.json(results);
 };
 

@@ -1,6 +1,6 @@
 import { Number, String, Record, Array, Null, Union, Static } from 'runtypes';
 
-const ContentItem = Record({
+const CatalogItem = Record({
   id: Number,
   title: String,
   img: String,
@@ -19,5 +19,5 @@ const ContentItem = Record({
   titledate: String,
 });
 
-export const ContentItems = Array(ContentItem);
-export type ContentItem = Static<typeof ContentItem>;
+export const CatalogItems = Array(CatalogItem);
+export type CatalogItem = Static<typeof CatalogItem>;

@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/unogs';
 import { decodeHTML } from 'entities';
-import { ContentItem, ContentItems } from './types';
+import { CatalogItem, CatalogItems } from './types';
 
 const lookbackDate = () => {
   const dateToday = new Date();
@@ -25,9 +25,9 @@ const fetchNewContent = async () => {
 
 const addNewContentToDB = async () => {
   let { results } = await fetchNewContent();
-  results = ContentItems.check(results); // type-check api response
-  const newContent: ContentItem[] = results;
-  const itemsNotAddedToDb: Pick<ContentItem, 'nfid' | 'title'>[] = [];
+  results = CatalogItems.check(results); // type-check api response
+  const newContent: CatalogItem[] = results;
+  const itemsNotAddedToDb: Pick<CatalogItem, 'nfid' | 'title'>[] = [];
 
   for (let i = 0; i < newContent.length; i++) {
     const item = newContent[i];
@@ -40,6 +40,7 @@ const addNewContentToDB = async () => {
       year: item.year,
       runtime: item.runtime,
       imdbid: item.imdbid,
+      rating: item.imdbrating === 0 ? null : item.imdbrating,
       titledate: item.titledate,
     });
 

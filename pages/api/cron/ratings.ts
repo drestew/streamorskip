@@ -2,8 +2,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/imdb';
 import { Database } from '../../../types/supabase';
+import { ImdbRatingItem, ImdbRatingItems } from './types';
 
-type RatingNeeded = Pick<
+type NeedsRating = Pick<
   Database['public']['Tables']['catalog']['Row'],
   'title' | 'imdbid' | 'year' | 'rating'
 >;
@@ -41,8 +42,8 @@ const nullRatingsFromDB = async () => {
 const getRating = async () => {
   const catalogFromDB = await nullRatingsFromDB();
 
-  let itemsNoRatings: RatingNeeded[] = [];
-  let itemsNoImdbId: RatingNeeded[] = [];
+  let itemsNoRatings: NeedsRating[] = [];
+  let itemsNoImdbId: NeedsRating[] = [];
   let itemsWithRatings;
 
   if (catalogFromDB != null) {
@@ -50,15 +51,21 @@ const getRating = async () => {
     itemsNoRatings = catalogFromDB.filter((item) => item.imdbid);
 
     itemsWithRatings = await Promise.all(
-      itemsNoRatings.map(async (item: RatingNeeded) => {
+      itemsNoRatings.map(async (item: NeedsRating) => {
         const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item.imdbid}`;
         const fetchItemRatings = await fetch(url, options);
-        return await fetchItemRatings.json();
+
+        return fetchItemRatings.json();
       })
     );
   }
 
   return itemsWithRatings;
+};
+
+const addRatingsToDB = async () => {
+  let ratedItems = await getRating();
+  ratedItems = ImdbRatingItems.check(ratedItems);
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {

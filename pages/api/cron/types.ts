@@ -21,3 +21,49 @@ const CatalogItem = Record({
 
 export const CatalogItems = Array(CatalogItem);
 export type CatalogItem = Static<typeof CatalogItem>;
+
+const histogram = Record({
+  aggregateRating: Number,
+  demographic: String,
+  histogram: Record({
+    ['1']: Number,
+    ['2']: Number,
+    ['3']: Number,
+    ['4']: Number,
+    ['5']: Number,
+    ['6']: Number,
+    ['7']: Number,
+    ['8']: Number,
+    ['9']: Number,
+    ['10']: Number,
+  }),
+  totalRatings: Number,
+});
+
+const ImdbRatingItem = Record({
+  ['@type']: String,
+  id: String,
+  title: String,
+  titleType: String,
+  year: Number,
+  canRate: Number,
+  rating: Number,
+  ratingCount: Number,
+  ratingHistograms: Record({
+    ['US users']: histogram,
+    ['Males Aged 30-44']: histogram,
+    ['Females']: histogram,
+    ['Males']: histogram,
+    ['Females Aged 45+']: histogram,
+    ['IMDb Users']: histogram,
+    ['Males Aged 45+']: histogram,
+    ['Aged 18-29']: histogram,
+    ['Aged 30-44']: histogram,
+    ['Aged 45+']: histogram,
+    ['Non-US users']: histogram,
+    ['Males Aged 18-29']: histogram,
+  }),
+});
+
+export const ImdbRatingItems = Array(ImdbRatingItem);
+export type ImdbRatingItem = Static<typeof ImdbRatingItem>;

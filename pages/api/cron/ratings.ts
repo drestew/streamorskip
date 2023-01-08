@@ -2,7 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/imdb';
 import { Database } from '../../../types/supabase';
-import { ImdbRatingItem, ImdbRatingItems } from './types';
+import { CatalogItem, ImdbRatingItem, ImdbRatingItems } from './types';
+import { instanceOf } from 'prop-types';
+import { ValidationError } from 'runtypes';
+import { decodeHTML } from 'entities';
 
 type NeedsRating = Pick<
   Database['public']['Tables']['catalog']['Row'],
@@ -10,7 +13,7 @@ type NeedsRating = Pick<
 >;
 /*
  * add ratings from unogs => add to types
- * get items from db that have null of 0 rating
+ * get items from db that have null or 0 rating
  * get ratings from imdb8 api, using the tt-id => fetch('https://imdb8.p.rapidapi.com/title/get-ratings?tconst=tt2211129', options)
  * add types for the ratings response
  * add ratings to db
@@ -65,11 +68,53 @@ const getRating = async () => {
 
 const addRatingsToDB = async () => {
   let ratedItems = await getRating();
-  ratedItems = ImdbRatingItems.check(ratedItems);
+  const ratingsAndIds: Pick<ImdbRatingItem, 'id' | 'rating'>[] = [];
+  const itemsNotAddedToDb: Pick<ImdbRatingItem, 'id' | 'title'>[] = [];
+
+  try {
+    ratedItems = ImdbRatingItems.check(ratedItems);
+  } catch (error) {
+    if (error instanceof ValidationError)
+      console.error('Error:', {
+        code: error.code,
+        details: error.details,
+      });
+  }
+
+  if (ratedItems) {
+    ratedItems.map(async (item) => {
+      if (item.id && item.rating) {
+        const id = item.id.replace(/\D/g, '');
+        console.log(id);
+        const { error } = await supabaseService
+          .from('catalog')
+          .update({
+            rating: item.rating,
+          })
+          .eq('imdbid', `tt${id}`);
+
+        if (error) {
+          itemsNotAddedToDb.push({
+            id: id,
+            title: item.title,
+          });
+          console.log('Error:', {
+            message: error.message,
+            details: error.details,
+          });
+        }
+      }
+    });
+  }
+
+  console.log(ratedItems);
+  return itemsNotAddedToDb.length === 0
+    ? { success: 201 }
+    : { Error: [...itemsNotAddedToDb] };
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const results = await getRating();
+  const results = await addRatingsToDB();
   res.json(results);
 };
 

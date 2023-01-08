@@ -1,4 +1,13 @@
-import { Number, String, Record, Array, Null, Union, Static } from 'runtypes';
+import {
+  Number,
+  String,
+  Record,
+  Array,
+  Boolean,
+  Null,
+  Union,
+  Static,
+} from 'runtypes';
 
 const CatalogItem = Record({
   id: Number,
@@ -46,10 +55,10 @@ const ImdbRatingItem = Record({
   title: String,
   titleType: String,
   year: Number,
-  canRate: Number,
+  canRate: Boolean,
   rating: Number,
   ratingCount: Number,
-  ratingHistograms: Record({
+  ratingsHistograms: Record({
     ['US users']: histogram,
     ['Males Aged 30-44']: histogram,
     ['Females']: histogram,
@@ -62,8 +71,27 @@ const ImdbRatingItem = Record({
     ['Aged 45+']: histogram,
     ['Non-US users']: histogram,
     ['Males Aged 18-29']: histogram,
+    ['Top 1000 voters']: histogram,
   }),
 });
 
 export const ImdbRatingItems = Array(ImdbRatingItem);
 export type ImdbRatingItem = Static<typeof ImdbRatingItem>;
+// export type ImdbRatingItem = {
+//   '@type': string;
+//   id: string;
+//   title: string;
+//   titleType: string;
+//   year: number;
+//   canRate: boolean;
+//   rating: number;
+//   ratingCount: number;
+//   ratingsHistograms: { [key: string]: RatingsHistogram };
+// };
+//
+// export type RatingsHistogram = {
+//   aggregateRating: number;
+//   demographic: string;
+//   histogram: { [key: string]: number };
+//   totalRatings: number;
+// };

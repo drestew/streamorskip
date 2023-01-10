@@ -7,6 +7,7 @@ import {
   Null,
   Union,
   Static,
+  Optional,
 } from 'runtypes';
 
 const CatalogItem = Record({
@@ -31,67 +32,20 @@ const CatalogItem = Record({
 export const CatalogItems = Array(CatalogItem);
 export type CatalogItem = Static<typeof CatalogItem>;
 
-const histogram = Record({
-  aggregateRating: Number,
-  demographic: String,
-  histogram: Record({
-    ['1']: Number,
-    ['2']: Number,
-    ['3']: Number,
-    ['4']: Number,
-    ['5']: Number,
-    ['6']: Number,
-    ['7']: Number,
-    ['8']: Number,
-    ['9']: Number,
-    ['10']: Number,
-  }),
-  totalRatings: Number,
-});
-
 const ImdbRatingItem = Record({
-  ['@type']: String,
   id: String,
   title: String,
-  titleType: String,
   year: Number,
-  canRate: Boolean,
   rating: Number,
-  ratingCount: Number,
-  ratingsHistograms: Record({
-    ['US users']: histogram,
-    ['Males Aged 30-44']: histogram,
-    ['Females']: histogram,
-    ['Males']: histogram,
-    ['Females Aged 45+']: histogram,
-    ['IMDb Users']: histogram,
-    ['Males Aged 45+']: histogram,
-    ['Aged 18-29']: histogram,
-    ['Aged 30-44']: histogram,
-    ['Aged 45+']: histogram,
-    ['Non-US users']: histogram,
-    ['Males Aged 18-29']: histogram,
-    ['Top 1000 voters']: histogram,
-  }),
 });
 
 export const ImdbRatingItems = Array(ImdbRatingItem);
 export type ImdbRatingItem = Static<typeof ImdbRatingItem>;
-// export type ImdbRatingItem = {
-//   '@type': string;
-//   id: string;
-//   title: string;
-//   titleType: string;
-//   year: number;
-//   canRate: boolean;
-//   rating: number;
-//   ratingCount: number;
-//   ratingsHistograms: { [key: string]: RatingsHistogram };
-// };
-//
-// export type RatingsHistogram = {
-//   aggregateRating: number;
-//   demographic: string;
-//   histogram: { [key: string]: number };
-//   totalRatings: number;
-// };
+
+const ImdbIdItem = Record({
+  id: String,
+  title: String,
+});
+
+export const ImdbIdItems = Array(ImdbIdItem);
+export type ImdbIdItem = Static<typeof ImdbIdItem>;

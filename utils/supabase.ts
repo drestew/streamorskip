@@ -6,7 +6,4 @@ const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseKey = process.env.SUPABASE_KEY;
 
 export const supabaseClient = createClient(supabaseUrl, anonKey);
-export const supabaseService = createClient<Database['public']>(
-  supabaseUrl,
-  supabaseKey
-);
+export const supabaseService = createClient<Database>(supabaseUrl, supabaseKey);

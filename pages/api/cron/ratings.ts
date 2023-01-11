@@ -23,11 +23,10 @@ const getNullRatingsFromDB = async () => {
   return data;
 };
 
-const getImdbId = async () => {
+const getImdbId = async (catalogFromDB: NeedRating) => {
   // need imdb id in order to get rating
   let itemsNoImdbId: NeedRating;
   let itemsWithImdbIds: ImdbIdItem[] = [];
-  const catalogFromDB = await getNullRatingsFromDB();
 
   if (catalogFromDB) {
     itemsNoImdbId = catalogFromDB.filter((item) => !item.imdbid);
@@ -38,6 +37,7 @@ const getImdbId = async () => {
         const url = `https://imdb8.p.rapidapi.com/title/v2/find?title=${encodedTitle}`;
         const titleSearch = await fetch(url, options);
         const { results } = await titleSearch.json();
+
         const { title, id } = results[0];
         const checkTitleMatch = distance(itemsNoImdbId.title, title);
         const formattedId = id.replace(/\D/g, ''); // '/title/tt12345678/' => '12345678'
@@ -65,13 +65,13 @@ const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
       return item.imdbid;
     });
   }
-
+  console.log('with id', imdbids);
   return imdbids;
 };
 
 const getRating = async () => {
   const catalogFromDB = await getNullRatingsFromDB();
-  const itemsWithNewImdbId = await getImdbId();
+  const itemsWithNewImdbId = await getImdbId(catalogFromDB);
   let itemsNoRatings: NeedRating;
   let itemsWithRatings: ImdbRatingItem[] = [];
 
@@ -131,9 +131,10 @@ const addRatingsToDB = async () => {
     });
   }
 
-  return itemsNotAddedToDb.length === 0
-    ? { success: 201 }
-    : { Error: [...itemsNotAddedToDb] };
+  return {
+    ratingsAdded: ratedItems.length - itemsNotAddedToDb.length,
+    ratingsNotAdded: [...itemsNotAddedToDb],
+  };
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {

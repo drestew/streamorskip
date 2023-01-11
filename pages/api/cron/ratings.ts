@@ -1,36 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/imdb';
-import {
-  ImdbRatingItem,
-  ImdbRatingItems,
-  ImdbIdItem,
-  ImdbIdItems,
-} from './types';
+import { ImdbRatingItem, ImdbRatingItems, ImdbIdItem } from './types';
 import { ValidationError } from 'runtypes';
-import { decodeHTML } from 'entities';
+import { distance } from 'fastest-levenshtein';
 
 type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
-
-/*
- * add ratings from unogs => add to types
- * get items from db that have null or 0 rating
- * get ratings from imdb8 api, using the tt-id => fetch('https://imdb8.p.rapidapi.com/title/get-ratings?tconst=tt2211129', options)
- * add types for the ratings response
- * add ratings to db
- *
- * if no tt-id, use title/v2/find endpoint => fetch('https://imdb8.p.rapidapi.com/title/v2/find?title=sodium%20day', options)
- * add types for the search response
- * verify that the title matches with the 'string-similarity' npm package
- * if close enough, take item id (tt-id) and use it to get the ratings
- *
- * use title/get-videos and title/get-video-playback to get trailers
- * */
 
 const getNullRatingsFromDB = async () => {
   const { data, error } = await supabaseService
     .from('catalog')
-    .select('title, imdbid, year, rating')
+    .select('title, imdbid, rating')
     .or('rating.is.null, rating.eq.0');
 
   if (error) {
@@ -44,6 +24,7 @@ const getNullRatingsFromDB = async () => {
 };
 
 const getImdbId = async () => {
+  // need imdb id in order to get rating
   let itemsNoImdbId: NeedRating;
   let itemsWithImdbIds: ImdbIdItem[] = [];
   const catalogFromDB = await getNullRatingsFromDB();
@@ -55,9 +36,14 @@ const getImdbId = async () => {
       itemsNoImdbId.map(async (itemsNoImdbId) => {
         const encodedTitle = encodeURI(itemsNoImdbId.title);
         const url = `https://imdb8.p.rapidapi.com/title/v2/find?title=${encodedTitle}`;
-        const fetchImdbIds = await fetch(url, options);
-
-        return fetchImdbIds.json();
+        const titleSearch = await fetch(url, options);
+        const { results } = await titleSearch.json();
+        const { title, id } = results[0];
+        const checkTitleMatch = distance(itemsNoImdbId.title, title);
+        const formattedId = id.replace(/\D/g, ''); // '/title/tt12345678/' => '12345678'
+        return checkTitleMatch <= 1
+          ? { title: title, imdbid: `tt${formattedId}` }
+          : { title: title, imdbid: null };
       })
     );
   }
@@ -65,17 +51,37 @@ const getImdbId = async () => {
   return itemsWithImdbIds;
 };
 
+const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
+  let imdbids: (string | null)[] = [];
+
+  if (imdbItem) {
+    imdbids = imdbItem.map((item) => {
+      return item.imdbid;
+    });
+  }
+
+  if (dbItem) {
+    imdbids = dbItem.map((item) => {
+      return item.imdbid;
+    });
+  }
+
+  return imdbids;
+};
+
 const getRating = async () => {
   const catalogFromDB = await getNullRatingsFromDB();
+  const itemsWithNewImdbId = await getImdbId();
   let itemsNoRatings: NeedRating;
   let itemsWithRatings: ImdbRatingItem[] = [];
 
   if (catalogFromDB) {
     itemsNoRatings = catalogFromDB.filter((item) => item.imdbid);
+    const imdbArr = extractImdbIds(itemsWithNewImdbId, itemsNoRatings);
 
     itemsWithRatings = await Promise.all(
-      itemsNoRatings.map(async (item) => {
-        const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item.imdbid}`;
+      imdbArr.map(async (item) => {
+        const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item}`;
         const fetchItemRatings = await fetch(url, options);
 
         return fetchItemRatings.json();
@@ -131,7 +137,7 @@ const addRatingsToDB = async () => {
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const results = await getImdbId();
+  const results = await addRatingsToDB();
   res.json(results);
 };
 

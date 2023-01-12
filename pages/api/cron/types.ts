@@ -1,4 +1,13 @@
-import { Number, String, Record, Array, Null, Union, Static } from 'runtypes';
+import {
+  Number,
+  String,
+  Record,
+  Array,
+  Null,
+  Union,
+  Static,
+  Optional,
+} from 'runtypes';
 
 const CatalogItem = Record({
   id: Number,
@@ -25,7 +34,7 @@ export type CatalogItem = Static<typeof CatalogItem>;
 const ImdbRatingItem = Record({
   id: String,
   title: String,
-  rating: Number,
+  rating: Optional(Number),
 });
 
 export const ImdbRatingItems = Array(ImdbRatingItem);

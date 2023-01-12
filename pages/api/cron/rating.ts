@@ -23,6 +23,19 @@ const getNullRatingsFromDB = async () => {
   return data;
 };
 
+const addImdbIdsToDB = async (itemsWithImdbIds: ImdbIdItem[]) => {
+  itemsWithImdbIds.map(async (item) => {
+    const { error } = await supabaseService
+      .from('catalog')
+      .update({
+        imdbid: item.imdbid,
+      })
+      .eq('title', item.title);
+
+    if (error) console.error(error);
+  });
+};
+
 const getImdbId = async (catalogFromDB: NeedRating) => {
   // need imdb id in order to get rating
   let itemsNoImdbId: NeedRating;
@@ -41,12 +54,15 @@ const getImdbId = async (catalogFromDB: NeedRating) => {
         const { title, id } = results[0];
         const checkTitleMatch = distance(itemsNoImdbId.title, title);
         const formattedId = id.replace(/\D/g, ''); // '/title/tt12345678/' => '12345678'
+
         return checkTitleMatch <= 1
           ? { title: title, imdbid: `tt${formattedId}` }
           : { title: title, imdbid: null };
       })
     );
   }
+
+  await addImdbIdsToDB(itemsWithImdbIds);
 
   return itemsWithImdbIds;
 };
@@ -58,20 +74,23 @@ const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
     imdbids = imdbItem.map((item) => {
       return item.imdbid;
     });
+    return imdbids;
   }
 
   if (dbItem) {
     imdbids = dbItem.map((item) => {
       return item.imdbid;
     });
+    return imdbids;
   }
-  console.log('with id', imdbids);
+
   return imdbids;
 };
 
 const getRating = async () => {
   const catalogFromDB = await getNullRatingsFromDB();
   const itemsWithNewImdbId = await getImdbId(catalogFromDB);
+
   let itemsNoRatings: NeedRating;
   let itemsWithRatings: ImdbRatingItem[] = [];
 
@@ -81,10 +100,12 @@ const getRating = async () => {
 
     itemsWithRatings = await Promise.all(
       imdbArr.map(async (item) => {
-        const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item}`;
-        const fetchItemRatings = await fetch(url, options);
+        if (item) {
+          const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item}`;
+          const fetchItemRatings = await fetch(url, options);
 
-        return fetchItemRatings.json();
+          return fetchItemRatings.json();
+        }
       })
     );
   }
@@ -95,7 +116,7 @@ const getRating = async () => {
 const addRatingsToDB = async () => {
   let ratedItems = await getRating();
   const itemsNotAddedToDb: Pick<ImdbRatingItem, 'id' | 'title'>[] = [];
-
+  console.log(ratedItems);
   try {
     ratedItems = ImdbRatingItems.check(ratedItems);
   } catch (error) {
@@ -108,12 +129,12 @@ const addRatingsToDB = async () => {
 
   if (ratedItems) {
     ratedItems.map(async (item) => {
-      if (item.id && item.rating) {
+      if (item.id) {
         const id = item.id.replace(/\D/g, '');
         const { error } = await supabaseService
           .from('catalog')
           .update({
-            rating: item.rating,
+            rating: item.rating ?? 999,
           })
           .eq('imdbid', `tt${id}`);
 

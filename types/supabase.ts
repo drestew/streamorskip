@@ -24,6 +24,7 @@ export interface Database {
           runtime: number | null;
           imdbid: string | null;
           rating: number | null;
+          trailer: string | null;
         };
         Insert: {
           id?: number;
@@ -39,6 +40,7 @@ export interface Database {
           runtime?: number | null;
           imdbid?: string | null;
           rating?: number | null;
+          trailer?: string | null;
         };
         Update: {
           id?: number;
@@ -54,6 +56,7 @@ export interface Database {
           runtime?: number | null;
           imdbid?: string | null;
           rating?: number | null;
+          trailer?: string | null;
         };
       };
     };

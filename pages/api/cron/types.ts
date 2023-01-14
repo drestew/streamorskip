@@ -63,3 +63,17 @@ const TrailerItem = Record({
 
 export const TrailerItems = TrailerItem;
 export type TrailerItem = Static<typeof TrailerItem>;
+
+const TrailerUrl = Record({
+  resource: Record({
+    encodings: Array(
+      Record({
+        mimeType: String,
+        playUrl: String,
+      })
+    ),
+  }),
+});
+
+export const TrailerUrls = TrailerUrl;
+export type TrailerUrl = Static<typeof TrailerUrl>;

@@ -116,7 +116,7 @@ const getRating = async () => {
 const addRatingsToDB = async () => {
   let ratedItems = await getRating();
   const itemsNotAddedToDb: Pick<ImdbRatingItem, 'id' | 'title'>[] = [];
-  console.log(ratedItems);
+
   try {
     ratedItems = ImdbRatingItems.check(ratedItems);
   } catch (error) {

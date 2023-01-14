@@ -47,3 +47,19 @@ const ImdbIdItem = Record({
 
 export const ImdbIdItems = Array(ImdbIdItem);
 export type ImdbIdItem = Static<typeof ImdbIdItem>;
+
+const TrailerItem = Record({
+  resource: Record({
+    id: String,
+    videos: Optional(
+      Array(
+        Record({
+          id: String,
+        })
+      )
+    ),
+  }),
+});
+
+export const TrailerItems = TrailerItem;
+export type TrailerItem = Static<typeof TrailerItem>;

@@ -11,52 +11,98 @@ export interface Database {
     Tables: {
       catalog: {
         Row: {
-          id: number;
           created_at: string;
-          title: string;
-          synopsis: string;
-          img: string;
-          vtype: string;
-          nfid: number;
-          titledate: string;
-          on_Nflix: boolean;
-          year: number;
-          runtime: number | null;
+          id: number;
           imdbid: string | null;
+          img: string;
+          nfid: number;
+          on_Nflix: boolean;
           rating: number | null;
+          runtime: number | null;
+          synopsis: string;
+          title: string;
+          titledate: string;
           trailer: string | null;
+          vtype: string;
+          year: number;
         };
         Insert: {
-          id?: number;
           created_at?: string;
-          title: string;
-          synopsis: string;
-          img: string;
-          vtype: string;
-          nfid: number;
-          titledate: string;
-          on_Nflix?: boolean;
-          year: number;
-          runtime?: number | null;
+          id?: number;
           imdbid?: string | null;
+          img: string;
+          nfid: number;
+          on_Nflix?: boolean;
           rating?: number | null;
+          runtime?: number | null;
+          synopsis: string;
+          title: string;
+          titledate: string;
           trailer?: string | null;
+          vtype: string;
+          year: number;
         };
         Update: {
-          id?: number;
           created_at?: string;
-          title?: string;
-          synopsis?: string;
-          img?: string;
-          vtype?: string;
-          nfid?: number;
-          titledate?: string;
-          on_Nflix?: boolean;
-          year?: number;
-          runtime?: number | null;
+          id?: number;
           imdbid?: string | null;
+          img?: string;
+          nfid?: number;
+          on_Nflix?: boolean;
           rating?: number | null;
+          runtime?: number | null;
+          synopsis?: string;
+          title?: string;
+          titledate?: string;
           trailer?: string | null;
+          vtype?: string;
+          year?: number;
+        };
+      };
+      'catalog-genre': {
+        Row: {
+          'catalog-nfid': number;
+          created_at: string | null;
+          genre: string | null;
+          'genre-nfid': number | null;
+          id: number;
+        };
+        Insert: {
+          'catalog-nfid': number;
+          created_at?: string | null;
+          genre?: string | null;
+          'genre-nfid'?: number | null;
+          id?: number;
+        };
+        Update: {
+          'catalog-nfid'?: number;
+          created_at?: string | null;
+          genre?: string | null;
+          'genre-nfid'?: number | null;
+          id?: number;
+        };
+      };
+      genres: {
+        Row: {
+          created_at: string | null;
+          genre: string | null;
+          id: number;
+          movie: boolean | null;
+          series: boolean | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          genre?: string | null;
+          id?: number;
+          movie?: boolean | null;
+          series?: boolean | null;
+        };
+        Update: {
+          created_at?: string | null;
+          genre?: string | null;
+          id?: number;
+          movie?: boolean | null;
+          series?: boolean | null;
         };
       };
     };

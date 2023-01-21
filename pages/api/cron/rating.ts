@@ -160,7 +160,8 @@ const addRatingsToDB = async () => {
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
   const results = await addRatingsToDB();
-  res.json(results);
+  // res.json(results);
+  res.redirect('/api/cron/genre');
 };
 
 export default apiResponse;

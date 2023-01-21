@@ -109,7 +109,9 @@ const getTrailerId = async () => {
         (item, index, arr) =>
           item &&
           index ===
-            arr.findIndex((itemForIndex) => item.imdbid === itemForIndex.imdbid)
+            arr.findIndex(
+              (itemForIndex) => item.imdbid === itemForIndex?.imdbid
+            )
       );
   }
   return trailerSource;

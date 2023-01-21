@@ -65,14 +65,16 @@ export const TrailerItems = TrailerItem;
 export type TrailerItem = Static<typeof TrailerItem>;
 
 const TrailerUrl = Record({
-  resource: Record({
-    encodings: Array(
-      Record({
-        mimeType: String,
-        playUrl: String,
-      })
-    ),
-  }),
+  resource: Optional(
+    Record({
+      encodings: Array(
+        Record({
+          mimeType: String,
+          playUrl: String,
+        })
+      ),
+    })
+  ),
 });
 
 export const TrailerUrls = TrailerUrl;

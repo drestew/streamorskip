@@ -3,7 +3,7 @@ import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/imdb';
 import { TrailerItem, TrailerItems, TrailerUrl, TrailerUrls } from './types';
 import { ValidationError } from 'runtypes';
-import { throttle } from 'lodash';
+import Bottleneck from 'bottleneck';
 
 type TrailerId = {
   imdbid: string;
@@ -15,6 +15,8 @@ type TrailerUrlDB = {
   trailerUrl: string;
 };
 
+const limiter = new Bottleneck({ minTime: 300 });
+
 const getNullTrailersFromDB = async () => {
   const { data, error } = await supabaseService
     .from('catalog')
@@ -23,7 +25,7 @@ const getNullTrailersFromDB = async () => {
     .not('imdbid', 'is', null);
 
   if (error) {
-    console.log('Error:', {
+    console.error('Error:', {
       message: error.message,
       details: error.details,
     });
@@ -34,13 +36,12 @@ const getNullTrailersFromDB = async () => {
 
 const addTrailersToDB = async () => {
   const trailers = await getVideoUrl();
-
   if (trailers) {
     trailers.map(async (trailer) => {
       const { error } = await supabaseService
         .from('catalog')
         .update({
-          trailer: trailer.trailerUrl || null,
+          trailer: trailer?.trailerUrl || null,
         })
         .eq('imdbid', trailer.imdbid);
 
@@ -49,68 +50,44 @@ const addTrailersToDB = async () => {
   }
 };
 
-const getVideoUrl = throttle(async () => {
+const getVideoUrl = async () => {
   const trailerIds = await getTrailerId();
   let trailerForDB: TrailerUrlDB;
 
   if (trailerIds) {
-    const itemsWithTrailer: TrailerUrlDB[] = await Promise.all(
-      trailerIds.map(async (item) => {
+    const itemsWithTrailer: Promise<TrailerUrlDB>[] = trailerIds.map(
+      async (item) => {
         const url = `https://imdb8.p.rapidapi.com/title/get-video-playback?viconst=${item.trailerId}&region=US`;
-        const trailerUrls = await fetch(url, options);
+        const trailerUrls = await limiter.schedule(() => fetch(url, options));
         let trailerResponse: TrailerUrl = await trailerUrls.json();
 
         try {
           trailerResponse = TrailerUrls.check(trailerResponse);
-          const mp4 = trailerResponse.resource.encodings.filter(
-            (item) => item.mimeType === 'video/mp4'
-          );
-          trailerForDB = { imdbid: item.imdbid, trailerUrl: mp4[0].playUrl };
+          if (trailerResponse.resource) {
+            const mp4 = trailerResponse.resource.encodings.filter(
+              (item) => item.mimeType === 'video/mp4'
+            );
+            trailerForDB = {
+              imdbid: item.imdbid,
+              trailerUrl: mp4[0].playUrl,
+            };
+          }
         } catch (error) {
           if (error instanceof ValidationError)
-            console.error('Error:', {
+            console.error('Error: trailerUrls', {
               code: error.code,
               details: error.details,
               message: error.message,
             });
         }
+
         return trailerForDB;
-      })
+      }
     );
 
-    return itemsWithTrailer;
+    return await Promise.all(itemsWithTrailer.map((item) => item));
   }
-}, 400);
-
-const getTrailerSource = throttle(async () => {
-  const nullTrailers = await getNullTrailersFromDB();
-  let trailerItems: TrailerItem[] = [];
-
-  if (nullTrailers) {
-    trailerItems = await Promise.all(
-      nullTrailers.map(async (item) => {
-        const url = `https://imdb8.p.rapidapi.com/title/get-videos?tconst=${item.imdbid}&region=US`;
-        const fetchTrailers = await fetch(url, options);
-        let trailerResponse: TrailerItem = await fetchTrailers.json();
-        console.log(trailerResponse);
-        try {
-          trailerResponse = TrailerItems.check(trailerResponse);
-        } catch (error) {
-          if (error instanceof ValidationError)
-            console.error('Error:', {
-              code: error.code,
-              details: error.details,
-              message: error.message,
-            });
-        }
-
-        return trailerResponse;
-      })
-    );
-  }
-
-  return trailerItems;
-}, 400);
+};
 
 const getTrailerId = async () => {
   const trailerSource = await getTrailerSource();
@@ -128,9 +105,44 @@ const getTrailerId = async () => {
         }
         return newItem;
       })
-      .filter((item) => item);
+      .filter(
+        (item, index, arr) =>
+          item &&
+          index ===
+            arr.findIndex((itemForIndex) => item.imdbid === itemForIndex.imdbid)
+      );
   }
   return trailerSource;
+};
+
+const getTrailerSource = async () => {
+  const nullTrailers = await getNullTrailersFromDB();
+  let trailerItems: Promise<TrailerItem>[] = [];
+
+  if (nullTrailers) {
+    trailerItems = nullTrailers
+      .map(async (item) => {
+        const url = `https://imdb8.p.rapidapi.com/title/get-videos?tconst=${item.imdbid}&region=US`;
+        const fetchTrailers = await limiter.schedule(() => fetch(url, options));
+        let trailerResponse: TrailerItem = await fetchTrailers.json();
+
+        try {
+          trailerResponse = TrailerItems.check(trailerResponse);
+        } catch (error) {
+          if (error instanceof ValidationError)
+            console.error('Error: trailerItems', {
+              code: error.code,
+              details: error.details,
+              message: error.message,
+            });
+        }
+
+        return trailerResponse;
+      })
+      .filter((item) => item);
+  }
+
+  return await Promise.all(trailerItems.map((item) => item));
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {

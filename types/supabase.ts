@@ -25,6 +25,7 @@ export interface Database {
           trailer: string | null;
           vtype: string;
           year: number;
+          genre: boolean;
         };
         Insert: {
           created_at?: string;
@@ -41,6 +42,7 @@ export interface Database {
           trailer?: string | null;
           vtype: string;
           year: number;
+          genre?: boolean;
         };
         Update: {
           created_at?: string;
@@ -57,6 +59,7 @@ export interface Database {
           trailer?: string | null;
           vtype?: string;
           year?: number;
+          genre?: boolean;
         };
       };
       'catalog-genre': {

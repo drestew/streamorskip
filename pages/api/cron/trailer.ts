@@ -148,8 +148,8 @@ const getTrailerSource = async () => {
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const results = await addTrailersToDB();
-  res.json(results);
+  await addTrailersToDB();
+  res.status(200).json({ success: 200 });
 };
 
 export default apiResponse;

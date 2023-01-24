@@ -13,7 +13,10 @@ type Genre = {
 };
 
 const getCatalogFromDB = async () => {
-  const { data, error } = await supabaseService.from('catalog').select('nfid');
+  const { data, error } = await supabaseService
+    .from('catalog')
+    .select('nfid')
+    .eq('genre', 'false');
 
   if (error) {
     console.log('Error:', {
@@ -66,12 +69,25 @@ const addGenresToDB = async () => {
         });
       }
     }
+
+    for (let i = 0; i < genres.length; i++) {
+      const { error } = await supabaseService
+        .from('catalog')
+        .update({ genre: true })
+        .eq('nfid', genres[i].nfid);
+      ``;
+      if (error) {
+        console.log('Error:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
+    }
   }
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const result = await addGenresToDB();
-  // res.json(result);
+  await addGenresToDB();
   res.redirect('/api/cron/trailer');
 };
 

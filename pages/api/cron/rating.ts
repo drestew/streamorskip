@@ -4,8 +4,11 @@ import { options } from '../../../utils/imdb';
 import { ImdbRatingItem, ImdbRatingItems, ImdbIdItem } from './types';
 import { ValidationError } from 'runtypes';
 import { distance } from 'fastest-levenshtein';
+import Bottleneck from 'bottleneck';
 
 type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
+
+const limiter = new Bottleneck({ minTime: 300 });
 
 const getNullRatingsFromDB = async () => {
   const { data, error } = await supabaseService
@@ -39,77 +42,80 @@ const addImdbIdsToDB = async (itemsWithImdbIds: ImdbIdItem[]) => {
 const getImdbId = async (catalogFromDB: NeedRating) => {
   // need imdb id in order to get rating
   let itemsNoImdbId: NeedRating;
-  let itemsWithImdbIds: ImdbIdItem[] = [];
-
+  let itemsWithImdbIds: Promise<ImdbIdItem>[] = [];
+  let dbItem: { title: string; imdbid: string | null };
   if (catalogFromDB) {
     itemsNoImdbId = catalogFromDB.filter((item) => !item.imdbid);
-
-    itemsWithImdbIds = await Promise.all(
-      itemsNoImdbId.map(async (itemsNoImdbId) => {
-        const encodedTitle = encodeURI(itemsNoImdbId.title);
-        const url = `https://imdb8.p.rapidapi.com/title/v2/find?title=${encodedTitle}`;
-        const titleSearch = await fetch(url, options);
-        const { results } = await titleSearch.json();
-
+    itemsWithImdbIds = itemsNoImdbId.map(async (itemsNoImdbId) => {
+      const encodedTitle = encodeURI(itemsNoImdbId.title);
+      const url = `https://imdb8.p.rapidapi.com/title/v2/find?title=${encodedTitle}`;
+      const titleSearch = await limiter.schedule(() => fetch(url, options));
+      const { results } = await titleSearch.json();
+      if (results?.length > 0) {
         const { title, id } = results[0];
         const checkTitleMatch = distance(itemsNoImdbId.title, title);
         const formattedId = id.replace(/\D/g, ''); // '/title/tt12345678/' => '12345678'
 
-        return checkTitleMatch <= 1
-          ? { title: title, imdbid: `tt${formattedId}` }
-          : { title: title, imdbid: null };
-      })
-    );
+        dbItem =
+          checkTitleMatch <= 1
+            ? { title: title, imdbid: `tt${formattedId}` }
+            : { title: title, imdbid: null };
+      } else {
+        dbItem = { title: itemsNoImdbId.title, imdbid: null };
+      }
+      return dbItem;
+    });
   }
+  const resolved = await Promise.all(itemsWithImdbIds.map((item) => item));
+  const resolvedWithImdbId = resolved.filter((item) => item.imdbid);
+  await addImdbIdsToDB(resolvedWithImdbId);
 
-  await addImdbIdsToDB(itemsWithImdbIds);
-
-  return itemsWithImdbIds;
+  return resolvedWithImdbId;
 };
 
 const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
-  let imdbids: (string | null)[] = [];
+  let imdbItemsArr: (string | null)[] = [];
+  let dbItemsArr: (string | null)[] = [];
 
   if (imdbItem) {
-    imdbids = imdbItem.map((item) => {
+    imdbItemsArr = imdbItem.map((item) => {
       return item.imdbid;
     });
-    return imdbids;
   }
 
   if (dbItem) {
-    imdbids = dbItem.map((item) => {
+    dbItemsArr = dbItem.map((item) => {
       return item.imdbid;
     });
-    return imdbids;
   }
 
-  return imdbids;
+  return [...imdbItemsArr, ...dbItemsArr];
 };
 
 const getRating = async () => {
   const catalogFromDB = await getNullRatingsFromDB();
-  const itemsWithNewImdbId = await getImdbId(catalogFromDB);
-
+  let itemsWithNewImdbId: Awaited<ImdbIdItem>[] = [];
   let itemsNoRatings: NeedRating;
   let itemsWithRatings: ImdbRatingItem[] = [];
 
-  if (catalogFromDB) {
+  if (catalogFromDB && catalogFromDB.length > 0) {
+    itemsWithNewImdbId = await getImdbId(catalogFromDB);
     itemsNoRatings = catalogFromDB.filter((item) => item.imdbid);
-    const imdbArr = extractImdbIds(itemsWithNewImdbId, itemsNoRatings);
 
+    const imdbArr = extractImdbIds(itemsWithNewImdbId, itemsNoRatings);
     itemsWithRatings = await Promise.all(
       imdbArr.map(async (item) => {
         if (item) {
           const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item}`;
-          const fetchItemRatings = await fetch(url, options);
+          const fetchItemRatings = await limiter.schedule(() =>
+            fetch(url, options)
+          );
 
           return fetchItemRatings.json();
         }
       })
     );
   }
-
   return itemsWithRatings;
 };
 
@@ -127,14 +133,14 @@ const addRatingsToDB = async () => {
       });
   }
 
-  if (ratedItems) {
+  if (ratedItems?.length > 0) {
     ratedItems.map(async (item) => {
       if (item.id) {
         const id = item.id.replace(/\D/g, '');
         const { error } = await supabaseService
           .from('catalog')
           .update({
-            rating: item.rating ?? 999,
+            rating: item.rating ?? null,
           })
           .eq('imdbid', `tt${id}`);
 
@@ -160,7 +166,8 @@ const addRatingsToDB = async () => {
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
   await addRatingsToDB();
-  res.redirect('/api/cron/genre');
+  // res.redirect('/api/cron/genre');
+  res.json({ success: 200 });
 };
 
 export default apiResponse;

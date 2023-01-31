@@ -6,7 +6,7 @@ import { CatalogItem, CatalogItems } from './types';
 
 const lookbackDate = () => {
   const dateToday = new Date();
-  const fromDate = dateToday.setDate(dateToday.getDate() - 1);
+  const fromDate = dateToday.setDate(dateToday.getDate() - 3);
   const fromDateInMS = new Date(fromDate);
   const day = fromDateInMS.getDate();
   const month = fromDateInMS.getMonth() + 1;

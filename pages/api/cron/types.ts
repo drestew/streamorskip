@@ -79,3 +79,18 @@ const TrailerUrl = Record({
 
 export const TrailerUrls = TrailerUrl;
 export type TrailerUrl = Static<typeof TrailerUrl>;
+
+const Genre = Record({
+  nfid: Number,
+  genres: Optional(
+    Array(
+      Record({
+        nfid: Number,
+        genre: String,
+      })
+    )
+  ),
+});
+
+export const Genres = Array(Genre);
+export type Genre = Static<typeof Genre>;

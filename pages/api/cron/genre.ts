@@ -1,16 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/unogs';
-
-type Genre = {
-  nfid: number;
-  genres: [
-    {
-      nfid: number;
-      genre: string;
-    }
-  ];
-};
+import { Genre, Genres } from './types';
 
 const getCatalogFromDB = async () => {
   const { data, error } = await supabaseService
@@ -48,34 +39,38 @@ const getGenres = async () => {
 };
 
 const addGenresToDB = async () => {
-  const genres: Genre[] = await getGenres();
+  let genreResults = await getGenres();
 
-  if (genres) {
-    for (let i = 0; i < genres.length; i++) {
-      const { error } = await supabaseService.from('catalog-genre').insert(
-        genres[i].genres.map((item) => {
-          return {
-            ['catalog-nfid']: genres[i].nfid,
-            genre: item.genre,
-            ['genre-nfid']: item.nfid,
-          };
-        })
-      );
+  genreResults = Genres.check(genreResults);
 
-      if (error) {
-        console.log('Error:', {
-          message: error.message,
-          details: error.details,
-        });
+  if (genreResults) {
+    for (const item of genreResults) {
+      if (item.genres) {
+        const { error } = await supabaseService.from('catalog-genre').insert(
+          item.genres.map((genre) => {
+            return {
+              ['catalog-nfid']: item.nfid,
+              genre: genre.genre,
+              ['genre-nfid']: genre.nfid,
+            };
+          })
+        );
+
+        if (error) {
+          console.log('Error:', {
+            message: error.message,
+            details: error.details,
+          });
+        }
       }
     }
 
-    for (let i = 0; i < genres.length; i++) {
+    for (const item of genreResults) {
       const { error } = await supabaseService
         .from('catalog')
         .update({ genre: true })
-        .eq('nfid', genres[i].nfid);
-      ``;
+        .eq('nfid', item.nfid);
+
       if (error) {
         console.log('Error:', {
           message: error.message,

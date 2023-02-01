@@ -62,8 +62,8 @@ const addNewContentToDB = async () => {
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  await addNewContentToDB();
-  res.redirect('/api/cron/rating');
+  const resp = await addNewContentToDB();
+  res.json(resp);
 };
 
 export default apiResponse;

@@ -48,6 +48,8 @@ const addTrailersToDB = async () => {
       if (error) console.error(error);
     });
   }
+
+  return { trailers: trailers };
 };
 
 const getVideoUrl = async () => {
@@ -148,8 +150,8 @@ const getTrailerSource = async () => {
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  await addTrailersToDB();
-  res.status(200).json({ success: 200 });
+  const resp = await addTrailersToDB();
+  res.json(resp);
 };
 
 export default apiResponse;

@@ -121,7 +121,6 @@ const getRating = async () => {
 
 const addRatingsToDB = async () => {
   let ratedItems = await getRating();
-  const itemsNotAddedToDb: Pick<ImdbRatingItem, 'id' | 'title'>[] = [];
 
   try {
     ratedItems = ImdbRatingItems.check(ratedItems);
@@ -140,15 +139,11 @@ const addRatingsToDB = async () => {
         const { error } = await supabaseService
           .from('catalog')
           .update({
-            rating: item.rating ?? null,
+            rating: item.rating,
           })
           .eq('imdbid', `tt${id}`);
 
         if (error) {
-          itemsNotAddedToDb.push({
-            id: id,
-            title: item.title,
-          });
           console.log('Error:', {
             message: error.message,
             details: error.details,
@@ -158,15 +153,35 @@ const addRatingsToDB = async () => {
     });
   }
 
+  const itemsAddedToDb = ratedItems
+    .map((item) => {
+      return {
+        title: item.title,
+        id: item.id,
+        rating: item.rating,
+      };
+    })
+    .filter((item) => item.rating);
+
+  const itemsNotAddedToDb = ratedItems
+    .map((item) => {
+      return {
+        title: item.title,
+        id: item.id,
+        rating: item.rating,
+      };
+    })
+    .filter((item) => !item.rating);
+
   return {
-    ratingsAdded: ratedItems.length - itemsNotAddedToDb.length,
-    ratingsNotAdded: [...itemsNotAddedToDb],
+    ratingsAdded: itemsAddedToDb,
+    ratingsNotAdded: itemsNotAddedToDb,
   };
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  await addRatingsToDB();
-  res.redirect('/api/cron/genre');
+  const resp = await addRatingsToDB();
+  res.json(resp);
 };
 
 export default apiResponse;

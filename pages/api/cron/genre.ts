@@ -83,7 +83,7 @@ const addGenresToDB = async () => {
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
   await addGenresToDB();
-  res.redirect('/api/cron/trailer');
+  res.json({ success: 200 });
 };
 
 export default apiResponse;

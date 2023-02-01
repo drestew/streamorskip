@@ -1,0 +1,22 @@
+name: update-catalog
+
+on:
+  schedule:
+    - cron: '0 2 * * */2'
+
+jobs:
+  new_content:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add new content to catalog
+        run: |
+          curl -X GET "https://streamorskip.com/api/cron/addToCatalog"
+      - name: Add ratings
+        run: |
+          curl -X GET "https://streamorskip.com/api/cron/rating"
+      - name: Add genres
+        run: |
+          curl -X GET "https://streamorskip.com/api/cron/genre"
+      - name: Add trailers
+        run: |
+          curl -X GET "https://streamorskip.com/api/cron/trailer"

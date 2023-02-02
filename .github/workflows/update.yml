@@ -10,13 +10,21 @@ jobs:
     steps:
       - name: Add new content to catalog
         run: |
-          curl -X GET "https://streamorskip.com/api/cron/addToCatalog"
+          curl --request GET \
+          --url "https://streamorskip.com/api/cron/addToCatalog" \
+          --header "apikey: ${{ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ process.env.SUPABASE_KEY }}"
       - name: Add ratings
         run: |
-          curl -X GET "https://streamorskip.com/api/cron/rating"
+          curl --request GET \
+          --url "https://streamorskip.com/api/cron/rating" \
+          --header "apikey: ${{ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ process.env.SUPABASE_KEY }}"
       - name: Add genres
         run: |
-          curl -X GET "https://streamorskip.com/api/cron/genre"
+          curl --request GET \
+          --url "https://streamorskip.com/api/cron/genre" \
+          --header "apikey: ${{ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ process.env.SUPABASE_KEY }}"
       - name: Add trailers
         run: |
-          curl -X GET "https://streamorskip.com/api/cron/trailer"
+          curl --request GET \
+          --url "https://streamorskip.com/api/cron/trailer" \
+          --header "apikey: ${{ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ process.env.SUPABASE_KEY }}"

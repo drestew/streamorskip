@@ -14,19 +14,19 @@ jobs:
         run: |
           curl --request GET \
           --url "https://streamorskip.com/api/cron/addToCatalog" \
-          --header "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+          --header "apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer process.env.SUPABASE_KEY"
       - name: Add ratings
         run: |
           curl --request GET \
           --url "https://streamorskip.com/api/cron/rating" \
-          --header "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+          --header "apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer process.env.SUPABASE_KEY"
       - name: Add genres
         run: |
           curl --request GET \
           --url "https://streamorskip.com/api/cron/genre" \
-          --header "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+          --header "apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer process.env.SUPABASE_KEY"
       - name: Add trailers
         run: |
           curl --request GET \
           --url "https://streamorskip.com/api/cron/trailer" \
-          --header "apikey: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}, Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+          --header "apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer process.env.SUPABASE_KEY"

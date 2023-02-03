@@ -3,7 +3,7 @@ name: update-catalog
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * */2'
+    - cron: '0 7 * * */2'
 
 
 jobs:
@@ -24,9 +24,4 @@ jobs:
         run: |
           curl --request GET \
           --url "https://www.streamorskip.com/api/cron/genre" \
-          --header "apikey: secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer secrets.SUPABASE_KEY"
-      - name: Add trailers
-        run: |
-          curl --request GET \
-          --url "https://www.streamorskip.com/api/cron/trailer" \
           --header "apikey: secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer secrets.SUPABASE_KEY"

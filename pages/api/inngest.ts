@@ -1,4 +1,5 @@
 import { serve } from 'inngest/next';
-import addToCatalog from './cron/inngest/functions';
+import getRatings from './cron/inngestFunctions/rating';
+import getGenres from './cron/inngestFunctions/genre';
 
-export default serve('My app name', [addToCatalog]);
+export default serve('streamorskip', [getRatings, getGenres]);

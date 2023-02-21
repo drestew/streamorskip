@@ -1,4 +1,3 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../../utils/supabase';
 import { options } from '../../../../utils/unogs';
 import { Genre, Genres } from '../types';
@@ -10,19 +9,19 @@ export default inngest.createStepFunction(
   'Get genres',
   'cron/genre',
   ({ tools }) => {
-    tools.run('get lookback date', () => {
-      return testFunc();
+    const dbCatalog = tools.run('db catalog', () => {
+      return getCatalogFromDB();
     });
 
-    // tools.run('get new content', async () => {
-    //   // return await fetchNewContent();
-    // });
+    const genreArr = tools.run('catalog genres', () => {
+      return getGenres(dbCatalog);
+    });
+
+    tools.run('genres to db', () => {
+      return addGenresToDB(genreArr);
+    });
   }
 );
-
-const testFunc = () => {
-  return { working: true };
-};
 
 const getCatalogFromDB = async () => {
   const { data, error } = await supabaseService
@@ -40,8 +39,7 @@ const getCatalogFromDB = async () => {
   return data;
 };
 
-const getGenres = async () => {
-  const catalog = await getCatalogFromDB();
+const getGenres = async (catalog: { nfid: number }[] | null) => {
   let genres: Genre[] = [];
 
   if (catalog) {
@@ -59,9 +57,7 @@ const getGenres = async () => {
   return genres;
 };
 
-const addGenresToDB = async () => {
-  let genreResults = await getGenres();
-
+const addGenresToDB = async (genreResults: Genre[]) => {
   genreResults = Genres.check(genreResults);
 
   if (genreResults) {
@@ -101,10 +97,3 @@ const addGenresToDB = async () => {
     }
   }
 };
-
-const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  await addGenresToDB();
-  res.json({ success: 200 });
-};
-
-// export default apiResponse;

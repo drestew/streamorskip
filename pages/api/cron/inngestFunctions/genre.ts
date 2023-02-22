@@ -5,19 +5,19 @@ import { Inngest } from 'inngest';
 
 const inngest = new Inngest({ name: 'streamorskip' });
 
-export default inngest.createStepFunction(
-  'Get genres',
-  'cron/genre',
-  ({ tools }) => {
-    const dbCatalog = tools.run('db catalog', () => {
+export default inngest.createFunction(
+  { name: 'Get genres' },
+  { event: 'cron/genre' },
+  async ({ step }) => {
+    const dbCatalog = await step.run('db catalog', () => {
       return getCatalogFromDB();
     });
 
-    const genreArr = tools.run('catalog genres', () => {
+    const genreArr = await step.run('catalog genres', () => {
       return getGenres(dbCatalog);
     });
 
-    tools.run('genres to db', () => {
+    await step.run('genres to db', () => {
       return addGenresToDB(genreArr);
     });
   }

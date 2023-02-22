@@ -12,23 +12,6 @@ type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
 const limiter = new Bottleneck({ minTime: 300 });
 const inngest = new Inngest({ name: 'streamorskip' });
 
-export default inngest.createStepFunction(
-  'Get ratings',
-  'cron/rating',
-  ({ tools }) => {
-    tools.run('get lookback date', () => {
-      return testFunc();
-    });
-
-    // tools.run('get new content', async () => {
-    //   // return await fetchNewContent();
-    // });
-  }
-);
-
-const testFunc = () => {
-  return { working: true };
-};
 const getNullRatingsFromDB = async () => {
   const { data, error } = await supabaseService
     .from('catalog')

@@ -1,7 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Inngest } from 'inngest';
-
-const inngest = new Inngest({ name: 'streamorskip' });
+import { inngest } from '../inngest';
 
 export default async function handler(
   req: NextApiRequest,

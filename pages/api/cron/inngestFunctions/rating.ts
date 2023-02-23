@@ -1,7 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseService } from '../../../../utils/supabase';
 import { options } from '../../../../utils/imdb';
-import { ImdbRatingItem, ImdbRatingItems, ImdbIdItem } from '../types';
+import { ImdbIdItem, ImdbRatingItem, ImdbRatingItems } from '../types';
 import { ValidationError } from 'runtypes';
 import { distance } from 'fastest-levenshtein';
 import Bottleneck from 'bottleneck';
@@ -11,6 +10,32 @@ type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
 
 const limiter = new Bottleneck({ minTime: 300 });
 const inngest = new Inngest({ name: 'streamorskip' });
+
+export default inngest.createFunction(
+  { name: 'Get ratings' },
+  { event: 'cron/rating' },
+  async ({ step }) => {
+    const nullFromDB = await step.run('null ratings from db', () => {
+      return getNullRatingsFromDB();
+    });
+
+    const getImdbIds = await step.run('get imdb ids', () => {
+      return getImdbId(nullFromDB);
+    });
+
+    await step.run('add imdb ids db', () => {
+      return addImdbIdsToDB(getImdbIds);
+    });
+
+    const fetchRating = await step.run('fetch rating', () => {
+      return getRating(nullFromDB, getImdbIds);
+    });
+
+    await step.run('add ratings to db', () => {
+      return addRatingsToDB(fetchRating);
+    });
+  }
+);
 
 const getNullRatingsFromDB = async () => {
   const { data, error } = await supabaseService
@@ -39,6 +64,8 @@ const addImdbIdsToDB = async (itemsWithImdbIds: ImdbIdItem[]) => {
 
     if (error) console.error(error);
   });
+
+  return itemsWithImdbIds;
 };
 
 const getImdbId = async (catalogFromDB: NeedRating) => {
@@ -69,10 +96,8 @@ const getImdbId = async (catalogFromDB: NeedRating) => {
     });
   }
   const resolved = await Promise.all(itemsWithImdbIds.map((item) => item));
-  const resolvedWithImdbId = resolved.filter((item) => item.imdbid);
-  await addImdbIdsToDB(resolvedWithImdbId);
 
-  return resolvedWithImdbId;
+  return resolved.filter((item) => item.imdbid);
 };
 
 const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
@@ -94,14 +119,16 @@ const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
   return [...imdbItemsArr, ...dbItemsArr];
 };
 
-const getRating = async () => {
-  const catalogFromDB = await getNullRatingsFromDB();
+const getRating = async (
+  catalogFromDB: NeedRating,
+  newImdbIds: Awaited<ImdbIdItem>[]
+) => {
   let itemsWithNewImdbId: Awaited<ImdbIdItem>[] = [];
   let itemsNoRatings: NeedRating;
   let itemsWithRatings: ImdbRatingItem[] = [];
 
   if (catalogFromDB && catalogFromDB.length > 0) {
-    itemsWithNewImdbId = await getImdbId(catalogFromDB);
+    itemsWithNewImdbId = newImdbIds;
     itemsNoRatings = catalogFromDB.filter((item) => item.imdbid);
 
     const imdbArr = extractImdbIds(itemsWithNewImdbId, itemsNoRatings);
@@ -121,8 +148,8 @@ const getRating = async () => {
   return itemsWithRatings;
 };
 
-const addRatingsToDB = async () => {
-  let ratedItems = await getRating();
+const addRatingsToDB = async (ratedItemsPromise: ImdbRatingItem[]) => {
+  let ratedItems = ratedItemsPromise;
 
   try {
     ratedItems = ImdbRatingItems.check(ratedItems);
@@ -180,10 +207,3 @@ const addRatingsToDB = async () => {
     ratingsNotAdded: itemsNotAddedToDb,
   };
 };
-
-const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const resp = await addRatingsToDB();
-  res.json(resp);
-};
-
-// export default apiResponse;

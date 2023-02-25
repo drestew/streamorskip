@@ -4,17 +4,7 @@ import { options } from '../../../utils/unogs';
 import { decodeHTML } from 'entities';
 import { DeletedItem, DeletedItems } from './types';
 import { ValidationError } from 'runtypes';
-
-const lookbackDate = () => {
-  const dateToday = new Date();
-  const fromDate = dateToday.setDate(dateToday.getDate() - 2);
-  const fromDateInMS = new Date(fromDate);
-  const day = fromDateInMS.getDate();
-  const month = fromDateInMS.getMonth() + 1;
-  const year = fromDateInMS.getFullYear();
-
-  return `${year}-${month}-${day}`;
-};
+import { lookbackDate } from './addToCatalog';
 
 const fetchDeletedContent = async () => {
   const url = `https://unogsng.p.rapidapi.com/titlesdel?offset=0&countrylist=78&date=${lookbackDate()}`;

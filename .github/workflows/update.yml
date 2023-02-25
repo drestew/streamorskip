@@ -25,3 +25,8 @@ jobs:
           curl --request GET \
           --url "https://www.streamorskip.com/api/cron/genre" \
           --header "apikey: secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer secrets.SUPABASE_KEY"
+      - name: Check for deleted content
+        run: |
+          curl --request GET \
+          --url "https://www.streamorskip.com/api/cron/removeFromCatalog" \
+          --header "apikey: secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: Bearer secrets.SUPABASE_KEY"

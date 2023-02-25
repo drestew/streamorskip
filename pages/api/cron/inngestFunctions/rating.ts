@@ -42,6 +42,7 @@ const getNullRatingsFromDB = async () => {
   const { data, error } = await supabaseService
     .from('catalog')
     .select('title, imdbid, rating')
+    .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
     .order('id', { ascending: false })
     .range(0, 100);
@@ -52,7 +53,7 @@ const getNullRatingsFromDB = async () => {
       details: error.details,
     });
   }
-  console.log(data);
+
   return data;
 };
 

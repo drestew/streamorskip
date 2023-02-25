@@ -3,8 +3,9 @@ import { supabaseService } from '../../../utils/supabase';
 import { options } from '../../../utils/unogs';
 import { decodeHTML } from 'entities';
 import { CatalogItem, CatalogItems } from './types';
+import { ValidationError } from 'runtypes';
 
-const lookbackDate = () => {
+export const lookbackDate = () => {
   const dateToday = new Date();
   const fromDate = dateToday.setDate(dateToday.getDate() - 3);
   const fromDateInMS = new Date(fromDate);
@@ -25,40 +26,53 @@ const fetchNewContent = async () => {
 
 const addNewContentToDB = async () => {
   let { results } = await fetchNewContent();
-  results = CatalogItems.check(results); // type-check api response
-  const newContent: CatalogItem[] = results;
-  const itemsNotAddedToDb: Pick<CatalogItem, 'nfid' | 'title'>[] = [];
+  type ItemData = Pick<CatalogItem, 'nfid' | 'title'>;
+  const itemsNotAddedToDb: ItemData[] = [];
+  const itemsAddedToDb: ItemData[] = [];
 
-  for (let i = 0; i < newContent.length; i++) {
-    const item = newContent[i];
-    const { error } = await supabaseService.from('catalog').insert({
-      nfid: item.nfid,
-      title: decodeHTML(item.title),
-      img: item.img,
-      vtype: item.vtype,
-      synopsis: decodeHTML(item.synopsis),
-      year: item.year,
-      runtime: item.runtime,
-      imdbid: item.imdbid,
-      rating: item.imdbrating === 0 ? null : item.imdbrating,
-      titledate: item.titledate,
-    });
+  try {
+    results = CatalogItems.check(results); // type-check api response
+    const newContent: CatalogItem[] = results;
+    for (let i = 0; i < newContent.length; i++) {
+      const item = newContent[i];
+      const { error } = await supabaseService.from('catalog').insert({
+        nfid: item.nfid,
+        title: decodeHTML(item.title),
+        img: item.img,
+        vtype: item.vtype,
+        synopsis: decodeHTML(item.synopsis),
+        year: item.year,
+        runtime: item.runtime,
+        imdbid: item.imdbid,
+        rating: item.imdbrating === 0 ? null : item.imdbrating,
+        titledate: item.titledate,
+      });
 
-    if (error) {
-      itemsNotAddedToDb.push({
+      itemsAddedToDb.push({
         nfid: item.nfid,
         title: decodeHTML(item.title),
       });
-      console.log('Error:', {
-        message: error.message,
+
+      if (error) {
+        itemsNotAddedToDb.push({
+          nfid: item.nfid,
+          title: decodeHTML(item.title),
+        });
+        console.log('Error:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
+    }
+  } catch (error) {
+    if (error instanceof ValidationError)
+      console.error('Error:', {
+        code: error.code,
         details: error.details,
       });
-    }
   }
 
-  return itemsNotAddedToDb.length === 0
-    ? { success: 201 }
-    : { Error: [...itemsNotAddedToDb] };
+  return { contentAdded: [...itemsAddedToDb], Error: [...itemsNotAddedToDb] };
 };
 
 const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {

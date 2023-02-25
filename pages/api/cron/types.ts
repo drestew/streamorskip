@@ -94,3 +94,13 @@ const Genre = Record({
 
 export const Genres = Array(Genre);
 export type Genre = Static<typeof Genre>;
+
+const DeletedItem = Record({
+  title: String,
+  deletedate: String,
+  netflixid: Number,
+  countrycode: String,
+});
+
+export const DeletedItems = Array(DeletedItem);
+export type DeletedItem = Static<typeof DeletedItem>;

@@ -43,6 +43,7 @@ export type ImdbRatingItem = Static<typeof ImdbRatingItem>;
 const ImdbIdItem = Record({
   imdbid: Union(String, Null),
   title: String,
+  nfid: Number,
 });
 
 export const ImdbIdItems = Array(ImdbIdItem);

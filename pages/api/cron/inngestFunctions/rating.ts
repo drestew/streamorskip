@@ -20,7 +20,18 @@ export default inngest.createFunction(
       return getNullRatingsFromDB();
     });
 
-    const getImdbIds = await step.run('get imdb ids', () => {
+    const fetchRatingForDbItem = await step.run(
+      'fetch rating for db item',
+      () => {
+        return getRating(nullFromDB, null);
+      }
+    );
+
+    await step.run('add ratings to db', () => {
+      return addRatingsToDB(fetchRatingForDbItem);
+    });
+
+    const getImdbIds = await step.run('get imdb ids from title search', () => {
       return getImdbId(nullFromDB);
     });
 
@@ -28,12 +39,16 @@ export default inngest.createFunction(
       return addImdbIdsToDB(getImdbIds);
     });
 
-    const fetchRating = await step.run('fetch rating', () => {
-      return getRating(nullFromDB, getImdbIds);
-    });
+    // search items ran separately than db items to fix function timeout error in vercel
+    const fetchRatingForTitleSearchItem = await step.run(
+      'fetch rating for title search item',
+      () => {
+        return getRating(null, getImdbIds);
+      }
+    );
 
     await step.run('add ratings to db', () => {
-      return addRatingsToDB(fetchRating);
+      return addRatingsToDB(fetchRatingForTitleSearchItem);
     });
   }
 );
@@ -41,7 +56,7 @@ export default inngest.createFunction(
 const getNullRatingsFromDB = async () => {
   const { data, error } = await supabaseService
     .from('catalog')
-    .select('title, imdbid, rating')
+    .select('title, imdbid, rating, nfid')
     .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
     .order('id', { ascending: false })
@@ -65,7 +80,7 @@ const addImdbIdsToDB = async (itemsWithImdbIds: ImdbIdItem[]) => {
         .update({
           imdbid: item.imdbid,
         })
-        .eq('title', item.title);
+        .eq('nfid', item.nfid);
 
       if (error) console.error(error);
     });
@@ -77,7 +92,7 @@ const getImdbId = async (catalogFromDB: Awaited<NeedRating>) => {
   // need imdb id in order to get rating
   let itemsNoImdbId: NeedRating;
   let itemsWithImdbIds: ImdbIdItem[] = [];
-  let dbItem: { title: string; imdbid: string | null };
+  let dbItem: { title: string; imdbid: string | null; nfid: number };
   if (catalogFromDB) {
     itemsNoImdbId = catalogFromDB.filter((item) => !item.imdbid);
     itemsWithImdbIds = await Promise.all(
@@ -95,15 +110,27 @@ const getImdbId = async (catalogFromDB: Awaited<NeedRating>) => {
             const formattedId = id.replace(/\D/g, ''); // '/title/tt12345678/' => '12345678'
             dbItem =
               checkTitleMatch <= 1
-                ? { title: title, imdbid: `tt${formattedId}` }
-                : { title: title, imdbid: null };
+                ? {
+                    title: title,
+                    imdbid: `tt${formattedId}`,
+                    nfid: itemsNoImdbId.nfid,
+                  }
+                : { title: title, imdbid: null, nfid: itemsNoImdbId.nfid };
           } else {
-            dbItem = { title: itemsNoImdbId.title, imdbid: null };
+            dbItem = {
+              title: itemsNoImdbId.title,
+              imdbid: null,
+              nfid: itemsNoImdbId.nfid,
+            };
           }
           return dbItem;
         } catch {
           console.log('Error: ', itemsNoImdbId);
-          return { title: itemsNoImdbId.title, imdbid: null };
+          return {
+            title: itemsNoImdbId.title,
+            imdbid: null,
+            nfid: itemsNoImdbId.nfid,
+          };
         }
       })
     ).then((imdbItems) => imdbItems.filter((item) => item.imdbid));
@@ -133,17 +160,16 @@ const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
 
 const getRating = async (
   catalogFromDB: Awaited<NeedRating>,
-  newImdbIds: Awaited<ImdbIdItem>[]
+  newImdbIds: Awaited<ImdbIdItem>[] | null
 ) => {
   let itemsWithNewImdbId: Awaited<ImdbIdItem>[] = [];
   let itemsNoRatings: NeedRating;
   let itemsWithRatings: ImdbRatingItem[] = [];
 
   if (catalogFromDB && catalogFromDB.length > 0) {
-    itemsWithNewImdbId = newImdbIds;
     itemsNoRatings = catalogFromDB.filter((item) => item.imdbid);
 
-    const imdbArr = extractImdbIds(itemsWithNewImdbId, itemsNoRatings);
+    const imdbArr = extractImdbIds(itemsNoRatings);
 
     itemsWithRatings = await Promise.all(
       imdbArr.map(async (item) => {
@@ -158,6 +184,26 @@ const getRating = async (
       })
     );
   }
+
+  // duplication necessary to fix function timeout error in vercel
+  if (newImdbIds && newImdbIds.length > 0) {
+    itemsWithNewImdbId = newImdbIds;
+    const imdbArr = extractImdbIds(itemsWithNewImdbId);
+
+    itemsWithRatings = await Promise.all(
+      imdbArr.map(async (item) => {
+        if (item) {
+          const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item}`;
+          const fetchItemRatings = await limiter.schedule(() =>
+            fetch(url, options)
+          );
+
+          return fetchItemRatings.json();
+        }
+      })
+    );
+  }
+
   return itemsWithRatings;
 };
 

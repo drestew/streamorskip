@@ -60,7 +60,7 @@ const getNullRatingsFromDB = async () => {
     .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
     .order('id', { ascending: false })
-    .range(0, 10);
+    .range(0, 100);
 
   if (error) {
     console.log('Error:', {

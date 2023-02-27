@@ -209,7 +209,7 @@ const getRating = async (
     );
   }
 
-  return itemsWithRatings;
+  return itemsWithRatings.filter((item) => item && item.rating);
 };
 
 const addRatingsToDB = async (ratedItemsPromise: Awaited<ImdbRatingItem[]>) => {
@@ -218,7 +218,6 @@ const addRatingsToDB = async (ratedItemsPromise: Awaited<ImdbRatingItem[]>) => {
   let itemsNotAddedToDb;
 
   try {
-    ratedItems = ratedItems.filter((item) => item);
     ratedItems = ImdbRatingItems.check(ratedItems);
     if (ratedItems?.length > 0) {
       ratedItems.map(async (item) => {

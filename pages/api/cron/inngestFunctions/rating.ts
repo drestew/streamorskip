@@ -16,51 +16,56 @@ export default inngest.createFunction(
   { name: 'Get ratings' },
   { event: 'cron/rating' },
   async ({ step }) => {
-    const nullFromDB = await step.run('null ratings from db', () => {
-      return getNullRatingsFromDB();
-    });
+    for (let i = 0; i < 100; i += 10) {
+      const nullFromDB = await step.run('null ratings from db', () => {
+        return getNullRatingsFromDB(i);
+      });
 
-    const fetchRatingForDbItem = await step.run(
-      'fetch rating for db item',
-      () => {
-        return getRating(nullFromDB, null);
-      }
-    );
+      const fetchRatingForDbItem = await step.run(
+        'fetch rating for db item',
+        () => {
+          return getRating(nullFromDB, null);
+        }
+      );
 
-    await step.run('add ratings to db', () => {
-      return addRatingsToDB(fetchRatingForDbItem);
-    });
+      await step.run('add ratings to db', () => {
+        return addRatingsToDB(fetchRatingForDbItem);
+      });
 
-    const getImdbIds = await step.run('get imdb ids from title search', () => {
-      return getImdbId(nullFromDB);
-    });
+      const getImdbIds = await step.run(
+        'get imdb ids from title search',
+        () => {
+          return getImdbId(nullFromDB);
+        }
+      );
 
-    await step.run('add imdb ids db', () => {
-      return addImdbIdsToDB(getImdbIds);
-    });
+      await step.run('add imdb ids db', () => {
+        return addImdbIdsToDB(getImdbIds);
+      });
 
-    // search items ran separately than db items to fix function timeout error in vercel
-    const fetchRatingForTitleSearchItem = await step.run(
-      'fetch rating for title search item',
-      () => {
-        return getRating(null, getImdbIds);
-      }
-    );
+      // search items ran separately than db items to fix function timeout error in vercel
+      const fetchRatingForTitleSearchItem = await step.run(
+        'fetch rating for title search item',
+        () => {
+          return getRating(null, getImdbIds);
+        }
+      );
 
-    await step.run('add ratings to db', () => {
-      return addRatingsToDB(fetchRatingForTitleSearchItem);
-    });
+      await step.run('add ratings to db', () => {
+        return addRatingsToDB(fetchRatingForTitleSearchItem);
+      });
+    }
   }
 );
 
-const getNullRatingsFromDB = async () => {
+const getNullRatingsFromDB = async (rowStep: number) => {
   const { data, error } = await supabaseService
     .from('catalog')
     .select('title, imdbid, rating, nfid')
     .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
     .order('id', { ascending: false })
-    .range(0, 100);
+    .range(rowStep, rowStep + 10);
 
   if (error) {
     console.log('Error:', {

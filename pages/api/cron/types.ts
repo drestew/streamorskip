@@ -43,6 +43,7 @@ export type ImdbRatingItem = Static<typeof ImdbRatingItem>;
 const ImdbIdItem = Record({
   imdbid: Union(String, Null),
   title: String,
+  nfid: Number,
 });
 
 export const ImdbIdItems = Array(ImdbIdItem);
@@ -94,3 +95,13 @@ const Genre = Record({
 
 export const Genres = Array(Genre);
 export type Genre = Static<typeof Genre>;
+
+const DeletedItem = Record({
+  title: String,
+  deletedate: String,
+  netflixid: Number,
+  countrycode: String,
+});
+
+export const DeletedItems = Array(DeletedItem);
+export type DeletedItem = Static<typeof DeletedItem>;

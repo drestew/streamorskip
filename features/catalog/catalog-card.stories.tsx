@@ -8,15 +8,17 @@ export default {
 } as ComponentMeta<typeof CatalogCard>;
 
 const Template: ComponentStory<typeof CatalogCard> = (args) => (
-  <CatalogCard border={args.border}>card here</CatalogCard>
+  <CatalogCard border={args.border}>{args.children}</CatalogCard>
 );
 
 export const Default = Template.bind({});
 Default.args = {
   border: 'red',
+  children: 'Click Me',
 };
 
 export const Secondary = Template.bind({});
 Secondary.args = {
   border: 'blue',
+  children: 'Click Me',
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
+import { useCatalog } from '@features/catalog/api/getCatalog';
 
 type CardProps = {
   border: string;
@@ -28,6 +29,8 @@ const Card = styled.button<CardProps>`
   }}
 `;
 
-export function CatalogCard({ border, children }: CardProps) {
-  return <Card border={border}>{children}</Card>;
+export function CatalogCard({ border }: CardProps) {
+  const { data } = useCatalog();
+
+  return <Card border={border}>{data}</Card>;
 }

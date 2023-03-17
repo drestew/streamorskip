@@ -8,7 +8,7 @@ export default {
 } as ComponentMeta<typeof CatalogCard>;
 
 const Template: ComponentStory<typeof CatalogCard> = (args) => (
-  <CatalogCard border={args.border}>{args.children}</CatalogCard>
+  <CatalogCard border={args.border}>Click Me</CatalogCard>
 );
 
 export const Default = Template.bind({});

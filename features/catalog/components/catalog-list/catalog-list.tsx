@@ -1,10 +1,9 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
-import { useCatalog } from '@features/catalog/api/getCatalog';
+import styled from 'styled-components';
+import { useCatalog, CatalogCard } from '@features/catalog';
 
 const List = styled.ul`
   background-color: teal;
-  width: 80%;
 `;
 
 export function CatalogList() {
@@ -15,10 +14,12 @@ export function CatalogList() {
       {data?.map((item) => {
         return (
           <li key={item.nfid}>
-            <p>{item.title}</p>
-            <p>{item.img}</p>
-            <p>{item.rating}</p>
-            <p>{item.synopsis}</p>
+            <CatalogCard
+              title={item.title}
+              synopsis={item.synopsis}
+              img={item.img}
+              rating={item.rating}
+            />
           </li>
         );
       })}

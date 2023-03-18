@@ -26,6 +26,9 @@
       "@features/*": [
         "features/*"
       ],
+      "@utils/*": [
+        "utils/*"
+      ],
       "@types/*": [
         "types/*"
       ]

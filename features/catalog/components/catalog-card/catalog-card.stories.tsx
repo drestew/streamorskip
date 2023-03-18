@@ -1,14 +1,14 @@
 import React from 'react';
 import { ComponentStory, ComponentMeta } from '@storybook/react';
-import { CatalogCard } from './catalog-card';
+import { CatalogList } from '@features/catalog';
 
 export default {
   title: 'Catalog Card',
-  component: CatalogCard,
-} as ComponentMeta<typeof CatalogCard>;
+  component: CatalogList,
+} as ComponentMeta<typeof CatalogList>;
 
-const Template: ComponentStory<typeof CatalogCard> = (args) => (
-  <CatalogCard border={args.border}>Click Me</CatalogCard>
+const Template: ComponentStory<typeof CatalogList> = (args) => (
+  <CatalogList border={args.border}>Click Me</CatalogList>
 );
 
 export const Default = Template.bind({});

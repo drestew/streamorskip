@@ -4,13 +4,14 @@ import { useCatalog, CatalogCard } from '@features/catalog';
 
 const List = styled.ul`
   background-color: teal;
+  list-style: none;
 `;
 
 export function CatalogList() {
   const { data } = useCatalog();
 
   return (
-    <List>
+    <List role="list">
       {data?.map((item) => {
         return (
           <li key={item.nfid}>

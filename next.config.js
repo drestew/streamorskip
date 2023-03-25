@@ -4,6 +4,18 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.nflxso.net',
+      },
+      {
+        protocol: 'http',
+        hostname: '**.nflxso.net',
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;

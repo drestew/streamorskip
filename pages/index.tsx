@@ -1,9 +1,10 @@
+import { CatalogList } from '@features/catalog';
+
 export default function Home() {
   return (
-    <>
-      <main>
-        <p>Welcome</p>
-      </main>
-    </>
+    <main>
+      <p>Site Under Construction</p>
+      {/*<CatalogList />*/}
+    </main>
   );
 }

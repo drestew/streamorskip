@@ -107,7 +107,7 @@ export function CatalogCard(props: CardContent) {
   const toggleSynopsis = () => setTruncateSynopsis(!truncateSynopsis);
 
   return (
-    <CardContainer>
+    <CardContainer tabIndex={0}>
       <Card>
         <Title>{title}</Title>
         <SynopsisContainer onClick={toggleSynopsis}>

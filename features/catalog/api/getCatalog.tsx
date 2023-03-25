@@ -1,11 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
 import { supabaseClient } from '@utils/supabase-client';
 
-async function getCatalog() {
+export async function getCatalog({ pageParam = 0 }) {
+  const step = pageParam + 10;
+
   const { data, error } = await supabaseClient
     .from('catalog')
     .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
-    .is('on_Nflix', true);
+    .is('on_Nflix', true)
+    .neq('rating', 0)
+    .range(pageParam, step);
 
   if (error) {
     console.log('Error:', {
@@ -14,8 +17,5 @@ async function getCatalog() {
     });
   }
 
-  return data;
-}
-export function useCatalog() {
-  return useQuery(['catalog-default'], getCatalog);
+  return { data, step: step + 1 };
 }

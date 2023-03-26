@@ -62,30 +62,30 @@ export interface Database {
           genre?: boolean;
         };
       };
-      'catalog-genre': {
+      catalog_genre: {
         Row: {
-          'catalog-nfid': number;
+          catalog_nfid: number;
           created_at: string | null;
           genre: string | null;
-          'genre-nfid': number | null;
+          genre_nfid: number | null;
           id: number;
         };
         Insert: {
-          'catalog-nfid': number;
+          catalog_nfid: number;
           created_at?: string | null;
           genre?: string | null;
-          'genre-nfid'?: number | null;
+          genre_nfid?: number | null;
           id?: number;
         };
         Update: {
-          'catalog-nfid'?: number;
+          catalog_nfid?: number;
           created_at?: string | null;
           genre?: string | null;
-          'genre-nfid'?: number | null;
+          genre_nfid?: number | null;
           id?: number;
         };
       };
-      genres: {
+      genre: {
         Row: {
           created_at: string | null;
           genre: string | null;

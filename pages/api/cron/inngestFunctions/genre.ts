@@ -1,5 +1,5 @@
-import { supabaseService } from '../../../../utils/supabase';
-import { options } from '../../../../utils/unogs';
+import { supabaseService } from '@utils/supabase';
+import { options } from '@utils/unogs';
 import { Genre, Genres } from '../types';
 import { Inngest } from 'inngest';
 
@@ -63,12 +63,12 @@ const addGenresToDB = async (genreResults: Genre[]) => {
   if (genreResults) {
     for (const item of genreResults) {
       if (item.genres) {
-        const { error } = await supabaseService.from('catalog-genre').insert(
+        const { error } = await supabaseService.from('catalog_genre').insert(
           item.genres.map((genre) => {
             return {
-              ['catalog-nfid']: item.nfid,
+              ['catalog_nfid']: item.nfid,
               genre: genre.genre,
-              ['genre-nfid']: genre.nfid,
+              ['genre_nfid']: genre.nfid,
             };
           })
         );

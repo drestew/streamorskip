@@ -12,6 +12,7 @@ export interface Database {
       catalog: {
         Row: {
           created_at: string;
+          genre: boolean;
           id: number;
           imdbid: string | null;
           img: string;
@@ -25,10 +26,10 @@ export interface Database {
           trailer: string | null;
           vtype: string;
           year: number;
-          genre: boolean;
         };
         Insert: {
           created_at?: string;
+          genre?: boolean;
           id?: number;
           imdbid?: string | null;
           img: string;
@@ -42,10 +43,10 @@ export interface Database {
           trailer?: string | null;
           vtype: string;
           year: number;
-          genre?: boolean;
         };
         Update: {
           created_at?: string;
+          genre?: boolean;
           id?: number;
           imdbid?: string | null;
           img?: string;
@@ -59,7 +60,6 @@ export interface Database {
           trailer?: string | null;
           vtype?: string;
           year?: number;
-          genre?: boolean;
         };
       };
       catalog_genre: {
@@ -108,6 +108,26 @@ export interface Database {
           series?: boolean | null;
         };
       };
+      profile: {
+        Row: {
+          avatar_url: string | null;
+          id: string;
+          updated_at: string | null;
+          username: string | null;
+        };
+        Insert: {
+          avatar_url?: string | null;
+          id: string;
+          updated_at?: string | null;
+          username?: string | null;
+        };
+        Update: {
+          avatar_url?: string | null;
+          id?: string;
+          updated_at?: string | null;
+          username?: string | null;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -116,6 +136,9 @@ export interface Database {
       [_ in never]: never;
     };
     Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
       [_ in never]: never;
     };
   };

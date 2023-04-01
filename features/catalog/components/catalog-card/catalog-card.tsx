@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 import { Catalog } from '@features/catalog/types/catalog-card';
 import Image from 'next/image';
 import { color, font, space } from '@styles/theme';
 import arrow from '@public/arrow.png';
+import thumb_outline from '@public/thumb_outline.svg';
+import thumb_solid from '@public/thumb_solid.svg';
 
 type CardContent = Pick<Catalog, 'title' | 'synopsis' | 'rating' | 'img'>;
+type StreamSkip = 'stream' | 'skip' | null;
 
 const CardContainer = styled.div`
   max-width: 400px;
@@ -23,7 +26,7 @@ const Card = styled.div`
     'poster synopsis synopsis '
     'poster stream stream'
     'poster skip skip';
-  grid-column-gap: ${space(3)};
+    'icon icon icon';
   border-radius: ${space(2)};
 
   .rating-text {
@@ -37,8 +40,22 @@ const Title = styled.h4`
   margin: ${space(0)};
 `;
 
-const Poster = styled.div`
+const Poster = styled.div<{ truncateSynopsis: boolean }>`
   grid-area: poster;
+  display: grid;
+  width: ${space(20)};
+  position: relative;
+  margin-right: ${space(3)};
+
+  ${(props) => {
+    if (!props.truncateSynopsis) {
+      return css`
+        & > * {
+          padding-bottom: 100%;
+        }
+      `;
+    }
+  }}
 `;
 
 const SynopsisContainer = styled.div`
@@ -98,9 +115,19 @@ const SkipFill = styled.div<{ rating: number }>`
   border-radius: ${space(2)};
 `;
 
+const IconContainer = styled.div`
+  grid-area: 5 / 1 / 6 / 5;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 ${space(5)};
+  margin-top: ${space(4)};
+`;
+
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardContent) {
   const { title, synopsis, rating, img } = props;
+  const [streamSkip, setStreamSkip] = useState<StreamSkip>(null);
   const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
 
@@ -114,8 +141,13 @@ export function CatalogCard(props: CardContent) {
           <Synopsis truncateSynopsis={truncateSynopsis}>{synopsis}</Synopsis>
           <Image src={arrow} alt="Open details icon" width={15} height={15} />
         </SynopsisContainer>
-        <Poster>
-          <Image src={img} alt="Content Poster" width="85" height="120" />
+        <Poster truncateSynopsis={truncateSynopsis}>
+          <Image
+            src={img}
+            alt="Content Poster"
+            fill
+            style={{ objectFit: 'contain' }}
+          />
         </Poster>
         <StreamContainer>
           <span className="rating-text">Stream - {ratingFrom100}%</span>
@@ -125,6 +157,31 @@ export function CatalogCard(props: CardContent) {
           <span className="rating-text">Skip - {100 - ratingFrom100}% </span>
           <SkipFill rating={ratingFrom100} />
         </SkipContainer>
+        <IconContainer>
+          <Image
+            src={streamSkip === 'skip' ? thumb_solid : thumb_outline}
+            alt="Thumb down icon"
+            width="50"
+            height="50"
+            style={{ transform: 'rotate(180deg)' }}
+            onClick={() =>
+              streamSkip === 'skip'
+                ? setStreamSkip(null)
+                : setStreamSkip('skip')
+            }
+          />
+          <Image
+            src={streamSkip === 'stream' ? thumb_solid : thumb_outline}
+            alt="Thumb up icon"
+            width="50"
+            height="50"
+            onClick={() =>
+              streamSkip === 'stream'
+                ? setStreamSkip(null)
+                : setStreamSkip('stream')
+            }
+          />
+        </IconContainer>
       </Card>
     </CardContainer>
   );

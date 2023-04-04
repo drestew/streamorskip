@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Catalog } from '@features/catalog/types/catalog-card';
+import { Catalog, UserRating } from '@features/catalog/types/catalog-card';
 import Image from 'next/image';
 import { color, font, space } from '@styles/theme';
 import arrow from '@public/arrow.png';
@@ -8,7 +8,7 @@ import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
 
 type CardContent = Pick<Catalog, 'title' | 'synopsis' | 'rating' | 'img'>;
-type StreamSkip = 'stream' | 'skip' | null;
+type CardProps = CardContent & UserRating;
 
 const CardContainer = styled.div`
   max-width: 400px;
@@ -123,11 +123,11 @@ const IconContainer = styled.div`
   padding: 0 ${space(5)};
   margin-top: ${space(4)};
 `;
-
 const convertRating = (rating: number) => rating * 10;
-export function CatalogCard(props: CardContent) {
-  const { title, synopsis, rating, img } = props;
-  const [streamSkip, setStreamSkip] = useState<StreamSkip>(null);
+export function CatalogCard(props: CardProps) {
+  const { title, synopsis, rating, img, stream } = props;
+  const [streamRating, setStreamRating] =
+    useState<UserRating['stream']>(stream);
   const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
 
@@ -159,26 +159,24 @@ export function CatalogCard(props: CardContent) {
         </SkipContainer>
         <IconContainer>
           <Image
-            src={streamSkip === 'skip' ? thumb_solid : thumb_outline}
+            src={streamRating === false ? thumb_solid : thumb_outline}
             alt="Thumb down icon"
             width="50"
             height="50"
             style={{ transform: 'rotate(180deg)' }}
             onClick={() =>
-              streamSkip === 'skip'
-                ? setStreamSkip(null)
-                : setStreamSkip('skip')
+              streamRating === false
+                ? setStreamRating(null)
+                : setStreamRating(false)
             }
           />
           <Image
-            src={streamSkip === 'stream' ? thumb_solid : thumb_outline}
+            src={streamRating ? thumb_solid : thumb_outline}
             alt="Thumb up icon"
             width="50"
             height="50"
             onClick={() =>
-              streamSkip === 'stream'
-                ? setStreamSkip(null)
-                : setStreamSkip('stream')
+              streamRating ? setStreamRating(null) : setStreamRating(true)
             }
           />
         </IconContainer>

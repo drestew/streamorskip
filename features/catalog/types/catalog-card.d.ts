@@ -7,3 +7,7 @@ export type Catalog = {
   rating: number;
   vtype: 'movie' | 'series';
 };
+
+export type UserRating = {
+  stream: boolean | null;
+};

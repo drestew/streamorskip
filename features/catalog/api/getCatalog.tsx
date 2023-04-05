@@ -1,6 +1,7 @@
 import { supabaseClient } from '@utils/supabase-client';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
-export async function getCatalog({ pageParam = 0 }) {
+async function getCatalog({ pageParam = 0 }) {
   const step = pageParam + 10;
 
   const { data, error } = await supabaseClient
@@ -8,7 +9,7 @@ export async function getCatalog({ pageParam = 0 }) {
     .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
     .is('on_Nflix', true)
     .neq('rating', 0)
-    .range(pageParam, step);
+    .range(pageParam, 1);
 
   if (error) {
     console.log('Error:', {
@@ -17,5 +18,17 @@ export async function getCatalog({ pageParam = 0 }) {
     });
   }
 
-  return { data, step: step + 1 };
+  // return { data, step: step + 1 };
+  return { data };
+}
+
+export function useCatalog() {
+  const { data, fetchNextPage, status } = useInfiniteQuery({
+    queryKey: ['catalog-default'],
+    queryFn: getCatalog,
+    // getNextPageParam: (lastPage) => lastPage.step,
+    getNextPageParam: (lastPage) => lastPage,
+  });
+
+  return { data, fetchNextPage, status };
 }

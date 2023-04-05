@@ -1,72 +1,53 @@
 import React from 'react';
 import styled from 'styled-components';
-import { getCatalog, CatalogCard } from '@features/catalog';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { CatalogCard } from '@features/catalog';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useCatalog } from '@features/catalog';
 import { color } from '@styles/theme';
+import { useUserRating } from '@features/catalog/api/getUserRatings';
+import { useViewportBottom } from '@features/catalog/hooks/useViewportBottom';
 
 const List = styled.ul`
   background-color: ${color('dark', 300)};
   list-style: none;
 `;
+
 export function CatalogList() {
-  const { data, fetchNextPage, status } = useInfiniteQuery({
-    queryKey: ['catalog-default'],
-    queryFn: getCatalog,
-    getNextPageParam: (lastPage) => lastPage.step,
-  });
-  const [isBottom, setIsBottom] = React.useState(false);
+  const userRatings = useUserRating();
+  const catalog = useCatalog();
+  function getItemRating(nfid: bigint) {
+    const ratedItem = userRatings?.filter((item) => item.catalog_item === nfid);
+    // console.log(ratedItem);
+    if (ratedItem) return ratedItem[0];
+  }
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const windowHeight =
-        'innerHeight' in window
-          ? window.innerHeight
-          : document.documentElement.offsetHeight;
-      const body = document.body;
-      const html = document.documentElement;
-      const docHeight = Math.max(
-        body.scrollHeight,
-        body.offsetHeight,
-        html.clientHeight,
-        html.scrollHeight,
-        html.offsetHeight
-      );
-      const windowBottom = windowHeight + window.scrollY;
+  useViewportBottom() && catalog.fetchNextPage();
 
-      if (windowBottom >= docHeight) {
-        setIsBottom(true);
-      } else {
-        setIsBottom(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, []);
-
-  isBottom && fetchNextPage();
-
-  return status === 'loading' ? (
+  return catalog.status === 'loading' ? (
     <p>Loading...</p>
   ) : (
     <List role="list">
-      {data?.pages.map((group, i) => (
+      {catalog.data?.pages.map((group, i) => (
         <React.Fragment key={i}>
-          {group.data?.map((item) => (
-            <li key={item.nfid}>
-              <CatalogCard
-                title={item.title}
-                synopsis={item.synopsis}
-                img={item.img}
-                rating={item.rating}
-              />
-            </li>
-          ))}
+          {group.data?.map((item) => {
+            const ratedItem = getItemRating(item.nfid);
+            // console.log(ratedItem);
+            return (
+              <li key={item.nfid}>
+                <CatalogCard
+                  title={item.title}
+                  synopsis={item.synopsis}
+                  img={item.img}
+                  rating={item.rating}
+                  stream={
+                    ratedItem?.catalog_item === item.nfid
+                      ? ratedItem?.stream
+                      : null
+                  }
+                />
+              </li>
+            );
+          })}
         </React.Fragment>
       ))}
     </List>

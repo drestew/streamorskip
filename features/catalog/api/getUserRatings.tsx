@@ -1,6 +1,7 @@
 import { supabaseClient } from '@utils/supabase-client';
+import { useQuery } from '@tanstack/react-query';
 
-export async function getUserRatings() {
+async function getUserRatings() {
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
@@ -15,6 +16,15 @@ export async function getUserRatings() {
       details: error.details,
     });
   }
+
+  return data;
+}
+
+export function useUserRating() {
+  const { data } = useQuery({
+    queryKey: ['userRatings'],
+    queryFn: getUserRatings,
+  });
 
   return data;
 }

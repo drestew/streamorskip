@@ -21,10 +21,10 @@ async function getUserRatings() {
 }
 
 export function useUserRating() {
-  const { data } = useQuery({
+  const { data, status } = useQuery({
     queryKey: ['userRatings'],
     queryFn: getUserRatings,
   });
 
-  return data;
+  return { data, status };
 }

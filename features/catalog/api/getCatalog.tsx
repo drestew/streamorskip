@@ -9,7 +9,7 @@ async function getCatalog({ pageParam = 0 }) {
     .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
     .is('on_Nflix', true)
     .neq('rating', 0)
-    .range(pageParam, 1);
+    .range(pageParam, step);
 
   if (error) {
     console.log('Error:', {
@@ -18,16 +18,14 @@ async function getCatalog({ pageParam = 0 }) {
     });
   }
 
-  // return { data, step: step + 1 };
-  return { data };
+  return { data, step: step + 1 };
 }
 
 export function useCatalog() {
   const { data, fetchNextPage, status } = useInfiniteQuery({
     queryKey: ['catalog-default'],
     queryFn: getCatalog,
-    // getNextPageParam: (lastPage) => lastPage.step,
-    getNextPageParam: (lastPage) => lastPage,
+    getNextPageParam: (lastPage) => lastPage.step,
   });
 
   return { data, fetchNextPage, status };

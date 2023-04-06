@@ -1,12 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled, { css } from 'styled-components';
-import { Catalog, UserRating } from '@features/catalog/types/catalog-card';
 import Image from 'next/image';
 import { color, font, space } from '@styles/theme';
 import arrow from '@public/arrow.png';
 import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
 
+type Catalog = {
+  nfid: bigint;
+  title: string;
+  synopsis: string;
+  img: string;
+  on_Nflix: boolean;
+  rating: number;
+  vtype: 'movie' | 'series';
+};
+
+export type UserRating = {
+  stream: boolean | null;
+};
 type CardContent = Pick<Catalog, 'title' | 'synopsis' | 'rating' | 'img'>;
 type CardProps = CardContent & UserRating;
 
@@ -126,11 +138,9 @@ const IconContainer = styled.div`
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
   const { title, synopsis, rating, img, stream } = props;
-  const [streamRating, setStreamRating] =
-    useState<UserRating['stream']>(stream);
+  const [streamRating, setStreamRating] = useState(stream);
   const ratingFrom100 = convertRating(rating);
-  const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
-
+  const [truncateSynopsis, setTruncateSynopsis] = useState(true);
   const toggleSynopsis = () => setTruncateSynopsis(!truncateSynopsis);
 
   return (

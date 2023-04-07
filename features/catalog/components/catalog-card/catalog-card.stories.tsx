@@ -14,6 +14,7 @@ const Template: ComponentStory<typeof CatalogCard> = (args) => {
       rating={args.rating}
       img={args.img}
       stream={args.stream}
+      nfid={args.nfid}
     />
   );
 };

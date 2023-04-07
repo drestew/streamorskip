@@ -5,6 +5,10 @@ import { color, font, space } from '@styles/theme';
 import arrow from '@public/arrow.png';
 import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
+import {
+  deleteUserRating,
+  updateUserRating,
+} from '@features/catalog/api/updateUserRating';
 
 type Catalog = {
   nfid: bigint;
@@ -19,7 +23,10 @@ type Catalog = {
 export type UserRating = {
   stream: boolean | null;
 };
-type CardContent = Pick<Catalog, 'title' | 'synopsis' | 'rating' | 'img'>;
+type CardContent = Pick<
+  Catalog,
+  'title' | 'synopsis' | 'rating' | 'img' | 'nfid'
+>;
 type CardProps = CardContent & UserRating;
 
 const CardContainer = styled.div`
@@ -137,11 +144,27 @@ const IconContainer = styled.div`
 `;
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
-  const { title, synopsis, rating, img, stream } = props;
+  const { title, synopsis, rating, img, stream, nfid } = props;
   const [streamRating, setStreamRating] = useState(stream);
   const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = useState(true);
   const toggleSynopsis = () => setTruncateSynopsis(!truncateSynopsis);
+
+  function handleClick(thumbIcon: string) {
+    if (thumbIcon === 'skip' && streamRating !== false) {
+      setStreamRating(false);
+      updateUserRating(nfid, false);
+    } else if (thumbIcon === 'skip' && streamRating === false) {
+      setStreamRating(null);
+      deleteUserRating(nfid);
+    } else if (thumbIcon === 'stream' && !streamRating) {
+      setStreamRating(true);
+      updateUserRating(nfid, true);
+    } else if (thumbIcon === 'stream' && streamRating) {
+      setStreamRating(null);
+      deleteUserRating(nfid);
+    }
+  }
 
   return (
     <CardContainer tabIndex={0}>
@@ -174,20 +197,14 @@ export function CatalogCard(props: CardProps) {
             width="50"
             height="50"
             style={{ transform: 'rotate(180deg)' }}
-            onClick={() =>
-              streamRating === false
-                ? setStreamRating(null)
-                : setStreamRating(false)
-            }
+            onClick={() => handleClick('skip')}
           />
           <Image
             src={streamRating ? thumb_solid : thumb_outline}
             alt="Thumb up icon"
             width="50"
             height="50"
-            onClick={() =>
-              streamRating ? setStreamRating(null) : setStreamRating(true)
-            }
+            onClick={() => handleClick('stream')}
           />
         </IconContainer>
       </Card>

@@ -7,8 +7,8 @@ async function getUserRatings() {
   } = await supabaseClient.auth.getUser();
   const { data, error } = await supabaseClient
     .from('rating')
-    .select('user, catalog_item, stream')
-    .eq('user', user?.id);
+    .select('user_id, catalog_item, stream')
+    .eq('user_id', user?.id);
 
   if (error) {
     console.log('Error:', {

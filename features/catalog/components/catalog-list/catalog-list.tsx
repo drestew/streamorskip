@@ -44,6 +44,7 @@ export function CatalogList() {
                       ? ratedItem?.stream
                       : null
                   }
+                  nfid={item.nfid}
                 />
               </li>
             );

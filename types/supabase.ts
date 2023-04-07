@@ -134,21 +134,24 @@ export interface Database {
           created_at: string | null
           id: number
           stream: boolean
-          user: string
+          user_id: string
+          user_item_key: string
         }
         Insert: {
           catalog_item: number
           created_at?: string | null
           id?: number
           stream: boolean
-          user: string
+          user_id: string
+          user_item_key: string
         }
         Update: {
           catalog_item?: number
           created_at?: string | null
           id?: number
           stream?: boolean
-          user?: string
+          user_id?: string
+          user_item_key?: string
         }
       }
     }

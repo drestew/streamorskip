@@ -15,7 +15,7 @@ export function CatalogList() {
   const userRatings = useUserRating();
   const catalog = useCatalog();
 
-  function getItemRating(nfid: bigint) {
+  function getItemRating(nfid: number) {
     const ratedItem = userRatings?.data?.filter(
       (item) => item.catalog_item === nfid
     );

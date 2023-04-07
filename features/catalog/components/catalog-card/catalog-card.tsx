@@ -11,7 +11,7 @@ import {
 } from '@features/catalog/api/updateUserRating';
 
 type Catalog = {
-  nfid: bigint;
+  nfid: number;
   title: string;
   synopsis: string;
   img: string;

@@ -7,7 +7,7 @@ async function getUser() {
 
   return user;
 }
-export async function deleteUserRating(nfid: bigint) {
+export async function deleteUserRating(nfid: number) {
   const user = await getUser();
   const { error } = await supabaseClient
     .from('rating')
@@ -21,7 +21,7 @@ export async function deleteUserRating(nfid: bigint) {
     });
   }
 }
-export async function updateUserRating(nfid: bigint, stream: boolean | null) {
+export async function updateUserRating(nfid: number, stream: boolean | null) {
   const user = await getUser();
   const { error } = await supabaseClient.from('rating').upsert({
     user_item_key: `${user?.id}-${nfid}`,

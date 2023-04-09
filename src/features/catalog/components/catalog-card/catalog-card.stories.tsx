@@ -1,5 +1,5 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
-import { CatalogCard } from '@features/catalog';
+import { CatalogCard } from '../../index';
 
 export default {
   title: 'Catalog Card',

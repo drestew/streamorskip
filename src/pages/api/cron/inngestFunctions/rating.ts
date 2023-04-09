@@ -1,5 +1,5 @@
-import { supabaseService } from '../../../../utils/supabase';
-import { options } from '../../../../utils/imdb';
+import { supabaseService } from '@utils/supabase';
+import { options } from '@utils/imdb';
 import { ImdbIdItem, ImdbRatingItem, ImdbRatingItems } from '../types';
 import { ValidationError } from 'runtypes';
 import { distance } from 'fastest-levenshtein';

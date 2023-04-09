@@ -5,10 +5,7 @@ import { color, font, space } from '@styles/theme';
 import arrow from '@public/arrow.png';
 import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
-import {
-  deleteUserRating,
-  updateUserRating,
-} from '@features/catalog/api/updateUserRating';
+import { deleteUserRating, updateUserRating } from '@features/catalog';
 
 type Catalog = {
   nfid: number;

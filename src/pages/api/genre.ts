@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { inngest } from '../inngest';
+import { inngest } from './cron/inngest';
 
 export default async function handler(
   req: NextApiRequest,

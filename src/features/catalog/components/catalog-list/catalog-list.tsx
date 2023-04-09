@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
-import { CatalogCard } from '@features/catalog';
-import { useCatalog } from '@features/catalog/api/getCatalog';
+import { CatalogCard } from '../../index';
+import { useCatalog } from '@features/catalog';
 import { color } from '@styles/theme';
-import { useUserRating } from '@features/catalog/api/getUserRatings';
-import { useViewportBottom } from '@features/catalog/hooks/useViewportBottom';
+import { useUserRating } from '@features/catalog';
+import { useViewportBottom } from '../../hooks/useViewportBottom';
 
 const List = styled.ul`
   background-color: ${color('dark', 300)};

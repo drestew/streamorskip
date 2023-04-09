@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseService } from '../../../utils/supabase';
-import { options } from '../../../utils/unogs';
+import { supabaseService } from '@utils/supabase';
+import { options } from '@utils/unogs';
 import { decodeHTML } from 'entities';
 import { DeletedItem, DeletedItems } from './types';
 import { ValidationError } from 'runtypes';

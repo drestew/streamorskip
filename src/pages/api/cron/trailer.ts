@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseService } from '../../../utils/supabase';
-import { options } from '../../../utils/imdb';
+import { supabaseService } from '@utils/supabase';
+import { options } from '@utils/imdb';
 import { TrailerItem, TrailerItems, TrailerUrl, TrailerUrls } from './types';
 import { ValidationError } from 'runtypes';
 import Bottleneck from 'bottleneck';

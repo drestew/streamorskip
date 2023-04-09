@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 import Image from 'next/image';
 import { color, font, space } from '@styles/theme';
@@ -139,6 +139,7 @@ const IconContainer = styled.div`
   padding: 0 ${space(5)};
   margin-top: ${space(4)};
 `;
+
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
   const { title, synopsis, rating, img, stream, nfid } = props;
@@ -163,11 +164,30 @@ export function CatalogCard(props: CardProps) {
     }
   }
 
+  function handleKeyDown(event: React.KeyboardEvent) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      const key = event.target as HTMLElement;
+      if (key.dataset.rating === 'stream') {
+        handleClick('stream');
+      } else if (key.dataset.rating === 'skip') {
+        handleClick('skip');
+      } else if (key.dataset.synopsis === 'synopsis') {
+        toggleSynopsis();
+      }
+    }
+  }
+
   return (
     <CardContainer tabIndex={0}>
       <Card>
         <Title>{title}</Title>
-        <SynopsisContainer onClick={toggleSynopsis}>
+        <SynopsisContainer
+          onClick={toggleSynopsis}
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          data-synopsis="synopsis"
+        >
           <Synopsis truncateSynopsis={truncateSynopsis}>{synopsis}</Synopsis>
           <Image src={arrow} alt="Open details icon" width={15} height={15} />
         </SynopsisContainer>
@@ -191,17 +211,23 @@ export function CatalogCard(props: CardProps) {
           <Image
             src={streamRating === false ? thumb_solid : thumb_outline}
             alt="Thumb down icon"
+            data-rating="skip"
             width="50"
             height="50"
             style={{ transform: 'rotate(180deg)' }}
             onClick={() => handleClick('skip')}
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
           />
           <Image
             src={streamRating ? thumb_solid : thumb_outline}
             alt="Thumb up icon"
+            data-rating="stream"
             width="50"
             height="50"
             onClick={() => handleClick('stream')}
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
           />
         </IconContainer>
       </Card>

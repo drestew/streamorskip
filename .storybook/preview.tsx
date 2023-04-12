@@ -3,22 +3,28 @@ import { ThemeProvider } from 'styled-components';
 import { GlobalStyle } from '@styles/global-style';
 import { theme } from '@styles/theme';
 import { StoryFn } from '@storybook/react';
+import { Preview } from '@storybook/react';
 
-export const decorators = [
-  (Story: StoryFn) => (
+const withThemeProvider = (Story: StoryFn) => {
+  return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <Story />
     </ThemeProvider>
-  ),
-];
+  );
+};
 
-export const parameters = {
-  actions: { argTypesRegex: '^on[A-Z].*' },
-  controls: {
-    matchers: {
-      color: /(background|color)$/i,
-      date: /Date$/,
+const preview: Preview = {
+  decorators: [withThemeProvider],
+  parameters: {
+    actions: { argTypesRegex: '^on[A-Z].*' },
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/,
+      },
     },
   },
 };
+
+export default preview;

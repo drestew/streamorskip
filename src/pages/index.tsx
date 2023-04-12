@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <main>
       <p>Site Under Construction</p>
-      <CatalogList />
+      {/*<CatalogList />*/}
       {/*<div*/}
       {/*  className="container"*/}
       {/*  style={{ padding: '50px 0 100px 0', width: '400px' }}*/}

@@ -1,7 +1,6 @@
 import { supabaseClient } from '@utils/supabase-client';
-import { useInfiniteQuery } from '@tanstack/react-query';
 
-async function getCatalog({ pageParam = 0 }) {
+export async function getCatalog({ pageParam = 0 }) {
   const step = pageParam + 10;
 
   const { data, error } = await supabaseClient
@@ -19,14 +18,4 @@ async function getCatalog({ pageParam = 0 }) {
   }
 
   return { data, step: step + 1 };
-}
-
-export function useCatalog() {
-  const { data, fetchNextPage, status } = useInfiniteQuery({
-    queryKey: ['catalog-default'],
-    queryFn: getCatalog,
-    getNextPageParam: (lastPage) => lastPage.step,
-  });
-
-  return { data, fetchNextPage, status };
 }

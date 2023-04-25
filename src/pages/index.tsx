@@ -1,7 +1,6 @@
 import { CatalogList, getCatalog, useUserRating } from '@features/catalog';
 import { InferGetStaticPropsType } from 'next';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useViewportBottom } from '@features/catalog/hooks/useViewportBottom';
 import { Category } from '@features/category/category';
 import { useFilters } from '../hooks/useFilter';
 import { useInView } from 'react-intersection-observer';
@@ -21,7 +20,6 @@ export default function Home({
   });
 
   const { ref, inView } = useInView();
-  useViewportBottom() && fetchNextPage();
 
   useEffect(() => {
     if (inView) {

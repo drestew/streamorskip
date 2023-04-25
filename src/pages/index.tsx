@@ -4,6 +4,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useViewportBottom } from '@features/catalog/hooks/useViewportBottom';
 import { Category } from '@features/category/category';
 import { useFilters } from '../hooks/useFilter';
+import { useInView } from 'react-intersection-observer';
+import { useEffect } from 'react';
 
 export default function Home({
   catalog,
@@ -18,7 +20,14 @@ export default function Home({
     initialData: { pages: [catalog], pageParams: [] },
   });
 
+  const { ref, inView } = useInView();
   useViewportBottom() && fetchNextPage();
+
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage]);
 
   return (
     <main>
@@ -31,6 +40,9 @@ export default function Home({
           <CatalogList catalog={data} userRatings={userRatings} />
         </>
       )}
+      <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
+        Loading...
+      </h1>
     </main>
   );
 }

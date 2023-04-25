@@ -20,11 +20,16 @@ type Catalog = {
 export type UserRating = {
   stream: boolean | null;
 };
+
+type ImgPriority = {
+  priorityImg: boolean;
+};
+
 type CardContent = Pick<
   Catalog,
   'title' | 'synopsis' | 'rating' | 'img' | 'nfid'
 >;
-type CardProps = CardContent & UserRating;
+type CardProps = CardContent & UserRating & ImgPriority;
 
 const CardContainer = styled.div`
   max-width: 400px;
@@ -142,7 +147,7 @@ const IconContainer = styled.div`
 
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
-  const { title, synopsis, rating, img, stream, nfid } = props;
+  const { title, synopsis, rating, img, stream, nfid, priorityImg } = props;
   const [streamRating, setStreamRating] = useState(stream);
   const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = useState(true);
@@ -197,6 +202,8 @@ export function CatalogCard(props: CardProps) {
             alt="Content Poster"
             fill
             style={{ objectFit: 'contain' }}
+            sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"
+            priority={priorityImg}
           />
         </Poster>
         <StreamContainer>

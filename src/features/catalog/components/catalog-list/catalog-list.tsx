@@ -47,7 +47,7 @@ export function CatalogList({ catalog, userRatings }: CatalogListProps) {
     <List role="list">
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
-          {group.data?.map((item) => {
+          {group.data?.map((item, index) => {
             const ratedItem = getItemRating(item.nfid);
             return (
               <li key={item.nfid}>
@@ -62,6 +62,7 @@ export function CatalogList({ catalog, userRatings }: CatalogListProps) {
                       : null
                   }
                   nfid={item.nfid}
+                  priorityImg={index === 0}
                 />
               </li>
             );

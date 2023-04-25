@@ -1,7 +1,8 @@
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 import { color, space } from '@styles/theme';
+import { ContentFilters, useFilters } from '../../hooks/useFilter';
 
 const ContentToggle = styled(ToggleGroup.Item)<{ ['data-state']: boolean }>`
   color: white;
@@ -37,36 +38,35 @@ const ContentToggle = styled(ToggleGroup.Item)<{ ['data-state']: boolean }>`
     }
   }}
 `;
-export function ContentType() {
-  const [value, setValue] = useState('movie');
-  const [selected, setSelected] = useState(true);
 
+export function Category({ category }: ContentFilters) {
+  const [value, setValue] = useState(category);
+  const { handleFilters } = useFilters();
+  const selected = true;
   function handleValueChange(value: string) {
-    if (value) {
-      setValue(value);
-    }
+    handleFilters({ category: value });
   }
 
-  function handleSelected() {
-    setSelected(!selected);
+  function handleSelected(value: string) {
+    setValue(value);
   }
 
   return (
     <ToggleGroup.Root
       type="single"
-      onValueChange={(value) => handleValueChange(value)}
+      onValueChange={() => handleValueChange(value)}
     >
       <ContentToggle
         value="movie"
-        data-state={selected}
-        onClick={handleSelected}
+        data-state={category === 'movie' ? selected : !selected}
+        onClick={() => handleSelected('movie')}
       >
         Movie
       </ContentToggle>
       <ContentToggle
         value="series"
-        data-state={!selected}
-        onClick={handleSelected}
+        data-state={category === 'series' ? selected : !selected}
+        onClick={() => handleSelected('series')}
       >
         Series
       </ContentToggle>

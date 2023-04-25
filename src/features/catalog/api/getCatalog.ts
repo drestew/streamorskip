@@ -1,6 +1,6 @@
 import { supabaseClient } from '@utils/supabase-client';
 
-export async function getCatalog({ pageParam = 0 }) {
+export async function getCatalog({ pageParam = 0 }, category: string) {
   const step = pageParam + 10;
 
   const { data, error } = await supabaseClient
@@ -8,6 +8,7 @@ export async function getCatalog({ pageParam = 0 }) {
     .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
     .is('on_Nflix', true)
     .neq('rating', 0)
+    .eq('vtype', category)
     .range(pageParam, step);
 
   if (error) {

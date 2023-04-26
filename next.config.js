@@ -14,6 +14,14 @@ const nextConfig = {
         protocol: 'http',
         hostname: '**.nflxso.net',
       },
+      {
+        protocol: 'http',
+        hostname: '**.nflximg.net',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.nflximg.net',
+      },
     ],
   },
 };

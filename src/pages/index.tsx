@@ -29,10 +29,11 @@ export default function Home({
 
   return (
     <main>
-      <p>Site Under Construction</p>
-      {status && userRatings.status === 'loading' ? (
-        <p>Loading...</p>
+      {/*{status && userRatings.status === 'loading' ? (*/}
+      {userRatings ? (
+        <p>Under Construction</p>
       ) : (
+        // <p>Loading...</p>
         <>
           <Category category={filters.category} />
           <CatalogList catalog={data} userRatings={userRatings} />

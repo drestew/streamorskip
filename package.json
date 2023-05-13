@@ -13,6 +13,7 @@
   "dependencies": {
     "@fontsource/poppins": "^4.5.10",
     "@next/font": "13.1.1",
+    "@radix-ui/react-select": "^1.2.1",
     "@radix-ui/react-tabs": "^1.0.3",
     "@radix-ui/react-toggle-group": "^1.0.3",
     "@supabase/auth-helpers-nextjs": "^0.5.6",

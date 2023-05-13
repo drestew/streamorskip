@@ -5,6 +5,7 @@ import { Category } from '@features/category/category';
 import { useFilters } from '../hooks/useFilter';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
+import { Genre } from '@features/genre/genre';
 
 export default function Home({
   catalog,
@@ -17,6 +18,7 @@ export default function Home({
       getCatalog({ pageParam: pageParam }, filters.category),
     getNextPageParam: (lastPage) => lastPage.step,
     initialData: { pages: [catalog], pageParams: [] },
+    //staleTime: 60000,
   });
 
   const { ref, inView } = useInView();
@@ -29,13 +31,13 @@ export default function Home({
 
   return (
     <main>
-      {/*{status && userRatings.status === 'loading' ? (*/}
-      {userRatings ? (
+      {status && userRatings.status === 'loading' ? (
+        // {userRatings ? (
         <p>Under Construction</p>
       ) : (
-        // <p>Loading...</p>
         <>
           <Category category={filters.category} />
+          <Genre />
           <CatalogList catalog={data} userRatings={userRatings} />
         </>
       )}

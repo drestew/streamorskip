@@ -26,26 +26,13 @@ type CatalogListProps = {
     | InfiniteData<{
         data:
           | {
-              catalog:
-                | {
-                    nfid: number;
-                    title: string;
-                    img: string;
-                    synopsis: string;
-                    rating: number | null;
-                    vtype: string;
-                    on_Nflix: boolean;
-                  }
-                | {
-                    nfid: number;
-                    title: string;
-                    img: string;
-                    synopsis: string;
-                    rating: number | null;
-                    vtype: string;
-                    on_Nflix: boolean;
-                  }[]
-                | null;
+              nfid: number;
+              title: string;
+              img: string;
+              synopsis: string;
+              rating: number | null;
+              vtype: string;
+              on_Nflix: boolean;
             }[]
           | null;
         step: number;
@@ -72,24 +59,21 @@ export function CatalogList({ catalog, userRatings }: CatalogListProps) {
     <List role="list">
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
-          {group.data?.map((catalogItem: unknown, index) => {
-            const item = catalogItem as DBItem;
-            const ratedItem = getItemRating(item.catalog.nfid);
+          {group.data?.map((item, index) => {
+            const ratedItem = getItemRating(item.nfid);
             return (
-              <li key={item.catalog.nfid}>
+              <li key={item.nfid}>
                 <CatalogCard
-                  title={item.catalog.title}
-                  synopsis={item.catalog.synopsis}
-                  img={item.catalog.img}
-                  rating={
-                    item.catalog.rating === null ? 0 : item.catalog.rating
-                  }
+                  title={item.title}
+                  synopsis={item.synopsis}
+                  img={item.img}
+                  rating={item.rating === null ? 0 : item.rating}
                   stream={
-                    ratedItem?.catalog_item === item.catalog.nfid
+                    ratedItem?.catalog_item === item.nfid
                       ? ratedItem?.stream
                       : null
                   }
-                  nfid={item.catalog.nfid}
+                  nfid={item.nfid}
                   priorityImg={index === 0}
                 />
               </li>

@@ -12,13 +12,19 @@ export default function Home({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const userRatings = useUserRating();
   const { filters } = useFilters();
+  let category: string, genre: string;
+  if (filters.category) {
+    category = filters.category;
+  }
+  if (filters.genre) {
+    genre = filters.genre;
+  }
   const { data, fetchNextPage, status } = useInfiniteQuery({
-    queryKey: ['catalog-default', filters.category],
+    queryKey: ['catalog-default', filters.category, filters.genre],
     queryFn: ({ pageParam }) =>
-      getCatalog({ pageParam: pageParam }, filters.category),
+      getCatalog({ pageParam: pageParam }, category, genre),
     getNextPageParam: (lastPage) => lastPage.step,
     initialData: { pages: [catalog], pageParams: [] },
-    //staleTime: 60000,
   });
 
   const { ref, inView } = useInView();
@@ -37,7 +43,7 @@ export default function Home({
       ) : (
         <>
           <Category category={filters.category} />
-          <Genre />
+          {/*<Genre />*/}
           <CatalogList catalog={data} userRatings={userRatings} />
         </>
       )}
@@ -49,6 +55,7 @@ export default function Home({
 }
 
 export const getStaticProps = async () => {
-  const catalog = await getCatalog({ pageParam: 0 }, 'movie');
+  const catalog = await getCatalog({ pageParam: 0 }, 'movie', 'All Genres');
+
   return { props: { catalog } };
 };

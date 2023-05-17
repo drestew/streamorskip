@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
 
 export type ContentFilters = {
-  category: string;
+  category?: string;
+  genre?: string;
 };
 
 export function useFilters() {
@@ -9,6 +10,7 @@ export function useFilters() {
 
   const filters = {
     category: !router.query.category ? 'movie' : router.query.category,
+    genre: !router.query.genre ? 'All Genres' : router.query.genre,
   } as ContentFilters;
 
   function handleFilters(newFilters: ContentFilters) {

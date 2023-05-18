@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useGenreList } from '@features/genre/getGenreList';
 import { color, space } from '@styles/theme';
 import React from 'react';
+import { ContentFilters, useFilters } from '../../hooks/useFilter';
 
 const GenreContainer = styled.div`
   display: flex;
@@ -35,6 +36,12 @@ const StyledItem = styled(Select.Item)`
   justify-content: center;
   align-items: center;
   padding: ${space(1)};
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${color('primary', 300)};
+    color: white;
+  }
 `;
 
 type GenreItemProps = {
@@ -54,14 +61,23 @@ const GenreItem = React.forwardRef(
     );
   }
 );
-export function Genre() {
+export function Genre({ genre }: ContentFilters) {
   const { data } = useGenreList();
+  const { handleFilters } = useFilters();
+  const genreTextOnly = genre?.replace(/%/g, '');
   GenreItem.displayName = 'GenreItem';
+
+  function handleValueChange(value: typeof genre) {
+    handleFilters({ genre: value });
+  }
+
   return (
     <GenreContainer>
-      <Select.Root defaultOpen={true}>
+      <Select.Root value={genre} onValueChange={handleValueChange}>
         <GenreButton aria-label="Genre">
-          <Select.Value placeholder="All Genres" />
+          <Select.Value>
+            {genre === '%%' ? 'All Genres' : genreTextOnly}
+          </Select.Value>
         </GenreButton>
 
         <Select.Portal>

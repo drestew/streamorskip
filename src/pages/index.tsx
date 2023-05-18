@@ -43,7 +43,7 @@ export default function Home({
       ) : (
         <>
           <Category category={filters.category} />
-          {/*<Genre />*/}
+          <Genre genre={filters.genre} />
           <CatalogList catalog={data} userRatings={userRatings} />
         </>
       )}

@@ -9,22 +9,10 @@ const List = styled.ul`
   list-style: none;
 `;
 
-type DBItem = {
-  catalog: {
-    nfid: number;
-    title: string;
-    img: string;
-    synopsis: string;
-    rating: number | null;
-    vtype: string;
-    on_Nflix: boolean;
-  };
-};
-
 type CatalogListProps = {
   catalog:
     | InfiniteData<{
-        data:
+        filteredData:
           | {
               nfid: number;
               title: string;
@@ -59,7 +47,7 @@ export function CatalogList({ catalog, userRatings }: CatalogListProps) {
     <List role="list">
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
-          {group.data?.map((item, index) => {
+          {group.filteredData?.map((item, index) => {
             const ratedItem = getItemRating(item.nfid);
             return (
               <li key={item.nfid}>

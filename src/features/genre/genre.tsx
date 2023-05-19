@@ -76,7 +76,7 @@ export function Genre({ genre }: ContentFilters) {
       <Select.Root value={genre} onValueChange={handleValueChange}>
         <GenreButton aria-label="Genre">
           <Select.Value>
-            {genre === '%%' ? 'All Genres' : genreTextOnly}
+            {genre === '' ? 'All Genres' : genreTextOnly}
           </Select.Value>
         </GenreButton>
 

@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { color, space } from '@styles/theme';
 
 const CardContainer = styled.div`
-  max-width: 400px;
   margin: ${space(4)} auto;
   padding-left: ${space(4)};
   padding-right: ${space(4)};
@@ -16,6 +15,7 @@ const Card = styled.div`
   display: grid;
   background-color: white;
   padding: ${space(3)};
+  width: 100%;
   grid-template-areas:
     'poster title title'
     'poster synopsis synopsis '

@@ -32,7 +32,6 @@ type CardContent = Pick<
 type CardProps = CardContent & UserRating & ImgPriority;
 
 const CardContainer = styled.div`
-  max-width: 400px;
   margin: ${space(4)} auto;
   padding-left: ${space(4)};
   padding-right: ${space(4)};
@@ -40,6 +39,7 @@ const CardContainer = styled.div`
 
 const Card = styled.div`
   display: grid;
+  width: 100%;
   background-color: white;
   padding: ${space(3)};
   grid-template-areas:

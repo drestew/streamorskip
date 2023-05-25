@@ -3,10 +3,12 @@ import styled from 'styled-components';
 import { CatalogCard } from '../../index';
 import { color } from '@styles/theme';
 import { InfiniteData } from '@tanstack/react-query';
+import LoadingSkeleton from '@features/catalog/components/loading-skeleton/loading-skeleton';
 
 const List = styled.ul`
   background-color: ${color('dark', 300)};
   list-style: none;
+  padding: 0;
 `;
 
 type CatalogListProps = {
@@ -31,11 +33,15 @@ type CatalogListProps = {
       | { user_id: string; catalog_item: number; stream: boolean }[]
       | null
       | undefined;
-    status: 'error' | 'success' | 'loading';
   };
+  isFetching: boolean;
 };
 
-export function CatalogList({ catalog, userRatings }: CatalogListProps) {
+export function CatalogList({
+  catalog,
+  userRatings,
+  isFetching,
+}: CatalogListProps) {
   function getItemRating(nfid: number) {
     const ratedItem = userRatings?.data?.filter(
       (item) => item.catalog_item === nfid
@@ -43,8 +49,15 @@ export function CatalogList({ catalog, userRatings }: CatalogListProps) {
     if (ratedItem) return ratedItem[0];
   }
 
+  const loadingSkeletonArr: React.ReactNode[] = new Array(10).fill(
+    <li>
+      <LoadingSkeleton />
+    </li>
+  );
+
   return (
     <List role="list">
+      {isFetching && <List>{loadingSkeletonArr}</List>}
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
           {group.filteredData?.map((item, index) => {
@@ -67,6 +80,7 @@ export function CatalogList({ catalog, userRatings }: CatalogListProps) {
               </li>
             );
           })}
+          {isFetching && <List>{loadingSkeletonArr}</List>}
         </React.Fragment>
       ))}
     </List>

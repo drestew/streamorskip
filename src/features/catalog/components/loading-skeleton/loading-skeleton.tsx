@@ -21,9 +21,9 @@ const Card = styled.div`
     'poster synopsis synopsis '
     'poster stream stream'
     'poster skip skip';
+    'icon icon icon'
     'icon icon icon';
   border-radius: ${space(2)};
-  height: 12.8rem;
   
   & > *:not(:last-child), & > :last-child > * {
     background-color: ${color('gray', 100)};
@@ -42,37 +42,32 @@ const Card = styled.div`
 `;
 
 const Title = styled.div`
-  grid-area: title;
+  grid-area: 1 / 2 / 2 / 5;
   margin: ${space(0)};
-  width: 235px;
   height: 20px;
 `;
 
 const Poster = styled.div`
-  grid-area: poster;
+  grid-area: 1 / 1 / 5 / 2;
   display: grid;
   position: relative;
   margin-right: ${space(3)};
-  width: 80px;
   height: 116px;
 `;
 
 const Synopsis = styled.div`
-  grid-area: synopsis;
+  grid-area: 2 / 2 / 3 / 5;
   margin-bottom: ${space(1)};
-  width: 235px;
   height: 20px;
 `;
 
 const StreamRatingBar = styled.div`
-  grid-area: stream;
-  width: 235px;
+  grid-area: 3 / 2 / 4 / 5;
   height: 12px;
 `;
 
 const SkipRatingBar = styled.div`
-  grid-area: skip;
-  width: 235px;
+  grid-area: 4 / 2 / 5 / 5;
   height: 12px;
 `;
 

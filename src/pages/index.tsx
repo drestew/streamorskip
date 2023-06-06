@@ -32,6 +32,7 @@ export default function Home({
       getCatalog({ pageParam: pageParam }, category, genre),
     getNextPageParam: (lastPage) => lastPage.step,
     placeholderData: { pages: [catalog], pageParams: [] },
+    refetchOnWindowFocus: false,
   });
 
   const { ref, inView } = useInView();

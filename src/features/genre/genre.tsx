@@ -26,10 +26,11 @@ const GenreButton = styled(Select.Trigger)`
 `;
 
 const GenreList = styled(Select.Content)`
-  background-color: white;
+  background-color: #dadcef;
   border-radius: ${space(1)};
   display: flex;
   justify-content: center;
+  border: solid 1px ${color('primary', 100)};
 `;
 
 const GenreScroll = styled(Select.Viewport)`
@@ -40,7 +41,7 @@ const StyledItem = styled(Select.Item)`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: ${space(1)};
+  padding: ${space(2)};
   cursor: pointer;
 
   &:hover {
@@ -90,11 +91,7 @@ export function Genre({ genre }: ContentFilters) {
 
   return (
     <GenreContainer>
-      <Select.Root
-        value={genre}
-        onValueChange={handleValueChange}
-        defaultOpen={true}
-      >
+      <Select.Root value={genre} onValueChange={handleValueChange}>
         <GenreButton aria-label="Genre">
           <Select.Value>
             {genre === '' ? 'All Genres' : genreTextOnly}

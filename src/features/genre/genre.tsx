@@ -4,6 +4,9 @@ import { useGenreList } from '@features/genre/getGenreList';
 import { color, space } from '@styles/theme';
 import React from 'react';
 import { ContentFilters, useFilters } from '../../hooks/useFilter';
+import chevron_up from '@public/chevron_up.svg';
+import chevron_down from '@public/chevron_down.svg';
+import Image from 'next/image';
 
 const GenreContainer = styled.div`
   display: flex;
@@ -25,6 +28,8 @@ const GenreButton = styled(Select.Trigger)`
 const GenreList = styled(Select.Content)`
   background-color: white;
   border-radius: ${space(1)};
+  display: flex;
+  justify-content: center;
 `;
 
 const GenreScroll = styled(Select.Viewport)`
@@ -42,6 +47,18 @@ const StyledItem = styled(Select.Item)`
     background-color: ${color('primary', 300)};
     color: white;
   }
+`;
+
+const ScrollUpArrow = styled(Select.SelectScrollUpButton)`
+  display: flex;
+  justify-content: center;
+  padding: ${space(2)} 0;
+`;
+
+const ScrollDownArrow = styled(Select.SelectScrollDownButton)`
+  display: flex;
+  justify-content: center;
+  padding: ${space(2)} 0;
 `;
 
 type GenreItemProps = {
@@ -73,7 +90,11 @@ export function Genre({ genre }: ContentFilters) {
 
   return (
     <GenreContainer>
-      <Select.Root value={genre} onValueChange={handleValueChange}>
+      <Select.Root
+        value={genre}
+        onValueChange={handleValueChange}
+        defaultOpen={true}
+      >
         <GenreButton aria-label="Genre">
           <Select.Value>
             {genre === '' ? 'All Genres' : genreTextOnly}
@@ -82,6 +103,9 @@ export function Genre({ genre }: ContentFilters) {
 
         <Select.Portal>
           <GenreList>
+            <ScrollUpArrow>
+              <Image src={chevron_up} alt="Scroll up" width={15} height={15} />
+            </ScrollUpArrow>
             <GenreScroll>
               <GenreItem key={'000'} value={'All Genres'}>
                 All Genres
@@ -94,6 +118,14 @@ export function Genre({ genre }: ContentFilters) {
                 );
               })}
             </GenreScroll>
+            <ScrollDownArrow>
+              <Image
+                src={chevron_down}
+                alt="Scroll down"
+                width={15}
+                height={15}
+              />
+            </ScrollDownArrow>
           </GenreList>
         </Select.Portal>
       </Select.Root>

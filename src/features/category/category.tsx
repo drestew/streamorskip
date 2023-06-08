@@ -43,7 +43,7 @@ export function Category({ category }: ContentFilters) {
   const [value, setValue] = useState(category);
   const { handleFilters } = useFilters();
   const selected = true;
-  function handleValueChange(value: string) {
+  function handleValueChange(value: typeof category) {
     handleFilters({ category: value });
   }
 

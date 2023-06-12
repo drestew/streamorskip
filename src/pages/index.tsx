@@ -7,6 +7,7 @@ import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Genre } from '@features/genre/genre';
 import styled from 'styled-components';
+import { Modal } from '@features/ui/modal/modal';
 
 const CatalogContainer = styled.div`
   display: flex;
@@ -50,6 +51,7 @@ export default function Home({
         <p>Under Construction</p>
       ) : (
         <>
+          <Modal />
           <Category category={filters.category} />
           <Genre genre={filters.genre} />
           <CatalogContainer>

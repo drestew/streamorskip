@@ -37,7 +37,8 @@ const LogIn = styled.div`
     color: ${color('gray', 100)};
   }
 `;
-export function SignupForm() {
+
+export function SignupForm({ signupUser }: any) {
   return (
     <FormContainer>
       <FormTitle>Sign up</FormTitle>
@@ -53,7 +54,7 @@ export function SignupForm() {
           <input type="email" required placeholder="you@example.com" />
         </FormInput>
       </FormField>
-      <Form.Submit asChild>
+      <Form.Submit asChild onClick={signupUser}>
         <Button color="primary" shade={300} size="md">
           Sign up
         </Button>

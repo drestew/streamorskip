@@ -52,10 +52,6 @@ const AppButton = styled.button<ButtonProps>`
   }}
 `;
 
-export function Button({ color, shade, size, children }: ButtonProps) {
-  return (
-    <AppButton color={color} shade={shade} size={size}>
-      {children}
-    </AppButton>
-  );
+export function Button(props: ButtonProps) {
+  return <AppButton {...props}>{props.children}</AppButton>;
 }

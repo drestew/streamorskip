@@ -2,6 +2,8 @@ import * as Form from '@radix-ui/react-form';
 import styled from 'styled-components';
 import { Button } from '@features/ui/button/button';
 import { color, space } from '@styles/theme';
+import { supabaseClient } from '@utils/supabase-client';
+import React from 'react';
 
 const FormContainer = styled(Form.Root)`
   max-width: 400px;
@@ -38,9 +40,29 @@ const LogIn = styled.div`
   }
 `;
 
-export function SignupForm({ signupUser }: any) {
+export function SignupForm() {
+  const [email, setEmail] = React.useState('');
+  async function handleSubmit(event: React.SyntheticEvent) {
+    event.preventDefault();
+    const { data, error } = await supabaseClient.auth.signInWithOtp({
+      email: email,
+      options: {
+        emailRedirectTo: 'http://localhost:3000/',
+      },
+    });
+
+    if (error) {
+      console.log('Error: SignupForm', {
+        message: error.message,
+        details: error.cause,
+      });
+    }
+
+    return data;
+  }
+
   return (
-    <FormContainer>
+    <FormContainer onSubmit={handleSubmit}>
       <FormTitle>Sign up</FormTitle>
       <FormField name="signup">
         <Form.Label>Your email address</Form.Label>
@@ -51,10 +73,16 @@ export function SignupForm({ signupUser }: any) {
           Please provide a valid email
         </Form.Message>
         <FormInput asChild>
-          <input type="email" required placeholder="you@example.com" />
+          <input
+            type="email"
+            required
+            placeholder="you@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
         </FormInput>
       </FormField>
-      <Form.Submit asChild onClick={signupUser}>
+      <Form.Submit asChild>
         <Button color="primary" shade={300} size="md">
           Sign up
         </Button>

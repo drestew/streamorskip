@@ -62,3 +62,11 @@ export const Large: Story = {
     children: 'Button',
   },
 };
+
+export const Hover: Story = {
+  args: { ...Primary.args, shade: 400 },
+};
+
+export const Disabled: Story = {
+  args: { ...Primary.args, color: 'gray', shade: 300 },
+};

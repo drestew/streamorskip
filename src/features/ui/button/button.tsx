@@ -3,7 +3,7 @@ import { color, space } from '@styles/theme';
 import { ReactNode } from 'react';
 
 type Color = 'primary' | 'secondary' | 'gray';
-type Shade = 300;
+type Shade = 100 | 200 | 300 | 400 | 500;
 type Size = 'sm' | 'md' | 'lg';
 type ButtonProps = {
   color: Color;
@@ -16,6 +16,15 @@ const AppButton = styled.button<ButtonProps>`
   color: white;
   border-radius: 5px;
   border-style: unset;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${color('primary', 400)};
+  }
+
+  &:disabled {
+    background-color: ${color('gray', 100)};
+  }
 
   ${(props) => {
     switch (props.color) {

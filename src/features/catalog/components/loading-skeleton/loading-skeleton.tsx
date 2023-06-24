@@ -3,8 +3,6 @@ import { color, space } from '@styles/theme';
 
 const CardContainer = styled.div`
   margin: ${space(4)} auto;
-  padding-left: ${space(4)};
-  padding-right: ${space(4)};
 
   * {
     border-radius: 3px;

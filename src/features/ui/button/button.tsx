@@ -1,16 +1,15 @@
 import styled, { css } from 'styled-components';
 import { color, space } from '@styles/theme';
-import { ReactNode } from 'react';
+import { ButtonHTMLAttributes } from 'react';
 
 type Color = 'primary' | 'secondary' | 'gray';
 type Shade = 100 | 200 | 300 | 400 | 500;
 type Size = 'sm' | 'md' | 'lg';
-type ButtonProps = {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   color: Color;
   shade: Shade;
   size: Size;
-  children: ReactNode;
-};
+}
 
 const AppButton = styled.button<ButtonProps>`
   color: white;
@@ -18,9 +17,13 @@ const AppButton = styled.button<ButtonProps>`
   border-style: unset;
   cursor: pointer;
 
-  &:hover {
-    background-color: ${color('primary', 400)};
-  }
+  ${(props) => {
+    return css`
+      &:hover {
+        background-color: ${color(props.color, 400)};
+      }
+    `;
+  }}
 
   &:disabled {
     background-color: ${color('gray', 100)};

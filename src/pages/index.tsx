@@ -7,12 +7,40 @@ import { useInView } from 'react-intersection-observer';
 import React, { useEffect } from 'react';
 import { Genre } from '@features/genre/genre';
 import styled from 'styled-components';
+import { Button } from '@features/ui/button/button';
+import { space } from '@styles/theme';
+import Link from 'next/link';
+
+const PageContainer = styled.div`
+  max-width: 400px;
+  margin: auto;
+  padding: ${space(3)};
+  border: red 1px solid;
+`;
+
+const Header = styled.header`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: ${space(8)};
+`;
+
+const MainContent = styled.main`
+  display: flex;
+  flex-direction: column;
+  padding-left: ${space(4)};
+  padding-right: ${space(4)};
+`;
 
 const CatalogContainer = styled.div`
   display: flex;
   justify-content: center;
   max-width: 400px;
   margin: auto;
+`;
+
+const Filters = styled.div`
+  display: flex;
+  justify-content: space-between;
 `;
 
 export default function Home({
@@ -45,26 +73,38 @@ export default function Home({
   }, [inView, fetchNextPage]);
 
   return (
-    <main>
-      {userRatings.status === 'loading' ? (
-        <p>Under Construction</p>
-      ) : (
-        <>
-          <Category category={filters.category} />
-          <Genre genre={filters.genre} />
-          <CatalogContainer>
-            <CatalogList
-              catalog={data}
-              userRatings={userRatings}
-              isFetching={isFetching}
-            />
-          </CatalogContainer>
-        </>
-      )}
-      <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
-        Loading...
-      </h1>
-    </main>
+    <PageContainer>
+      <Header>
+        <h2 style={{ color: 'white' }}>Stream or Skip</h2>
+        <Link href="/signup">
+          <Button color="secondary" shade={300} size="md" role="link">
+            Sign up
+          </Button>
+        </Link>
+      </Header>
+      <MainContent>
+        {userRatings.status === 'loading' ? (
+          <p>Under Construction</p>
+        ) : (
+          <>
+            <Filters>
+              <Category category={filters.category} />
+              <Genre genre={filters.genre} />
+            </Filters>
+            <CatalogContainer>
+              <CatalogList
+                catalog={data}
+                userRatings={userRatings}
+                isFetching={isFetching}
+              />
+            </CatalogContainer>
+          </>
+        )}
+        <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
+          Loading...
+        </h1>
+      </MainContent>
+    </PageContainer>
   );
 }
 

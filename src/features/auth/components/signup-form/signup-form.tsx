@@ -2,8 +2,8 @@ import * as Form from '@radix-ui/react-form';
 import styled from 'styled-components';
 import { Button } from '@features/ui/button/button';
 import { color, space } from '@styles/theme';
-import { supabaseClient } from '@utils/supabase-client';
 import React from 'react';
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 
 const FormContainer = styled(Form.Root)`
   max-width: 400px;
@@ -41,13 +41,14 @@ const LogIn = styled.div`
 `;
 
 export function SignupForm() {
+  const supabase = createPagesBrowserClient();
   const [email, setEmail] = React.useState('');
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
-    const { data, error } = await supabaseClient.auth.signInWithOtp({
+    const { data, error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
-        emailRedirectTo: 'http://localhost:3000/',
+        emailRedirectTo: 'http://localhost:3000/api/auth/callback',
       },
     });
 

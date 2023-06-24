@@ -7,8 +7,6 @@ import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
 import { Genre } from '@features/genre/genre';
 import styled from 'styled-components';
-import { Modal } from '@features/ui/modal/modal';
-import { supabaseClient } from '@utils/supabase-client';
 
 const CatalogContainer = styled.div`
   display: flex;
@@ -44,21 +42,10 @@ export default function Home({
       fetchNextPage();
     }
   }, [inView, fetchNextPage]);
-  async function signupUser() {
-    const { data, error } = await supabaseClient.auth.signInWithOtp({
-      email: 'sgedelson@gmail.com',
-      options: {
-        emailRedirectTo: 'http://localhost:3000/',
-      },
-    });
 
-    return data;
-  }
   return (
     <main>
-      <button onClick={signupUser}>Submit</button>
       {userRatings.status === 'loading' ? (
-        // {userRatings ? (
         <p>Under Construction</p>
       ) : (
         <>

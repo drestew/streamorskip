@@ -4,9 +4,10 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Category } from '@features/category/category';
 import { useFilters } from '../hooks/useFilter';
 import { useInView } from 'react-intersection-observer';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Genre } from '@features/genre/genre';
 import styled from 'styled-components';
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 
 const CatalogContainer = styled.div`
   display: flex;
@@ -14,11 +15,26 @@ const CatalogContainer = styled.div`
   max-width: 400px;
   margin: auto;
 `;
+
 export default function Home({
   catalog,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const userRatings = useUserRating();
   const { filters } = useFilters();
+  const supabaseClient = useSupabaseClient();
+  const user = useUser();
+
+  React.useEffect(() => {
+    async function getUser() {
+      console.log('test', user);
+      const { error } = await supabaseClient
+        .from('profile')
+        .insert({ id: user?.id });
+    }
+
+    if (user) getUser();
+  }, [supabaseClient, supabaseClient.auth, user]);
+
   let category: string, genre: string;
   if (filters.category) {
     category = filters.category;

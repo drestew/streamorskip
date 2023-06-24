@@ -6,6 +6,7 @@ import arrow from '@public/arrow.png';
 import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
 import { deleteUserRating, updateUserRating } from '@features/catalog';
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 
 type Catalog = {
   nfid: number;
@@ -143,10 +144,13 @@ const IconContainer = styled.div`
   align-items: center;
   padding: 0 ${space(5)};
   margin-top: ${space(4)};
+  cursor: pointer;
 `;
 
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
+  const supabaseClient = useSupabaseClient();
+  const user = useUser();
   const { title, synopsis, rating, img, stream, nfid, priorityImg } = props;
   const [streamRating, setStreamRating] = useState(stream);
   const ratingFrom100 = convertRating(rating);
@@ -154,18 +158,20 @@ export function CatalogCard(props: CardProps) {
   const toggleSynopsis = () => setTruncateSynopsis(!truncateSynopsis);
 
   function handleClick(thumbIcon: string) {
-    if (thumbIcon === 'skip' && streamRating !== false) {
-      setStreamRating(false);
-      updateUserRating(nfid, false);
-    } else if (thumbIcon === 'skip' && streamRating === false) {
-      setStreamRating(null);
-      deleteUserRating(nfid);
-    } else if (thumbIcon === 'stream' && !streamRating) {
-      setStreamRating(true);
-      updateUserRating(nfid, true);
-    } else if (thumbIcon === 'stream' && streamRating) {
-      setStreamRating(null);
-      deleteUserRating(nfid);
+    if (user) {
+      if (thumbIcon === 'skip' && streamRating !== false) {
+        setStreamRating(false);
+        updateUserRating(nfid, false, user, supabaseClient);
+      } else if (thumbIcon === 'skip' && streamRating === false) {
+        setStreamRating(null);
+        deleteUserRating(nfid, user, supabaseClient);
+      } else if (thumbIcon === 'stream' && !streamRating) {
+        setStreamRating(true);
+        updateUserRating(nfid, true, user, supabaseClient);
+      } else if (thumbIcon === 'stream' && streamRating) {
+        setStreamRating(null);
+        deleteUserRating(nfid, user, supabaseClient);
+      }
     }
   }
 

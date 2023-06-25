@@ -1,13 +1,13 @@
 import { Meta, StoryObj } from '@storybook/react';
-import { SignupForm } from './signup-form';
+import { LogInForm } from './login-form';
 
-const meta: Meta<typeof SignupForm> = {
-  title: 'Auth/Signup Form',
-  component: SignupForm,
+const meta: Meta<typeof LogInForm> = {
+  title: 'Auth/Login Form',
+  component: LogInForm,
 };
 
 export default meta;
-type Story = StoryObj<typeof SignupForm>;
+type Story = StoryObj<typeof LogInForm>;
 
 export const Mobile: Story = {
   decorators: [

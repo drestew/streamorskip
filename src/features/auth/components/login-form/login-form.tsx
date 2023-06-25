@@ -1,7 +1,7 @@
 import * as Form from '@radix-ui/react-form';
 import styled from 'styled-components';
 import { Button } from '@features/ui/button/button';
-import { color, space } from '@styles/theme';
+import { color, font, space } from '@styles/theme';
 import React from 'react';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
@@ -27,13 +27,22 @@ const FormInput = styled(Form.Control)`
   border: solid 1px #d0d0d0;
   border-radius: 5px;
   padding: ${space(2)};
-  margin-bottom: ${space(3)};
+  margin-bottom: ${space(2)};
   &::placeholder {
     color: #d0d0d0;
   }
 `;
 
-const LogIn = styled.div`
+const SupportText = styled.div`
+  margin-bottom: ${space(3)};
+
+  & > * {
+    color: ${color('gray', 100)};
+    ${font('sm', 'regular')};
+  }
+`;
+
+const Signup = styled.div`
   margin-top: ${space(6)};
 
   & > * {
@@ -41,7 +50,7 @@ const LogIn = styled.div`
   }
 `;
 
-export function SignupForm() {
+export function LogInForm() {
   const supabase = createPagesBrowserClient();
   const [email, setEmail] = React.useState('');
   async function handleSubmit(event: React.SyntheticEvent) {
@@ -49,12 +58,13 @@ export function SignupForm() {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
-        emailRedirectTo: 'http://localhost:3000/api/auth/callback',
+        emailRedirectTo: 'http://localhost:3000/',
+        shouldCreateUser: false,
       },
     });
 
     if (error) {
-      console.log('Error: SignupForm', {
+      console.log('Error: LoginForm', {
         message: error.message,
         details: error.cause,
       });
@@ -65,8 +75,8 @@ export function SignupForm() {
 
   return (
     <FormContainer onSubmit={handleSubmit}>
-      <FormTitle>Sign up</FormTitle>
-      <FormField name="signup">
+      <FormTitle>Log In</FormTitle>
+      <FormField name="log in">
         <Form.Label>Your email address</Form.Label>
         <Form.Message match="valueMissing">
           Please enter your email
@@ -84,16 +94,22 @@ export function SignupForm() {
           />
         </FormInput>
       </FormField>
+      <SupportText>
+        <p>
+          We’ll send you an email with a magic link that will log you in. No
+          need for a password!
+        </p>
+      </SupportText>
       <Form.Submit asChild>
         <Button color="primary" shade={300} size="md">
-          Sign up
+          Email Link
         </Button>
       </Form.Submit>
-      <LogIn>
+      <Signup>
         <p>
-          Have an account already? <Link href="/login">Log in</Link> instead.
+          Don&#39;t have an account? <Link href="/signup">Sign up</Link> now.
         </p>
-      </LogIn>
+      </Signup>
     </FormContainer>
   );
 }

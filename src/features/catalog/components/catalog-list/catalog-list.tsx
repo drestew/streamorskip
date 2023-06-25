@@ -49,11 +49,15 @@ export function CatalogList({
     if (ratedItem) return ratedItem[0];
   }
 
-  const loadingSkeletonArr: React.ReactNode[] = new Array(10).fill(
-    <li>
-      <LoadingSkeleton />
-    </li>
-  );
+  const loadingSkeletonArr: React.ReactNode[] = new Array(10)
+    .fill('')
+    .map((item, index) => {
+      return (
+        <li key={index}>
+          <LoadingSkeleton />
+        </li>
+      );
+    });
 
   return (
     <List role="list">

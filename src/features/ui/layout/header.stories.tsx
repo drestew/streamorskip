@@ -1,19 +1,14 @@
 import { Meta, StoryObj } from '@storybook/react';
-import Layout from './header';
-import { SignupForm } from '@features/auth/components/signup-form/signup-form';
+import Header from './header';
 
-const meta: Meta<typeof Layout> = {
-  title: 'Auth/Layout',
-  component: Layout,
+const meta: Meta<typeof Header> = {
+  title: 'Header',
+  component: Header,
 };
 
 export default meta;
-type Story = StoryObj<typeof Layout>;
+type Story = StoryObj<typeof Header>;
 
 export const Mobile: Story = {
-  render: () => (
-    <Layout>
-      <SignupForm />
-    </Layout>
-  ),
+  render: () => <Header />,
 };

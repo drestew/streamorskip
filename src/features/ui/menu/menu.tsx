@@ -48,13 +48,16 @@ const StyledLink = styled(Link)`
   color: ${color('dark', 300)};
 
   &:hover {
-    background-color: #2F303A;
+    background-color: #2f303a;
     color: white;
-    
+  }
 `;
 
 export default function Menu() {
   const supabase = useSupabaseClient();
+  const [menuOpen, setMenuOpen] = React.useState<boolean | undefined>(
+    undefined
+  );
   async function handleValueChange(value: string) {
     if (value === 'logout') {
       const { error } = await supabase.auth.signOut();
@@ -63,11 +66,12 @@ export default function Menu() {
         message: error?.message,
       });
     }
+    setMenuOpen(true);
   }
 
   return (
     <MenuContainer>
-      <Select.Root value={''} onValueChange={handleValueChange}>
+      <Select.Root open={menuOpen} value={''} onValueChange={handleValueChange}>
         <MenuTrigger>
           <Select.Value>
             <Image src={menu} alt="menu" width={20} height={20} />

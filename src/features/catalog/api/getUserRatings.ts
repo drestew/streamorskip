@@ -1,15 +1,20 @@
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { useQuery } from '@tanstack/react-query';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { User } from '@supabase/gotrue-js';
 
-async function getUserRatings(supabaseClient: SupabaseClient) {
-  const {
-    data: { user },
-  } = await supabaseClient.auth.getUser();
+async function getUserRatings(
+  supabaseClient: SupabaseClient,
+  user: User | null
+) {
+  if (!user) {
+    return null;
+  }
+
   const { data, error } = await supabaseClient
     .from('rating')
     .select('user_id, catalog_item, stream')
-    .eq('user_id', user?.id);
+    .eq('user_id', user.id);
 
   if (error) {
     console.log('Error:', {
@@ -23,9 +28,10 @@ async function getUserRatings(supabaseClient: SupabaseClient) {
 
 export function useUserRating() {
   const supabaseClient = useSupabaseClient();
+  const user = useUser();
   const { data, status } = useQuery({
     queryKey: ['userRatings'],
-    queryFn: () => getUserRatings(supabaseClient),
+    queryFn: () => getUserRatings(supabaseClient, user),
   });
 
   return { data, status };

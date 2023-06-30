@@ -4,7 +4,6 @@ import Image from 'next/image';
 import logo from '@public/logo.png';
 import { Button } from '@features/ui/button/button';
 import { space } from '@styles/theme';
-import { useUser } from '@supabase/auth-helpers-react';
 import Menu from '@features/ui/menu/menu';
 
 const HeaderContainer = styled.header`
@@ -17,9 +16,11 @@ const StyledLink = styled(Link)`
   text-decoration: none;
   color: white;
 `;
-export default function Header() {
-  const user = useUser();
 
+type HeaderProps = {
+  loggedIn: boolean;
+};
+export default function Header({ loggedIn }: HeaderProps) {
   return (
     <HeaderContainer>
       <Link href="/">
@@ -32,7 +33,7 @@ export default function Header() {
           priority
         />
       </Link>
-      {!user ? (
+      {!loggedIn ? (
         <StyledLink href="/login">
           <Button color="secondary" shade={300} size="sm" role="link">
             Log In

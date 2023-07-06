@@ -40,6 +40,10 @@ const MenuItem = styled(Select.Item)`
   &:hover {
     background-color: ${color('primary', 300)};
     color: white;
+
+    & > * {
+      color: white;
+    }
   }
 `;
 
@@ -48,7 +52,6 @@ const StyledLink = styled(Link)`
   color: ${color('dark', 300)};
 
   &:hover {
-    background-color: #2f303a;
     color: white;
   }
 `;

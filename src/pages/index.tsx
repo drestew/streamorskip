@@ -41,6 +41,7 @@ export default function Home({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const userRatings = useUserRating();
   const { filters } = useFilters();
+
   let category: string, genre: string;
   if (filters.category) {
     category = filters.category;
@@ -67,25 +68,19 @@ export default function Home({
 
   return (
     <PageContainer>
-      <Header />
+      <Header loggedIn={!!userRatings.data} />
       <MainContent>
-        {userRatings.status === 'loading' ? (
-          <p>Under Construction</p>
-        ) : (
-          <>
-            <Filters>
-              <Category category={filters.category} />
-              <Genre genre={filters.genre} />
-            </Filters>
-            <CatalogContainer>
-              <CatalogList
-                catalog={data}
-                userRatings={userRatings}
-                isFetching={isFetching}
-              />
-            </CatalogContainer>
-          </>
-        )}
+        <Filters>
+          <Category category={filters.category} />
+          <Genre genre={filters.genre} />
+        </Filters>
+        <CatalogContainer>
+          <CatalogList
+            catalog={data}
+            userRatings={userRatings}
+            isFetching={isFetching}
+          />
+        </CatalogContainer>
         <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
           Loading...
         </h1>

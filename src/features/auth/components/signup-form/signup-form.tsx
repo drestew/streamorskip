@@ -44,6 +44,7 @@ const LogIn = styled.div`
 export function SignupForm() {
   const supabase = createPagesBrowserClient();
   const [email, setEmail] = React.useState('');
+  const [signupComplete, setSignupComplete] = React.useState(false);
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     const { data, error } = await supabase.auth.signInWithOtp({
@@ -52,6 +53,8 @@ export function SignupForm() {
         emailRedirectTo: 'http://localhost:3000/api/auth/callback',
       },
     });
+
+    setSignupComplete(true);
 
     if (error) {
       console.log('Error: SignupForm', {
@@ -66,34 +69,46 @@ export function SignupForm() {
   return (
     <FormContainer onSubmit={handleSubmit}>
       <FormTitle>Sign up</FormTitle>
-      <FormField name="signup">
-        <Form.Label>Your email address</Form.Label>
-        <Form.Message match="valueMissing">
-          Please enter your email
-        </Form.Message>
-        <Form.Message match="typeMismatch">
-          Please provide a valid email
-        </Form.Message>
-        <FormInput asChild>
-          <input
-            type="email"
-            required
-            placeholder="you@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </FormInput>
-      </FormField>
-      <Form.Submit asChild>
-        <Button color="primary" shade={300} size="md">
-          Sign up
-        </Button>
-      </Form.Submit>
-      <LogIn>
-        <p>
-          Have an account already? <Link href="/login">Log in</Link> instead.
-        </p>
-      </LogIn>
+      {signupComplete ? (
+        <div>
+          <p>
+            <strong>Signup complete!</strong> Check your email at <i>{email}</i>{' '}
+            for your login link.
+          </p>
+        </div>
+      ) : (
+        <>
+          <FormField name="signup">
+            <Form.Label>Your email address</Form.Label>
+            <Form.Message match="valueMissing">
+              Please enter your email
+            </Form.Message>
+            <Form.Message match="typeMismatch">
+              Please provide a valid email
+            </Form.Message>
+            <FormInput asChild>
+              <input
+                type="email"
+                required
+                placeholder="you@example.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </FormInput>
+          </FormField>
+          <Form.Submit asChild>
+            <Button color="primary" shade={300} size="md">
+              Sign up
+            </Button>
+          </Form.Submit>
+          <LogIn>
+            <p>
+              Have an account already? <Link href="/login">Log in</Link>{' '}
+              instead.
+            </p>
+          </LogIn>
+        </>
+      )}
     </FormContainer>
   );
 }

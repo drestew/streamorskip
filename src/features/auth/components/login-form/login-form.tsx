@@ -53,6 +53,7 @@ const Signup = styled.div`
 export function LogInForm() {
   const supabase = createPagesBrowserClient();
   const [email, setEmail] = React.useState('');
+  const [sendEmail, setSendEmail] = React.useState(false);
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     const { data, error } = await supabase.auth.signInWithOtp({
@@ -62,6 +63,8 @@ export function LogInForm() {
         shouldCreateUser: false,
       },
     });
+
+    setSendEmail(true);
 
     if (error) {
       console.log('Error: LoginForm', {
@@ -76,40 +79,52 @@ export function LogInForm() {
   return (
     <FormContainer onSubmit={handleSubmit}>
       <FormTitle>Log In</FormTitle>
-      <FormField name="log in">
-        <Form.Label>Your email address</Form.Label>
-        <Form.Message match="valueMissing">
-          Please enter your email
-        </Form.Message>
-        <Form.Message match="typeMismatch">
-          Please provide a valid email
-        </Form.Message>
-        <FormInput asChild>
-          <input
-            type="email"
-            required
-            placeholder="you@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </FormInput>
-      </FormField>
-      <SupportText>
-        <p>
-          We’ll send you an email with a magic link that will log you in. No
-          need for a password!
-        </p>
-      </SupportText>
-      <Form.Submit asChild>
-        <Button color="primary" shade={300} size="md">
-          Email Link
-        </Button>
-      </Form.Submit>
-      <Signup>
-        <p>
-          Don&#39;t have an account? <Link href="/signup">Sign up</Link> now.
-        </p>
-      </Signup>
+      {sendEmail ? (
+        <div>
+          <p>
+            <strong>Email sent!</strong> Check your email at <i>{email}</i>; you
+            should have your login link in a few seconds!
+          </p>
+        </div>
+      ) : (
+        <>
+          <FormField name="log in">
+            <Form.Label>Your email address</Form.Label>
+            <Form.Message match="valueMissing">
+              Please enter your email
+            </Form.Message>
+            <Form.Message match="typeMismatch">
+              Please provide a valid email
+            </Form.Message>
+            <FormInput asChild>
+              <input
+                type="email"
+                required
+                placeholder="you@example.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </FormInput>
+          </FormField>
+          <SupportText>
+            <p>
+              We’ll send you an email with a magic link that will log you in. No
+              need for a password!
+            </p>
+          </SupportText>
+          <Form.Submit asChild>
+            <Button color="primary" shade={300} size="md">
+              Email Link
+            </Button>
+          </Form.Submit>
+          <Signup>
+            <p>
+              Don&#39;t have an account? <Link href="/signup">Sign up</Link>{' '}
+              now.
+            </p>
+          </Signup>
+        </>
+      )}
     </FormContainer>
   );
 }

@@ -5,6 +5,7 @@ import { color, font, space } from '@styles/theme';
 import React from 'react';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
+import { supabaseClient } from '@utils/supabase-client';
 
 const FormContainer = styled(Form.Root)`
   width: 100%;
@@ -50,30 +51,53 @@ const Signup = styled.div`
   }
 `;
 
+const ValidationError = styled(Form.Message)`
+  color: ${color('error', 300)};
+`;
+
 export function LogInForm() {
   const supabase = createPagesBrowserClient();
   const [email, setEmail] = React.useState('');
   const [sendEmail, setSendEmail] = React.useState(false);
+  const [noEmail, setNoEmail] = React.useState(false);
+
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
-    const { data, error } = await supabase.auth.signInWithOtp({
-      email: email,
-      options: {
-        emailRedirectTo: 'http://localhost:3000/',
-        shouldCreateUser: false,
-      },
-    });
 
-    setSendEmail(true);
+    const { data, error } = await supabaseClient
+      .from('profile')
+      .select('email')
+      .eq('email', email)
+      .limit(1)
+      .single();
 
     if (error) {
-      console.log('Error: LoginForm', {
+      console.log("Error: Email doesn't exist", {
         message: error.message,
-        details: error.cause,
       });
     }
 
-    return data;
+    if (!data) {
+      setNoEmail(true);
+    } else {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          emailRedirectTo: 'http://localhost:3000/',
+          shouldCreateUser: false,
+        },
+      });
+
+      setSendEmail(true);
+
+      if (error) {
+        console.log('Error: LoginForm', {
+          message: error.message,
+          details: error.cause,
+        });
+      }
+    }
+    console.log(data);
   }
 
   return (
@@ -90,21 +114,22 @@ export function LogInForm() {
         <>
           <FormField name="log in">
             <Form.Label>Your email address</Form.Label>
-            <Form.Message match="valueMissing">
+            <ValidationError match="valueMissing">
               Please enter your email
-            </Form.Message>
-            <Form.Message match="typeMismatch">
+            </ValidationError>
+            <ValidationError match="typeMismatch">
               Please provide a valid email
-            </Form.Message>
-            <FormInput asChild>
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </FormInput>
+            </ValidationError>
+            <ValidationError match={() => noEmail} forceMatch={noEmail}>
+              This email doesn&#39;t exist
+            </ValidationError>
+            <FormInput
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
           </FormField>
           <SupportText>
             <p>

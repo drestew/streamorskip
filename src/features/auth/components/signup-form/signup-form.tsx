@@ -5,6 +5,7 @@ import { color, space } from '@styles/theme';
 import React from 'react';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
+import { supabaseClient } from '@utils/supabase-client';
 
 const FormContainer = styled(Form.Root)`
   width: 100%;
@@ -41,29 +42,51 @@ const LogIn = styled.div`
   }
 `;
 
+const ValidationError = styled(Form.Message)`
+  color: ${color('error', 300)};
+`;
+
 export function SignupForm() {
   const supabase = createPagesBrowserClient();
   const [email, setEmail] = React.useState('');
   const [signupComplete, setSignupComplete] = React.useState(false);
+  const [duplicateEmail, setDuplicateEmail] = React.useState(false);
+
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
-    const { data, error } = await supabase.auth.signInWithOtp({
-      email: email,
-      options: {
-        emailRedirectTo: 'http://localhost:3000/api/auth/callback',
-      },
-    });
 
-    setSignupComplete(true);
+    const { data, error } = await supabaseClient
+      .from('profile')
+      .select('email')
+      .eq('email', email)
+      .limit(1)
+      .single();
 
     if (error) {
-      console.log('Error: SignupForm', {
+      console.log('Error: Duplicate email', {
         message: error.message,
-        details: error.cause,
       });
     }
 
-    return data;
+    if (data) {
+      setDuplicateEmail(true);
+    } else {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          emailRedirectTo: 'http://localhost:3000/api/auth/callback',
+        },
+      });
+
+      setSignupComplete(true);
+
+      if (error) {
+        console.log('Error: OTP Signup', {
+          message: error.message,
+          details: error.cause,
+        });
+      }
+    }
   }
 
   return (
@@ -80,21 +103,25 @@ export function SignupForm() {
         <>
           <FormField name="signup">
             <Form.Label>Your email address</Form.Label>
-            <Form.Message match="valueMissing">
+            <ValidationError match="valueMissing">
               Please enter your email
-            </Form.Message>
-            <Form.Message match="typeMismatch">
+            </ValidationError>
+            <ValidationError match="typeMismatch">
               Please provide a valid email
-            </Form.Message>
-            <FormInput asChild>
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </FormInput>
+            </ValidationError>
+            <ValidationError
+              match={() => duplicateEmail}
+              forceMatch={duplicateEmail}
+            >
+              This email is not available.
+            </ValidationError>
+            <FormInput
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
           </FormField>
           <Form.Submit asChild>
             <Button color="primary" shade={300} size="md">

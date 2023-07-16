@@ -97,7 +97,6 @@ export function LogInForm() {
         });
       }
     }
-    console.log(data);
   }
 
   return (

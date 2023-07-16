@@ -5,6 +5,8 @@ import logo from '@public/logo.png';
 import { Button } from '@features/ui/button/button';
 import { space } from '@styles/theme';
 import Menu from '@features/ui/menu/menu';
+import React from 'react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -17,10 +19,15 @@ const StyledLink = styled(Link)`
   color: white;
 `;
 
-type HeaderProps = {
-  loggedIn: boolean;
-};
-export default function Header({ loggedIn }: HeaderProps) {
+export default function Header() {
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  const supabase = useSupabaseClient();
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN') setLoggedIn(true);
+    if (event === 'SIGNED_OUT') setLoggedIn(false);
+  });
+
   return (
     <HeaderContainer>
       <Link href="/">

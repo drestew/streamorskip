@@ -1,14 +1,15 @@
-import { CatalogList, getCatalog, useUserRating } from '@features/catalog';
+import { CatalogList, getCatalog } from '@features/catalog';
 import { InferGetStaticPropsType } from 'next';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Category } from '@features/category/category';
 import { useFilters } from '../hooks/useFilter';
 import { useInView } from 'react-intersection-observer';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Genre } from '@features/genre/genre';
 import styled from 'styled-components';
 import { space } from '@styles/theme';
 import Header from '@features/ui/layout/header';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const PageContainer = styled.div`
   max-width: 400px;
@@ -39,10 +40,12 @@ const Filters = styled.div`
 export default function Home({
   catalog,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
-  const userRatings = useUserRating();
   const { filters } = useFilters();
-
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  const supabase = useSupabaseClient();
   let category: string, genre: string;
+  const session = useSession();
+
   if (filters.category) {
     category = filters.category;
   }
@@ -60,15 +63,22 @@ export default function Home({
 
   const { ref, inView } = useInView();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (inView) {
       fetchNextPage();
     }
   }, [inView, fetchNextPage]);
 
+  React.useEffect(() => {
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') setLoggedIn(true);
+      if (event === 'SIGNED_OUT') setLoggedIn(false);
+    });
+  }, [supabase.auth]);
+
   return (
     <PageContainer>
-      <Header loggedIn={!!userRatings.data} />
+      <Header loggedIn={loggedIn} />
       <MainContent>
         <Filters>
           <Category category={filters.category} />
@@ -77,8 +87,8 @@ export default function Home({
         <CatalogContainer>
           <CatalogList
             catalog={data}
-            userRatings={userRatings}
             isFetching={isFetching}
+            session={session}
           />
         </CatalogContainer>
         <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
@@ -90,7 +100,7 @@ export default function Home({
 }
 
 export const getStaticProps = async () => {
-  const catalog = await getCatalog({ pageParam: 0 }, 'movie', 'All Genres');
+  const catalog = await getCatalog({ pageParam: 11 }, 'movie', 'All Genres');
 
   return { props: { catalog } };
 };

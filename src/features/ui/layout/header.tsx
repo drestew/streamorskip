@@ -6,7 +6,7 @@ import { Button } from '@features/ui/button/button';
 import { space } from '@styles/theme';
 import Menu from '@features/ui/menu/menu';
 import React from 'react';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useUser } from '@supabase/auth-helpers-react';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -19,14 +19,11 @@ const StyledLink = styled(Link)`
   color: white;
 `;
 
-export default function Header() {
-  const [loggedIn, setLoggedIn] = React.useState(false);
-  const supabase = useSupabaseClient();
-
-  supabase.auth.onAuthStateChange((event) => {
-    if (event === 'SIGNED_IN') setLoggedIn(true);
-    if (event === 'SIGNED_OUT') setLoggedIn(false);
-  });
+type HeaderProps = {
+  loggedIn: boolean;
+};
+export default function Header({ loggedIn }: HeaderProps) {
+  const user = useUser();
 
   return (
     <HeaderContainer>
@@ -40,7 +37,7 @@ export default function Header() {
           priority
         />
       </Link>
-      {!loggedIn ? (
+      {!user && !loggedIn ? (
         <StyledLink href="/login">
           <Button color="secondary" shade={300} size="sm" role="link">
             Log In

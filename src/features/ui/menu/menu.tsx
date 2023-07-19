@@ -65,9 +65,11 @@ export default function Menu() {
     if (value === 'logout') {
       const { error } = await supabase.auth.signOut();
 
-      console.log('Error:', {
-        message: error?.message,
-      });
+      if (error) {
+        console.log('Error:', {
+          message: error?.message,
+        });
+      }
     }
     setMenuOpen(true);
   }

@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { CatalogCard } from '../../index';
 import { color } from '@styles/theme';
-import { InfiniteData } from '@tanstack/react-query';
+import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import LoadingSkeleton from '@features/catalog/components/loading-skeleton/loading-skeleton';
 import { Session } from '@supabase/gotrue-js';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
@@ -45,12 +45,15 @@ export function CatalogList({
   const [userRatings, setUserRatings] = React.useState<
     { user_id: string; catalog_item: number; stream: boolean }[] | null
   >();
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     getUserRatings();
 
     async function getUserRatings() {
       if (!user) {
+        setUserRatings(null);
+        await queryClient.resetQueries(['catalog-default']);
         return null;
       }
 
@@ -67,7 +70,7 @@ export function CatalogList({
       }
       setUserRatings(data);
     }
-  }, [session, supabase, user]);
+  }, [queryClient, session, supabase, user]);
 
   function getItemRating(nfid: number) {
     const ratedItem = userRatings?.filter((item) => item.catalog_item === nfid);
@@ -98,7 +101,7 @@ export function CatalogList({
                   synopsis={item.synopsis}
                   img={item.img}
                   rating={item.rating === null ? 0 : item.rating}
-                  stream={itemRating}
+                  stream={user ? itemRating : null}
                   nfid={item.nfid}
                   priorityImg={index === 0}
                 />

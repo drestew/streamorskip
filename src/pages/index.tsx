@@ -53,7 +53,7 @@ export default function Home({
     genre = filters.genre;
   }
   const { data, fetchNextPage, isFetching } = useInfiniteQuery({
-    queryKey: ['catalog-default', filters.category, filters.genre],
+    queryKey: ['catalog-default', filters.category, filters.genre, loggedIn],
     queryFn: ({ pageParam }) =>
       getCatalog({ pageParam: pageParam }, category, genre),
     getNextPageParam: (lastPage) => lastPage.step,
@@ -78,7 +78,7 @@ export default function Home({
 
   return (
     <PageContainer>
-      <Header loggedIn={loggedIn} />
+      <Header isFetching={isFetching} />
       <MainContent>
         <Filters>
           <Category category={filters.category} />

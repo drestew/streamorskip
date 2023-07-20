@@ -4,6 +4,12 @@
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
-  "plugins": ["@typescript-eslint"],
-  "parser": "@typescript-eslint/parser"
+  "plugins": ["@typescript-eslint", "testing-library"],
+  "parser": "@typescript-eslint/parser",
+  "overrides": [
+    {
+      "files": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
+      "extends": ["plugin:testing-library/react"]
+    }
+  ]
 }

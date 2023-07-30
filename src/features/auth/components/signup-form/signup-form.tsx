@@ -103,15 +103,16 @@ export function SignupForm() {
         <>
           <FormField name="signup">
             <Form.Label>Your email address</Form.Label>
-            <ValidationError match="valueMissing">
+            <ValidationError match="valueMissing" data-cy="validationError">
               Please enter your email
             </ValidationError>
-            <ValidationError match="typeMismatch">
+            <ValidationError match="typeMismatch" data-cy="validationError">
               Please provide a valid email
             </ValidationError>
             <ValidationError
               match={() => duplicateEmail}
               forceMatch={duplicateEmail}
+              data-cy="validationError"
             >
               This email is not available.
             </ValidationError>
@@ -124,13 +125,16 @@ export function SignupForm() {
             />
           </FormField>
           <Form.Submit asChild>
-            <Button color="primary" shade={300} size="md">
+            <Button color="primary" shade={300} size="md" data-cy="submit">
               Sign up
             </Button>
           </Form.Submit>
           <LogIn>
             <p>
-              Have an account already? <Link href="/login">Log in</Link>{' '}
+              Have an account already?{' '}
+              <Link href="/login" data-cy="loginLink">
+                Log in
+              </Link>{' '}
               instead.
             </p>
           </LogIn>

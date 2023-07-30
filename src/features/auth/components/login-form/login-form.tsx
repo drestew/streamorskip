@@ -113,13 +113,17 @@ export function LogInForm() {
         <>
           <FormField name="log in">
             <Form.Label>Your email address</Form.Label>
-            <ValidationError match="valueMissing">
+            <ValidationError match="valueMissing" data-cy="validationError">
               Please enter your email
             </ValidationError>
-            <ValidationError match="typeMismatch">
+            <ValidationError match="typeMismatch" data-cy="validationError">
               Please provide a valid email
             </ValidationError>
-            <ValidationError match={() => noEmail} forceMatch={noEmail}>
+            <ValidationError
+              match={() => noEmail}
+              forceMatch={noEmail}
+              data-cy="validationError"
+            >
               This email doesn&#39;t exist
             </ValidationError>
             <FormInput
@@ -137,13 +141,16 @@ export function LogInForm() {
             </p>
           </SupportText>
           <Form.Submit asChild>
-            <Button color="primary" shade={300} size="md">
+            <Button color="primary" shade={300} size="md" data-cy="submit">
               Email Link
             </Button>
           </Form.Submit>
           <Signup>
             <p>
-              Don&#39;t have an account? <Link href="/signup">Sign up</Link>{' '}
+              Don&#39;t have an account?{' '}
+              <Link href="/signup" data-cy="signupLink">
+                Sign up
+              </Link>{' '}
               now.
             </p>
           </Signup>

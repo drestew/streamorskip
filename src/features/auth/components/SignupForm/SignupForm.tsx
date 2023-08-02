@@ -1,6 +1,6 @@
 import * as Form from '@radix-ui/react-form';
 import styled from 'styled-components';
-import { Button } from '../../../../components';
+import { Button } from '@components/Button/Button';
 import { color, space } from '@styles/theme';
 import React from 'react';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';

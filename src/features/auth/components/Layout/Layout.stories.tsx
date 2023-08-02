@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/react';
-import Layout from './Layout';
+import { Layout } from './Layout';
 import { SignupForm } from '@features/auth/components/SignupForm/SignupForm';
 
 const meta: Meta<typeof Layout> = {

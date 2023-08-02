@@ -2,7 +2,7 @@ import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 import { color, space } from '@styles/theme';
-import { ContentFilters, useFilters } from '../../hooks/useFilter';
+import { ContentFilters, useFilters } from '@features/filters';
 
 const ContentToggle = styled(ToggleGroup.Item)<{ ['data-state']: boolean }>`
   color: white;

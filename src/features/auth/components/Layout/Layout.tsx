@@ -56,7 +56,7 @@ const SupportingText = styled.h2`
   text-shadow: ${color('primary', 300)} 2px 2px 2px;
 `;
 
-export default function Layout({ children }: LayoutProps) {
+export function Layout({ children }: LayoutProps) {
   return (
     <Page>
       <Logo>

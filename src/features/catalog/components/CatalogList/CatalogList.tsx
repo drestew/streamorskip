@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { CatalogCard } from '../../index';
+import { CatalogCard } from '@features/catalog';
 import { color } from '@styles/theme';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { LoadingSkeleton } from '@features/catalog/components/LoadingSkeleton/LoadingSkeleton';

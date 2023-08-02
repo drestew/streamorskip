@@ -1,5 +1,5 @@
-import { SignupForm } from '@features/auth/components/SignupForm/SignupForm';
-import Layout from '@features/auth/components/Layout/Layout';
+import { SignupForm } from '@features/auth';
+import { Layout } from '@features/auth';
 export default function Signup() {
   return (
     <Layout>

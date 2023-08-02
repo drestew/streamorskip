@@ -1,4 +1,4 @@
-import { SignupForm } from '@features/auth/components/signup-form/signup-form';
+import { SignupForm } from '@features/auth/components/SignupForm/SignupForm';
 
 describe('<SignupForm />', () => {
   beforeEach(() => {

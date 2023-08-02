@@ -1,14 +1,14 @@
 import { CatalogList, getCatalog } from '@features/catalog';
 import { InferGetStaticPropsType } from 'next';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Category } from '@features/category/category';
-import { useFilters } from '../hooks/useFilter';
+import { Category } from '@features/filter/components/Category/Category';
+import { useFilters } from '@features/filter/hooks/useFilter';
 import { useInView } from 'react-intersection-observer';
 import React from 'react';
-import { Genre } from '@features/genre/genre';
+import { Genre } from '@features/filter/components/Genre/Genre';
 import styled from 'styled-components';
 import { space } from '@styles/theme';
-import Header from '@features/ui/layout/header';
+import { Header } from '@features/../components/Header/Header';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const PageContainer = styled.div`

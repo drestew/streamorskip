@@ -1,5 +1,5 @@
-import { LogInForm } from '@features/auth/components/login-form/login-form';
-import Layout from '@features/auth/components/layout/layout';
+import { LogInForm } from '@features/auth/components/LoginForm/LoginForm';
+import Layout from '@features/auth/components/Layout/Layout';
 
 export default function LogIn() {
   return (

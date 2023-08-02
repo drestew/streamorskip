@@ -1,4 +1,4 @@
-import { LogInForm } from '@features/auth/components/login-form/login-form';
+import { LogInForm } from '@features/auth/components/LoginForm/LoginForm';
 
 describe('<LogInForm />', () => {
   beforeEach(() => {

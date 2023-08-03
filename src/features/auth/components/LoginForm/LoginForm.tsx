@@ -103,7 +103,7 @@ export function LogInForm() {
     <FormContainer onSubmit={handleSubmit}>
       <FormTitle>Log In</FormTitle>
       {sendEmail ? (
-        <div>
+        <div data-cy="emailSent">
           <p>
             <strong>Email sent!</strong> Check your email at <i>{email}</i>; you
             should have your login link in a few seconds!

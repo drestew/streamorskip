@@ -36,4 +36,17 @@
 //   }
 // }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      getEl(selector: string): Chainable;
+    }
+  }
+}
+
+Cypress.Commands.add('getEl', (selector) => {
+  return cy.get(`[data-cy="${selector}"]`);
+});
+
 export {};

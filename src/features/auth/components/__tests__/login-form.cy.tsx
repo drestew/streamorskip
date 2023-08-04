@@ -8,8 +8,8 @@ describe('<LogInForm />', () => {
 
   it('displays error for invalid input', () => {
     cy.get('input').type('testUserNo@');
-    cy.get('[data-cy="submit"]').click();
-    cy.get('[data-cy="validationError"]').should('exist');
+    cy.getEl('submit').click();
+    cy.getEl('validationError').should('exist');
   });
 
   it('displays error for non-existent email', () => {
@@ -19,8 +19,8 @@ describe('<LogInForm />', () => {
       });
     });
     cy.get('input').type(user.email);
-    cy.get('[data-cy="submit"]').click();
-    cy.get('[data-cy="validationError"]').should('exist');
+    cy.getEl('submit').click();
+    cy.getEl('validationError').should('exist');
   });
 
   it('confirms user and displays message to check email for login link', () => {
@@ -33,7 +33,7 @@ describe('<LogInForm />', () => {
       });
     });
     cy.get('input').type(user.email);
-    cy.get('[data-cy="submit"]').click();
-    cy.get('[data-cy="emailSent"]').should('exist');
+    cy.getEl('submit').click();
+    cy.getEl('emailSent').should('exist');
   });
 });

@@ -93,7 +93,7 @@ export function SignupForm() {
     <FormContainer onSubmit={handleSubmit}>
       <FormTitle>Sign up</FormTitle>
       {signupComplete ? (
-        <div>
+        <div data-cy="emailSent">
           <p>
             <strong>Signup complete!</strong> Check your email at <i>{email}</i>{' '}
             for your login link.

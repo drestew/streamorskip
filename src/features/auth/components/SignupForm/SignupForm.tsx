@@ -12,7 +12,6 @@ const FormContainer = styled(Form.Root)`
   background-color: white;
   padding: ${space(4)};
   border-radius: 5px;
-  margin: ${space(3)};
 `;
 
 const FormTitle = styled.h1`

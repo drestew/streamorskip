@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled, { css } from 'styled-components';
 import Image from 'next/image';
 import { color, font, space } from '@styles/theme';
@@ -30,7 +30,12 @@ type CardContent = Pick<
   Catalog,
   'title' | 'synopsis' | 'rating' | 'img' | 'nfid'
 >;
-type CardProps = CardContent & UserRating & ImgPriority;
+
+type Modal = {
+  modalState: () => void;
+};
+
+type CardProps = CardContent & UserRating & ImgPriority & Modal;
 
 const CardContainer = styled.div`
   margin: ${space(4)} auto;
@@ -149,11 +154,23 @@ const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
   const supabaseClient = useSupabaseClient();
   const user = useUser();
-  const { title, synopsis, rating, img, stream, nfid, priorityImg } = props;
-  const [streamRating, setStreamRating] = useState(stream);
+  const {
+    title,
+    synopsis,
+    rating,
+    img,
+    stream,
+    nfid,
+    priorityImg,
+    modalState,
+  } = props;
+  const [streamRating, setStreamRating] = React.useState(stream);
   const ratingFrom100 = convertRating(rating);
-  const [truncateSynopsis, setTruncateSynopsis] = useState(true);
-  const toggleSynopsis = () => setTruncateSynopsis(!truncateSynopsis);
+  const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
+
+  function toggleSynopsis() {
+    setTruncateSynopsis(!truncateSynopsis);
+  }
 
   function handleClick(thumbIcon: string) {
     if (user) {
@@ -170,6 +187,8 @@ export function CatalogCard(props: CardProps) {
         setStreamRating(null);
         deleteUserRating(nfid, user, supabaseClient);
       }
+    } else {
+      modalState();
     }
   }
 

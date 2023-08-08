@@ -2,7 +2,7 @@ import { Meta, StoryObj } from '@storybook/react';
 import { CatalogCard } from '../../index';
 
 const meta: Meta<typeof CatalogCard> = {
-  title: 'catalog Card',
+  title: 'Catalog Card',
   component: CatalogCard,
 };
 

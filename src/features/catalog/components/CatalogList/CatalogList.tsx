@@ -33,12 +33,14 @@ type CatalogListProps = {
 
   session: Session | null;
   isFetching: boolean;
+  modalState: () => void;
 };
 
 export function CatalogList({
   catalog,
   isFetching,
   session,
+  modalState,
 }: CatalogListProps) {
   const user = useUser();
   const supabase = useSupabaseClient();
@@ -104,6 +106,7 @@ export function CatalogList({
                   stream={user ? itemRating : null}
                   nfid={item.nfid}
                   priorityImg={index === 0}
+                  modalState={modalState}
                 />
               </li>
             );

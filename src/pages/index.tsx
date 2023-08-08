@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import { space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { Modal } from '@components/Modal/Modal';
 
 const PageContainer = styled.div`
   max-width: 400px;
@@ -42,6 +43,7 @@ export default function Home({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { filters } = useFilters();
   const [loggedIn, setLoggedIn] = React.useState(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
   const supabase = useSupabaseClient();
   let category: string, genre: string;
   const session = useSession();
@@ -76,8 +78,16 @@ export default function Home({
     });
   }, [supabase.auth]);
 
+  function openModal() {
+    if (modalOpen) {
+      return setModalOpen(false);
+    }
+    setModalOpen(true);
+  }
+
   return (
     <PageContainer>
+      {modalOpen && <Modal modalOpen={modalOpen} />}
       <Header isFetching={isFetching} />
       <MainContent>
         <Filters>
@@ -89,6 +99,7 @@ export default function Home({
             catalog={data}
             isFetching={isFetching}
             session={session}
+            modalState={openModal}
           />
         </CatalogContainer>
         <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>

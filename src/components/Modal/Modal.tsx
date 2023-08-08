@@ -1,6 +1,8 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import styled, { keyframes } from 'styled-components';
 import { space } from '@styles/theme';
+import { SignupForm } from '@features/auth';
+import React from 'react';
 
 const overlayShow = keyframes`
   0% {opacity: 0}
@@ -20,7 +22,7 @@ const DialogOverlay = styled(Dialog.Overlay)`
 `;
 
 const Content = styled(Dialog.DialogContent)`
-  width: 90vw;
+  width: 90%;
   max-width: 400px;
   max-height: 85vh;
   background-color: white;
@@ -30,35 +32,19 @@ const Content = styled(Dialog.DialogContent)`
   padding: ${space(4)};
   animation: ${contentShow} 150ms cubic-bezier(0.16, 1, 0.3, 1);
 `;
-export function Modal() {
+export function Modal({ modalOpen }: { modalOpen: boolean }) {
+  const [open, setOpen] = React.useState(modalOpen);
+
+  function openChange() {
+    setOpen(false);
+  }
+
   return (
-    <Dialog.Root open>
-      <Dialog.Trigger asChild>
-        <button>Sign up</button>
-      </Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={openChange}>
       <Dialog.Portal>
         <DialogOverlay />
         <Content>
-          <Dialog.DialogTitle>Sign up</Dialog.DialogTitle>
-          <Dialog.DialogDescription>
-            Make changes to your profile here. Click save when you are done.
-          </Dialog.DialogDescription>
-          <fieldset>
-            <label htmlFor="name">Name</label>
-            <input id="name" defaultValue="Pedro Duarte" />
-          </fieldset>
-          <fieldset>
-            <label htmlFor="username">Username</label>
-            <input id="username" defaultValue="@peduarte" />
-          </fieldset>
-          <Dialog.Close asChild>
-            <button>Save changes</button>
-          </Dialog.Close>
-          <Dialog.Close asChild>
-            <i aria-label="Close">
-              <button>Close</button>
-            </i>
-          </Dialog.Close>
+          <SignupForm />
         </Content>
       </Dialog.Portal>
     </Dialog.Root>

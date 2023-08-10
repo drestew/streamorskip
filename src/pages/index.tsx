@@ -86,27 +86,28 @@ export default function Home({
   }
 
   return (
-    <PageContainer>
-      {modalOpen && <Modal modalOpen={modalOpen} />}
-      <Header isFetching={isFetching} />
-      <MainContent>
-        <Filters>
-          <Category category={filters.category} />
-          <Genre genre={filters.genre} />
-        </Filters>
-        <CatalogContainer>
-          <CatalogList
-            catalog={data}
-            isFetching={isFetching}
-            session={session}
-            modalState={openModal}
-          />
-        </CatalogContainer>
-        <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
-          Loading...
-        </h1>
-      </MainContent>
-    </PageContainer>
+    <h1>Site Under Construction</h1>
+    // <PageContainer>
+    //   {modalOpen && <Modal modalOpen={modalOpen} />}
+    //   <Header isFetching={isFetching} />
+    //   <MainContent>
+    //     <Filters>
+    //       <Category category={filters.category} />
+    //       <Genre genre={filters.genre} />
+    //     </Filters>
+    //     <CatalogContainer>
+    //       <CatalogList
+    //         catalog={data}
+    //         isFetching={isFetching}
+    //         session={session}
+    //         modalState={openModal}
+    //       />
+    //     </CatalogContainer>
+    //     <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
+    //       Loading...
+    //     </h1>
+    //   </MainContent>
+    // </PageContainer>
   );
 }
 

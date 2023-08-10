@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React from 'react';
 import { color, space } from '@styles/theme';
 import menu from '@public/menu.png';
-import Link from 'next/link';
+// import Link from 'next/link';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const MenuContainer = styled.div`
@@ -47,14 +47,14 @@ const MenuItem = styled(Select.Item)`
   }
 `;
 
-const StyledLink = styled(Link)`
-  text-decoration: none;
-  color: ${color('dark', 300)};
-
-  &:hover {
-    color: white;
-  }
-`;
+// const StyledLink = styled(Link)`
+//   text-decoration: none;
+//   color: ${color('dark', 300)};
+//
+//   &:hover {
+//     color: white;
+//   }
+// `;
 
 export function Menu() {
   const supabase = useSupabaseClient();
@@ -82,14 +82,14 @@ export function Menu() {
             <Image src={menu} alt="menu" width={20} height={20} />
           </Select.Value>
         </MenuTrigger>
-        <MenuList position="popper">
+        <MenuList position="popper" alignOffset={-55}>
           <Select.Viewport>
-            <MenuItem value={'profile'}>
-              <StyledLink href="/profile">Profile</StyledLink>
-            </MenuItem>
-            <MenuItem value={'settings'}>
-              <StyledLink href="/settings">Settings</StyledLink>
-            </MenuItem>
+            {/*<MenuItem value={'profile'}>*/}
+            {/*  <StyledLink href="/profile">Profile</StyledLink>*/}
+            {/*</MenuItem>*/}
+            {/*<MenuItem value={'settings'}>*/}
+            {/*  <StyledLink href="/settings">Settings</StyledLink>*/}
+            {/*</MenuItem>*/}
             <MenuItem value={'logout'}>Logout</MenuItem>
           </Select.Viewport>
         </MenuList>

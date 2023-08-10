@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/react';
-import { Genre } from './genre';
+import { Genre } from './Genre';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();

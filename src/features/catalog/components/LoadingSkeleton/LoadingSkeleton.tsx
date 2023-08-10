@@ -3,8 +3,6 @@ import { color, space } from '@styles/theme';
 
 const CardContainer = styled.div`
   margin: ${space(4)} auto;
-  padding-left: ${space(4)};
-  padding-right: ${space(4)};
 
   * {
     border-radius: 3px;
@@ -83,7 +81,7 @@ const ThumbIcon = styled.div`
   height: 50px;
 `;
 
-export default function LoadingSkeleton() {
+export function LoadingSkeleton() {
   return (
     <CardContainer>
       <Card>

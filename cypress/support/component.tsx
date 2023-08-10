@@ -12,6 +12,9 @@
 // You can read more here:
 // https://on.cypress.io/configuration
 // ***********************************************************
+import { theme } from '@styles/theme';
+import { ThemeProvider } from 'styled-components';
+import { GlobalStyle } from '@styles/global-style';
 
 // Import commands.js using ES2015 syntax:
 import './commands';
@@ -20,6 +23,8 @@ import './commands';
 // require('./commands')
 
 import { mount } from 'cypress/react18';
+import React from 'react';
+import { MountReturn } from 'cypress/react';
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -29,12 +34,24 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
-      mount: typeof mount;
+      /**
+       * Mounts a React node
+       * @param component React Node to mount
+       */
+      mount(component: React.ReactNode): Cypress.Chainable<MountReturn>;
     }
   }
 }
 
-Cypress.Commands.add('mount', mount);
+Cypress.Commands.add('mount', (component) => {
+  const wrapper = (
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      {component}
+    </ThemeProvider>
+  );
+  return mount(wrapper);
+});
 
 // Example use:
 // cy.mount(<MyComponent />)

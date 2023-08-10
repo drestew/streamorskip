@@ -1,9 +1,9 @@
 import * as Select from '@radix-ui/react-select';
 import styled from 'styled-components';
-import { useGenreList } from '@features/genre/getGenreList';
+import { useGenreList } from '@features/filters/api/getGenreList';
 import { color, space } from '@styles/theme';
 import React from 'react';
-import { ContentFilters, useFilters } from '../../hooks/useFilter';
+import { ContentFilters, useFilters } from '@features/filters';
 import chevron_up from '@public/chevron_up.svg';
 import chevron_down from '@public/chevron_down.svg';
 import Image from 'next/image';

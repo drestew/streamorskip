@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/react';
-import { Category } from './category';
+import { Category } from './Category';
 
 const meta: Meta<typeof Category> = {
   title: 'Category',

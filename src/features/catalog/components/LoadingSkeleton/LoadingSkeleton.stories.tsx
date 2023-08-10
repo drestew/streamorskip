@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/react';
-import LoadingSkeleton from './loading-skeleton';
+import { LoadingSkeleton } from './LoadingSkeleton';
 
 const meta: Meta<typeof LoadingSkeleton> = {
   title: 'Loading Skeleton',

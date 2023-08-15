@@ -64,11 +64,22 @@ export function Search() {
     getTitles();
   }, [titles]);
 
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setSearchText(event.target.value);
+    const titleOptions = titles.filter((title) => {
+      const titleLCase = title.toLowerCase();
+      return (
+        titleLCase.startsWith(event.target.value) ||
+        titleLCase.includes(event.target.value)
+      );
+    });
+  }
+
   return (
     <>
       <Input
         value={searchText}
-        onChange={(event) => setSearchText(event.target.value)}
+        onChange={(event) => handleChange(event)}
         placeholder="Search"
       />
       <Select.Root open={searchText !== ''}>

@@ -1,5 +1,6 @@
 import { Meta, StoryObj } from '@storybook/react';
 import { Search } from '@features/search/Search';
+import { within, userEvent } from '@storybook/testing-library';
 
 const meta: Meta<typeof Search> = {
   title: 'Search',
@@ -10,3 +11,11 @@ export default meta;
 type Story = StoryObj<typeof Search>;
 
 export const Default: Story = {};
+
+export const WithText: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const searchInput = await canvas.getByRole('search');
+    await userEvent.type(searchInput, 'the last dance', { delay: 200 });
+  },
+};

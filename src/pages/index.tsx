@@ -11,12 +11,17 @@ import { space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Modal } from '@components/Modal/Modal';
+import { Search } from '@features/filters/components/Search/Search';
 
 const PageContainer = styled.div`
   max-width: 400px;
   margin: auto;
   padding: ${space(3)};
   border: red 1px solid;
+`;
+
+const SearchContainer = styled.div`
+  margin-bottom: ${space(6)};
 `;
 
 const MainContent = styled.main`
@@ -86,28 +91,28 @@ export default function Home({
   }
 
   return (
-    <h1>Site Under Construction</h1>
-    // <PageContainer>
-    //   {modalOpen && <Modal modalOpen={modalOpen} />}
-    //   <Header isFetching={isFetching} />
-    //   <MainContent>
-    //     <Filters>
-    //       <Category category={filters.category} />
-    //       <Genre genre={filters.genre} />
-    //     </Filters>
-    //     <CatalogContainer>
-    //       <CatalogList
-    //         catalog={data}
-    //         isFetching={isFetching}
-    //         session={session}
-    //         modalState={openModal}
-    //       />
-    //     </CatalogContainer>
-    //     <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
-    //       Loading...
-    //     </h1>
-    //   </MainContent>
-    // </PageContainer>
+    <PageContainer>
+      {modalOpen && <Modal modalOpen={modalOpen} />}
+      <Header isFetching={isFetching} />
+      <MainContent>
+        <SearchContainer>{<Search />}</SearchContainer>
+        <Filters>
+          <Category category={filters.category} />
+          <Genre genre={filters.genre} />
+        </Filters>
+        <CatalogContainer>
+          <CatalogList
+            catalog={data}
+            isFetching={isFetching}
+            session={session}
+            modalState={openModal}
+          />
+        </CatalogContainer>
+        <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
+          Loading...
+        </h1>
+      </MainContent>
+    </PageContainer>
   );
 }
 

@@ -28,6 +28,7 @@
     "@tanstack/react-query-devtools": "^4.26.1",
     "@types/lodash": "^4.14.191",
     "bottleneck": "^2.19.5",
+    "cmdk": "^0.2.0",
     "entities": "^4.4.0",
     "eslint": "8.22.0",
     "eslint-config-next": "13.1.1",

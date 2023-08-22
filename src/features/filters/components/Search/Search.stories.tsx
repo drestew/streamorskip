@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/react';
-import { Search } from '@features/search/Search';
+import { Search } from '@features/filters/components/Search/Search';
 import { within, userEvent } from '@storybook/testing-library';
 
 const meta: Meta<typeof Search> = {

@@ -43,7 +43,7 @@ export default inngest.createFunction(
         return addImdbIdsToDB(getImdbIds);
       });
 
-      // search items ran separately than db items to fix function timeout error in vercel
+      // Search items ran separately than db items to fix function timeout error in vercel
       const fetchRatingForTitleSearchItem = await step.run(
         'fetch rating for title search item',
         () => {

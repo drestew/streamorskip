@@ -6,6 +6,8 @@ import Image from 'next/image';
 import search from '@public/search.png';
 import close from '@public/close.png';
 import { Command } from 'cmdk';
+import { useFilters } from '@features/filters';
+import { useRouter } from 'next/router';
 
 type SearchItem = {
   title: string;
@@ -79,6 +81,8 @@ export function Search() {
     (JSX.Element | undefined)[]
   >([]);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const { handleFilters } = useFilters();
+  const router = useRouter();
 
   React.useEffect(() => {
     const titleCountDB = async () => {
@@ -140,6 +144,7 @@ export function Search() {
       if (index > 5) return;
 
       function handleSelectedValue(selectedValue: string) {
+        handleFilters({ search: selectedValue });
         const value = titleOptions.find(
           (itemOption) => selectedValue === itemOption.title.toLowerCase()
         );
@@ -163,6 +168,9 @@ export function Search() {
 
   function clearSearchText() {
     setSearchText('');
+    const query = { ...router.query };
+    delete query.search;
+    router.push({ pathname: router.pathname, query });
   }
 
   return (
@@ -189,7 +197,7 @@ export function Search() {
         <SearchIcon
           src={search}
           alt="search content"
-          width={22}
+          width={18}
           height={18}
           onClick={clearSearchText}
         />

@@ -50,7 +50,7 @@ export default function Home({
   const [loggedIn, setLoggedIn] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const supabase = useSupabaseClient();
-  let category: string, genre: string;
+  let category: string, genre: string, search: string;
   const session = useSession();
 
   if (filters.category) {
@@ -59,10 +59,19 @@ export default function Home({
   if (filters.genre) {
     genre = filters.genre;
   }
-  const { data, fetchNextPage, isFetching } = useInfiniteQuery({
-    queryKey: ['catalog-default', filters.category, filters.genre, loggedIn],
+  if (filters.search) {
+    search = filters.search;
+  }
+  const { data, fetchNextPage, isFetching, hasNextPage } = useInfiniteQuery({
+    queryKey: [
+      'catalog-default',
+      filters.category,
+      filters.genre,
+      filters.search,
+      loggedIn,
+    ],
     queryFn: ({ pageParam }) =>
-      getCatalog({ pageParam: pageParam }, category, genre),
+      getCatalog({ pageParam: pageParam }, category, genre, search),
     getNextPageParam: (lastPage) => lastPage.step,
     placeholderData: { pages: [catalog], pageParams: [] },
     refetchOnWindowFocus: false,
@@ -71,10 +80,10 @@ export default function Home({
   const { ref, inView } = useInView();
 
   React.useEffect(() => {
-    if (inView) {
+    if (inView && hasNextPage) {
       fetchNextPage();
     }
-  }, [inView, fetchNextPage]);
+  }, [inView, fetchNextPage, hasNextPage]);
 
   React.useEffect(() => {
     supabase.auth.onAuthStateChange((event) => {
@@ -108,16 +117,19 @@ export default function Home({
             modalState={openModal}
           />
         </CatalogContainer>
-        <h1 ref={ref} style={{ color: 'white', margin: 'auto' }}>
-          Loading...
-        </h1>
+        <div ref={ref}></div>
       </MainContent>
     </PageContainer>
   );
 }
 
 export const getStaticProps = async () => {
-  const catalog = await getCatalog({ pageParam: 11 }, 'movie', 'All Genres');
+  const catalog = await getCatalog(
+    { pageParam: 11 },
+    'movie',
+    'All Genres',
+    ''
+  );
 
   return { props: { catalog } };
 };

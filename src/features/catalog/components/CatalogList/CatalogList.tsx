@@ -27,7 +27,7 @@ type CatalogListProps = {
               on_Nflix: boolean;
             }[]
           | null;
-        step: number;
+        step: number | null;
       }>
     | undefined;
 

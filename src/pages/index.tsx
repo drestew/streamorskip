@@ -1,6 +1,5 @@
 import { CatalogList, getCatalog } from '@features/catalog';
-import { InferGetStaticPropsType } from 'next';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { Category } from '@features/filters';
 import { useFilters } from '@features/filters';
 import { useInView } from 'react-intersection-observer';
@@ -33,8 +32,9 @@ const MainContent = styled.main`
 
 const CatalogContainer = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  max-width: 400px;
+  width: 100%;
   margin: auto;
 `;
 
@@ -43,15 +43,14 @@ const Filters = styled.div`
   justify-content: space-between;
 `;
 
-export default function Home({
-  catalog,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Home() {
   const { filters } = useFilters();
   const [loggedIn, setLoggedIn] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const supabase = useSupabaseClient();
   let category: string, genre: string, search: string;
   const session = useSession();
+  const queryClient = useQueryClient();
 
   if (filters.category) {
     category = filters.category;
@@ -62,20 +61,27 @@ export default function Home({
   if (filters.search) {
     search = filters.search;
   }
-  const { data, fetchNextPage, isFetching, hasNextPage } = useInfiniteQuery({
-    queryKey: [
-      'catalog-default',
-      filters.category,
-      filters.genre,
-      filters.search,
-      loggedIn,
-    ],
-    queryFn: ({ pageParam }) =>
-      getCatalog({ pageParam: pageParam }, category, genre, search),
-    getNextPageParam: (lastPage) => lastPage.step,
-    placeholderData: { pages: [catalog], pageParams: [] },
-    refetchOnWindowFocus: false,
-  });
+
+  const { data, fetchNextPage, isFetching, hasNextPage, status } =
+    useInfiniteQuery({
+      queryKey: [
+        'catalog-default',
+        filters.category,
+        filters.genre,
+        filters.search,
+        loggedIn,
+      ],
+      queryFn: ({ pageParam }) =>
+        getCatalog(
+          { pageParam: pageParam },
+          category,
+          genre,
+          search,
+          hasNextPage
+        ),
+      getNextPageParam: (lastPage) => lastPage.step,
+      refetchOnWindowFocus: false,
+    }) as any;
 
   const { ref, inView } = useInView();
 
@@ -83,7 +89,18 @@ export default function Home({
     if (inView && hasNextPage) {
       fetchNextPage();
     }
-  }, [inView, fetchNextPage, hasNextPage]);
+  }, [inView]);
+
+  React.useEffect(() => {
+    // to not duplicate search result in catalogList
+    queryClient.resetQueries([
+      'catalog-default',
+      filters.category,
+      filters.genre,
+      filters.search,
+      loggedIn,
+    ]);
+  }, [filters.search]);
 
   React.useEffect(() => {
     supabase.auth.onAuthStateChange((event) => {
@@ -102,7 +119,7 @@ export default function Home({
   return (
     <PageContainer>
       {modalOpen && <Modal modalOpen={modalOpen} />}
-      <Header isFetching={isFetching} />
+      <Header />
       <MainContent>
         <SearchContainer>{<Search />}</SearchContainer>
         <Filters>
@@ -113,6 +130,7 @@ export default function Home({
           <CatalogList
             catalog={data}
             isFetching={isFetching}
+            status={status}
             session={session}
             modalState={openModal}
           />
@@ -122,14 +140,3 @@ export default function Home({
     </PageContainer>
   );
 }
-
-export const getStaticProps = async () => {
-  const catalog = await getCatalog(
-    { pageParam: 11 },
-    'movie',
-    'All Genres',
-    ''
-  );
-
-  return { props: { catalog } };
-};

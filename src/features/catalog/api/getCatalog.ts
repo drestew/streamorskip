@@ -22,13 +22,14 @@ export async function getCatalog(
   { pageParam = 0 },
   category: string,
   genre: string,
-  search: string
+  search: string,
+  hasNextPage: boolean
 ) {
   const step = pageParam + 10;
   const nfidSet = await searchGenre(genre);
   let filteredData;
 
-  if (search) {
+  if (search && !hasNextPage) {
     const { data, error } = await supabaseClient
       .from('catalog')
       .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
@@ -44,7 +45,9 @@ export async function getCatalog(
         details: error.details,
       });
     }
-  } else {
+  }
+
+  if (nfidSet.length > 0 && !search) {
     const { data, error } = await supabaseClient
       .from('catalog')
       .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
@@ -62,25 +65,25 @@ export async function getCatalog(
         details: error.details,
       });
     }
+  }
 
-    // display all titles if no genre is selected
-    if (data?.length === 0) {
-      const { data, error } = await supabaseClient
-        .from('catalog')
-        .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
-        .is('on_Nflix', true)
-        .neq('rating', 0)
-        .eq('vtype', category)
-        .range(pageParam, step);
+  // to not add unfiltered catalog at the end of the filtered results
+  if (!search && nfidSet.length === 0) {
+    const { data, error } = await supabaseClient
+      .from('catalog')
+      .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
+      .is('on_Nflix', true)
+      .neq('rating', 0)
+      .eq('vtype', category)
+      .range(pageParam, step);
 
-      filteredData = data;
+    filteredData = data;
 
-      if (error) {
-        console.log('Error: get catalog all titles', {
-          message: error.message,
-          details: error.details,
-        });
-      }
+    if (error) {
+      console.log('Error: get catalog all titles', {
+        message: error.message,
+        details: error.details,
+      });
     }
   }
 

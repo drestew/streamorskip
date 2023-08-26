@@ -34,11 +34,13 @@ type CatalogListProps = {
   session: Session | null;
   isFetching: boolean;
   modalState: () => void;
+  status: string;
 };
 
 export function CatalogList({
   catalog,
   isFetching,
+  status,
   session,
   modalState,
 }: CatalogListProps) {
@@ -91,7 +93,7 @@ export function CatalogList({
 
   return (
     <List role="list">
-      {isFetching && <List>{loadingSkeletonArr}</List>}
+      {status === 'loading' && <List>{loadingSkeletonArr}</List>}
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
           {group.filteredData?.map((item, index) => {
@@ -111,7 +113,11 @@ export function CatalogList({
               </li>
             );
           })}
-          {isFetching && <List>{loadingSkeletonArr}</List>}
+          {/* only display loadingSkeleton if at the end of infinite scroll,
+          pageParams will be greater than 1 if there is more data to show */}
+          {isFetching && catalog?.pageParams?.length !== 1 && (
+            <List>{loadingSkeletonArr}</List>
+          )}
         </React.Fragment>
       ))}
     </List>

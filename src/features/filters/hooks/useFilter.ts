@@ -11,7 +11,7 @@ export function useFilters() {
 
   const filters = {
     category: !router.query.category ? 'movie' : router.query.category,
-    genre: !router.query.genre ? '' : router.query.genre,
+    genre: !router.query.genre ? 'All Genres' : router.query.genre,
     search: router.query.search,
   } as ContentFilters;
 

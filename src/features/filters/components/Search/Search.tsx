@@ -173,6 +173,29 @@ export function Search() {
     router.push({ pathname: router.pathname, query });
   }
 
+  // need separate useEffects for search and genre dependencies since
+  // they function the opposite of one another
+  React.useEffect(() => {
+    if (!router.query.search) {
+      setSearchText('');
+    }
+  }, [router.query.search]);
+
+  React.useEffect(() => {
+    if (router.query.search) {
+      const query = { ...router.query };
+      delete query.search;
+      router.push({ pathname: router.pathname, query });
+    }
+  }, [router.query.genre]);
+
+  React.useEffect(() => {
+    setSearchText('');
+    const query = { ...router.query };
+    delete query.search;
+    router.push({ pathname: router.pathname, query });
+  }, [router.query.category]);
+
   return (
     <Container>
       <StyledCommand label="searchbar" shouldFilter={false}>

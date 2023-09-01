@@ -5,9 +5,13 @@ import { supabaseClient } from '@utils/supabase-client';
 import Image from 'next/image';
 import search from '@public/search.png';
 import close from '@public/close.png';
-import { Command } from 'cmdk';
 import { useFilters } from '@features/filters';
 import { useRouter } from 'next/router';
+import {
+  useCombobox,
+  UseComboboxState,
+  UseComboboxStateChangeOptions,
+} from 'downshift';
 
 type SearchItem = {
   title: string;
@@ -17,19 +21,20 @@ type SearchItem = {
 
 const Container = styled.div`
   position: relative;
-`;
-
-const StyledCommand = styled(Command)`
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  width: 100%;
 `;
 
-const Input = styled(Command.Input)`
+const Input = styled.input`
   padding: ${space(1)};
   background-color: white;
   border-radius: 5px;
   border: none;
+`;
+
+const Label = styled.label`
+  position: absolute !important;
+  clip-path: inSet(100%);
 `;
 
 const IconContainer = styled.div`
@@ -56,16 +61,18 @@ const CloseIcon = styled(Image)`
   background-color: white;
 `;
 
-const List = styled(Command.List)`
+const List = styled.ul`
+  list-style: none;
   z-index: 2;
   background-color: white;
   border: solid 1px ${color('primary', 500)};
   position: absolute;
   top: 2.1rem;
   width: 100%;
+  padding: 0;
 `;
 
-const Item = styled(Command.Item)`
+const Item = styled.li`
   cursor: pointer;
   padding: ${space(1)} ${space(2)};
   &:hover {
@@ -75,14 +82,13 @@ const Item = styled(Command.Item)`
 `;
 
 export function Search() {
-  const [searchText, setSearchText] = React.useState('');
   const [titles, setTitles] = React.useState<SearchItem[]>([]);
   const [searchResults, setSearchResults] = React.useState<
-    (JSX.Element | undefined)[]
+    (SearchItem | undefined)[]
   >([]);
-  const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const { handleFilters } = useFilters();
   const router = useRouter();
+  let titleOptions: SearchItem[] = [];
 
   React.useEffect(() => {
     const titleCountDB = async () => {
@@ -130,44 +136,8 @@ export function Search() {
     getTitles();
   }, []);
 
-  function handleValueChange(value: string) {
-    setSearchText(value);
-    setDropdownOpen(true);
-    const titleOptions = titles.filter((content) => {
-      const titleLCase = content.title.toLowerCase();
-      return (
-        titleLCase.startsWith(value.toLowerCase()) ||
-        titleLCase.includes(value.toLowerCase())
-      );
-    });
-    const searchResult = titleOptions.map((result, index) => {
-      if (index > 5) return;
-
-      function handleSelectedValue(selectedValue: string) {
-        handleFilters({ search: selectedValue });
-        const value = titleOptions.find(
-          (itemOption) => selectedValue === itemOption.title.toLowerCase()
-        );
-        if (value) {
-          setSearchText(value?.title);
-          setDropdownOpen(false);
-        }
-      }
-      return (
-        <Item
-          key={result.nfid}
-          value={result.title}
-          onSelect={(selectedValue) => handleSelectedValue(selectedValue)}
-        >
-          {result.title}
-        </Item>
-      );
-    });
-    setSearchResults(searchResult.slice(0, 5));
-  }
-
   function clearSearchText() {
-    setSearchText('');
+    selectItem(null);
     const query = { ...router.query };
     delete query.search;
     router.push({ pathname: router.pathname, query });
@@ -177,7 +147,7 @@ export function Search() {
   // they function the opposite of one another
   React.useEffect(() => {
     if (!router.query.search) {
-      setSearchText('');
+      selectItem(null);
     }
   }, [router.query.search]);
 
@@ -190,31 +160,88 @@ export function Search() {
   }, [router.query.genre]);
 
   React.useEffect(() => {
-    setSearchText('');
+    selectItem(null);
     const query = { ...router.query };
     delete query.search;
     router.push({ pathname: router.pathname, query });
   }, [router.query.category]);
 
+  const {
+    isOpen,
+    getLabelProps,
+    getMenuProps,
+    getInputProps,
+    getItemProps,
+    selectItem,
+    inputValue,
+  } = useCombobox<SearchItem | undefined>({
+    items: searchResults,
+    itemToString: (item) => (item ? item.title : ''),
+    onInputValueChange: ({ inputValue: newInputValue }) => {
+      if (newInputValue) {
+        titleOptions = titles.filter((content) => {
+          const titleLCase = content.title.toLowerCase();
+          return (
+            titleLCase.startsWith(inputValue.toLowerCase()) ||
+            titleLCase.includes(inputValue.toLowerCase())
+          );
+        });
+        const searchResult = titleOptions.map((item, index) => {
+          if (index > 5) return;
+
+          return { title: item.title, nfid: item.nfid, rating: item.rating };
+        });
+        setSearchResults(searchResult);
+      }
+    },
+    onSelectedItemChange: ({ selectedItem }) => {
+      handleFilters({ search: selectedItem?.title });
+    },
+    stateReducer,
+  });
+
+  function stateReducer(
+    state: UseComboboxState<SearchItem | undefined>,
+    actionAndChanges: UseComboboxStateChangeOptions<SearchItem | undefined>
+  ) {
+    const { changes } = actionAndChanges;
+    if (
+      changes.inputValue === '' &&
+      (state.inputValue !== '' || useCombobox.stateChangeTypes.InputClick)
+    ) {
+      return {
+        ...changes,
+        isOpen: false,
+      };
+    }
+    return changes;
+  }
+
   return (
     <Container>
-      <StyledCommand label="searchbar" shouldFilter={false}>
-        <Input
-          value={searchText}
-          onValueChange={handleValueChange}
-          placeholder="Search for a movie or series..."
-          role="search"
-          data-cy="searchbar"
-        />
-        {searchText !== '' && dropdownOpen && (
-          <List>
-            <Command.Empty>No results found.</Command.Empty>
-            {searchResults}
-          </List>
-        )}
-      </StyledCommand>
+      <Label {...getLabelProps()} htmlFor="searchbar">
+        <span aria-hidden="true">Search for a movie or series.</span>
+      </Label>
+      <Input
+        {...getInputProps()}
+        placeholder="Search for a movie or series..."
+        id="searchbar"
+      />
+      <List {...getMenuProps()}>
+        {isOpen &&
+          searchResults
+            .map((item, index) => {
+              if (index > 5) return;
+              return (
+                <Item key={item?.nfid} {...getItemProps({ item, index })}>
+                  {item?.title}
+                </Item>
+              );
+            })
+            .filter((item) => item)}
+      </List>
       <IconContainer>
-        {searchText !== '' && (
+        {inputValue && (
           <CloseIcon src={close} alt="clear search" onClick={clearSearchText} />
         )}
         <SearchIcon

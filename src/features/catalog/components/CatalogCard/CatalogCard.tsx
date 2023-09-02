@@ -67,7 +67,6 @@ const Title = styled.h4`
 
 const Poster = styled.div<{ truncateSynopsis: boolean }>`
   grid-area: poster;
-  display: grid;
   width: ${space(20)};
   position: relative;
   margin-right: ${space(3)};
@@ -76,11 +75,11 @@ const Poster = styled.div<{ truncateSynopsis: boolean }>`
     if (!props.truncateSynopsis) {
       return css`
         & > * {
-          padding-bottom: 100%;
+          //padding-bottom: 100%;
         }
       `;
     }
-  }}
+  }};
 `;
 
 const SynopsisContainer = styled.div`
@@ -223,8 +222,10 @@ export function CatalogCard(props: CardProps) {
           <Image
             src={img}
             alt="Content Poster"
-            fill
-            style={{ objectFit: 'contain' }}
+            //fill
+            //style={{ objectFit: 'contain' }}
+            width="80"
+            height="110"
             sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"
             priority={priorityImg}
           />

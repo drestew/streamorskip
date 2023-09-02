@@ -15,7 +15,7 @@ import { Search } from '@features/filters/components/Search/Search';
 const PageContainer = styled.div`
   max-width: 400px;
   margin: auto;
-  padding: ${space(3)};
+  padding: ${space(3)} ${space(4)};
   border: red 1px solid;
 `;
 
@@ -26,8 +26,6 @@ const SearchContainer = styled.div`
 const MainContent = styled.main`
   display: flex;
   flex-direction: column;
-  padding-left: ${space(4)};
-  padding-right: ${space(4)};
 `;
 
 const CatalogContainer = styled.div`
@@ -72,16 +70,10 @@ export default function Home() {
         loggedIn,
       ],
       queryFn: ({ pageParam }) =>
-        getCatalog(
-          { pageParam: pageParam },
-          category,
-          genre,
-          search,
-          hasNextPage
-        ),
+        getCatalog({ pageParam: pageParam }, category, genre, search),
       getNextPageParam: (lastPage) => lastPage.step,
       refetchOnWindowFocus: false,
-    }) as any;
+    });
 
   const { ref, inView } = useInView();
 

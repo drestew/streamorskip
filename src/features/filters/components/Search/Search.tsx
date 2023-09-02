@@ -41,24 +41,31 @@ const IconContainer = styled.div`
   background-color: ${color('primary', 300)};
   display: flex;
   align-items: center;
-  padding: 0.45rem ${space(3)};
+  justify-content: center;
   border-radius: 0 5px 5px 0;
   position: absolute;
   top: 0;
   right: -1px;
+  width: 2.5rem;
+  height: 100%;
+  cursor: pointer;
 `;
 
-const SearchIcon = styled(Image)`
+const SearchIcon = styled.button`
+  background-color: ${color('primary', 300)};
+  border-style: none;
   align-self: center;
   cursor: pointer;
   position: relative;
 `;
 
-const CloseIcon = styled(Image)`
+const CloseIcon = styled.button`
   position: absolute;
   left: -40px;
   cursor: pointer;
+  border-style: none;
   background-color: white;
+  padding-right: 5px;
 `;
 
 const List = styled.ul`
@@ -148,13 +155,14 @@ export function Search() {
   React.useEffect(() => {
     if (!router.query.search) {
       selectItem(null);
+      delete router.query.search;
     }
   }, [router.query.search]);
 
   React.useEffect(() => {
     if (router.query.search) {
       const query = { ...router.query };
-      delete query.search;
+      delete router.query.search;
       router.push({ pathname: router.pathname, query });
     }
   }, [router.query.genre]);
@@ -175,6 +183,7 @@ export function Search() {
     selectItem,
     inputValue,
   } = useCombobox<SearchItem | undefined>({
+    stateReducer,
     items: searchResults,
     itemToString: (item) => (item ? item.title : ''),
     onInputValueChange: ({ inputValue: newInputValue }) => {
@@ -197,14 +206,13 @@ export function Search() {
     onSelectedItemChange: ({ selectedItem }) => {
       handleFilters({ search: selectedItem?.title });
     },
-    stateReducer,
   });
 
   function stateReducer(
     state: UseComboboxState<SearchItem | undefined>,
     actionAndChanges: UseComboboxStateChangeOptions<SearchItem | undefined>
   ) {
-    const { changes } = actionAndChanges;
+    const { type, changes } = actionAndChanges;
     if (
       changes.inputValue === '' &&
       (state.inputValue !== '' || useCombobox.stateChangeTypes.InputClick)
@@ -213,6 +221,9 @@ export function Search() {
         ...changes,
         isOpen: false,
       };
+    }
+    if (type === useCombobox.stateChangeTypes.InputKeyDownEnter) {
+      handleFilters({ search: inputValue });
     }
     return changes;
   }
@@ -242,15 +253,13 @@ export function Search() {
       </List>
       <IconContainer>
         {inputValue && (
-          <CloseIcon src={close} alt="clear search" onClick={clearSearchText} />
+          <CloseIcon onClick={clearSearchText}>
+            <Image src={close} alt="clear search" />
+          </CloseIcon>
         )}
-        <SearchIcon
-          src={search}
-          alt="search content"
-          width={18}
-          height={18}
-          onClick={clearSearchText}
-        />
+        <SearchIcon onClick={() => handleFilters({ search: inputValue })}>
+          <Image src={search} alt="search content" width={18} height={18} />
+        </SearchIcon>
       </IconContainer>
     </Container>
   );

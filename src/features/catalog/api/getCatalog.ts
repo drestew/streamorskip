@@ -22,20 +22,20 @@ export async function getCatalog(
   { pageParam = 0 },
   category: string,
   genre: string,
-  search: string,
-  hasNextPage: boolean
+  search: string
 ) {
   const step = pageParam + 10;
   const nfidSet = await searchGenre(genre);
   let filteredData;
 
-  if (search && !hasNextPage) {
+  if (search) {
     const { data, error } = await supabaseClient
       .from('catalog')
       .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
       .is('on_Nflix', true)
       .neq('rating', 0)
-      .ilike('title', `%${search}%`);
+      .ilike('title', `%${search}%`)
+      .range(pageParam, step);
 
     filteredData = data;
 
@@ -88,7 +88,7 @@ export async function getCatalog(
   }
 
   return {
-    filteredData,
+    filteredData: filteredData || null,
     step: filteredData && filteredData.length > 0 ? step + 1 : null,
   };
 }

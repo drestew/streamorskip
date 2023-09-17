@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { color, space } from '@styles/theme';
 import React from 'react';
 import { supabaseClient } from '@utils/supabase-client';
@@ -68,15 +68,22 @@ const CloseIcon = styled.button`
   padding-right: 5px;
 `;
 
-const List = styled.ul`
+const List = styled.ul<{ isOpen: boolean }>`
   list-style: none;
   z-index: 2;
   background-color: white;
-  border: solid 1px ${color('primary', 500)};
   position: absolute;
   top: 2.1rem;
   width: 100%;
   padding: 0;
+
+  ${(props) => {
+    if (props.isOpen) {
+      return css`
+        border: solid 1px ${color('primary', 300)};
+      `;
+    }
+  }}
 `;
 
 const Item = styled.li`
@@ -191,8 +198,8 @@ export function Search() {
         titleOptions = titles.filter((content) => {
           const titleLCase = content.title.toLowerCase();
           return (
-            titleLCase.startsWith(inputValue.toLowerCase()) ||
-            titleLCase.includes(inputValue.toLowerCase())
+            titleLCase.startsWith(newInputValue.toLowerCase()) ||
+            titleLCase.includes(newInputValue.toLowerCase())
           );
         });
         const searchResult = titleOptions.map((item, index) => {
@@ -237,8 +244,9 @@ export function Search() {
         {...getInputProps()}
         placeholder="Search for a movie or series..."
         id="searchbar"
+        data-cy="search-input"
       />
-      <List {...getMenuProps()}>
+      <List {...getMenuProps()} data-cy="search-dropdown" isOpen={isOpen}>
         {isOpen &&
           searchResults
             .map((item, index) => {
@@ -253,11 +261,14 @@ export function Search() {
       </List>
       <IconContainer>
         {inputValue && (
-          <CloseIcon onClick={clearSearchText}>
+          <CloseIcon onClick={clearSearchText} data-cy="clear-search">
             <Image src={close} alt="clear search" />
           </CloseIcon>
         )}
-        <SearchIcon onClick={() => handleFilters({ search: inputValue })}>
+        <SearchIcon
+          onClick={() => handleFilters({ search: inputValue })}
+          data-cy="search-icon"
+        >
           <Image src={search} alt="search content" width={18} height={18} />
         </SearchIcon>
       </IconContainer>

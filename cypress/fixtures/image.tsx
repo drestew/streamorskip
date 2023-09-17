@@ -33,7 +33,6 @@ const Image = (props: ImageProps) => {
     imageSize = '15px';
   }
 
-  console.log(props);
   return (
     <img
       src={convertURL(src)}

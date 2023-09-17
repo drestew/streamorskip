@@ -19,10 +19,7 @@ const StyledLink = styled(Link)`
   color: white;
 `;
 
-type HeaderProps = {
-  isFetching: boolean;
-};
-export function Header({ isFetching }: HeaderProps) {
+export function Header() {
   const user = useUser();
 
   return (
@@ -37,7 +34,7 @@ export function Header({ isFetching }: HeaderProps) {
           priority
         />
       </Link>
-      {!user && !isFetching ? (
+      {!user ? (
         <StyledLink href="/login">
           <Button color="secondary" shade={300} size="sm" role="link">
             Log In

@@ -25,6 +25,8 @@ import './commands';
 import { mount } from 'cypress/react18';
 import React from 'react';
 import { MountReturn } from 'cypress/react';
+import { createMockRouter } from '../../test-utils/createMockRouter';
+import { RouterContext } from 'next/dist/shared/lib/router-context';
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -47,7 +49,9 @@ Cypress.Commands.add('mount', (component) => {
   const wrapper = (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
-      {component}
+      <RouterContext.Provider value={createMockRouter({})}>
+        {component}
+      </RouterContext.Provider>
     </ThemeProvider>
   );
   return mount(wrapper);

@@ -21,38 +21,57 @@ async function searchGenre(genre: string) {
 export async function getCatalog(
   { pageParam = 0 },
   category: string,
-  genre: string
+  genre: string,
+  search: string
 ) {
   const step = pageParam + 10;
   const nfidSet = await searchGenre(genre);
   let filteredData;
 
-  const { data, error } = await supabaseClient
-    .from('catalog')
-    .select(
-      'nfid, title, img, synopsis, rating, vtype, on_Nflix, catalog_genre!inner(genre)'
-    )
-    .is('on_Nflix', true)
-    .neq('rating', 0)
-    .eq('vtype', category)
-    .in('nfid', nfidSet)
-    .range(pageParam, step);
-
-  filteredData = data;
-
-  if (error) {
-    console.log('Error:', {
-      message: error.message,
-      details: error.details,
-    });
-  }
-
-  if (data?.length === 0) {
+  if (search) {
     const { data, error } = await supabaseClient
       .from('catalog')
-      .select(
-        'nfid, title, img, synopsis, rating, vtype, on_Nflix, catalog_genre!inner(genre)'
-      )
+      .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
+      .is('on_Nflix', true)
+      .neq('rating', 0)
+      .ilike('title', `%${search}%`)
+      .range(pageParam, step);
+
+    filteredData = data;
+
+    if (error) {
+      console.log('Error:', {
+        message: error.message,
+        details: error.details,
+      });
+    }
+  }
+
+  if (nfidSet.length > 0 && !search) {
+    const { data, error } = await supabaseClient
+      .from('catalog')
+      .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
+      .is('on_Nflix', true)
+      .neq('rating', 0)
+      .eq('vtype', category)
+      .in('nfid', nfidSet)
+      .range(pageParam, step);
+
+    filteredData = data;
+
+    if (error) {
+      console.log('Error: filter catalog genre', {
+        message: error.message,
+        details: error.details,
+      });
+    }
+  }
+
+  // to not add unfiltered catalog at the end of the filtered results
+  if (!search && nfidSet.length === 0) {
+    const { data, error } = await supabaseClient
+      .from('catalog')
+      .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
       .is('on_Nflix', true)
       .neq('rating', 0)
       .eq('vtype', category)
@@ -61,12 +80,15 @@ export async function getCatalog(
     filteredData = data;
 
     if (error) {
-      console.log('Error: getCala', {
+      console.log('Error: get catalog all titles', {
         message: error.message,
         details: error.details,
       });
     }
   }
 
-  return { filteredData, step: step + 1 };
+  return {
+    filteredData: filteredData || null,
+    step: filteredData && filteredData.length > 0 ? step + 1 : null,
+  };
 }

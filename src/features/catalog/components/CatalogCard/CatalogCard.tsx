@@ -50,8 +50,9 @@ const Card = styled.div`
     'poster title title'
     'poster synopsis synopsis '
     'poster stream stream'
-    'poster skip skip';
-    'icon icon icon';
+    'poster skip skip'
+    'icon icon icon'
+    'mylist mylist mylist';
   border-radius: ${space(2)};
 
   .rating-text {
@@ -146,6 +147,20 @@ const IconContainer = styled.div`
   align-items: center;
   padding: 0 ${space(5)};
   margin-top: ${space(4)};
+  cursor: pointer;
+`;
+
+const MyListContainer = styled.div`
+  margin-top: ${space(1)};
+  grid-area: mylist;
+  ${font('xs', 'regular')}
+  display: flex;
+  justify-content: center;
+`;
+
+const MyList = styled.button`
+  border-style: none;
+  background-color: white;
   cursor: pointer;
 `;
 
@@ -261,6 +276,9 @@ export function CatalogCard(props: CardProps) {
             onKeyDown={handleKeyDown}
           />
         </IconContainer>
+        <MyListContainer>
+          <MyList onClick={() => modalState()}>Add to My List</MyList>
+        </MyListContainer>
       </Card>
     </CardContainer>
   );

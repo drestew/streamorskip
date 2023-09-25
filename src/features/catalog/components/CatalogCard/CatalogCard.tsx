@@ -52,7 +52,7 @@ const Card = styled.div`
     'poster stream stream'
     'poster skip skip'
     'icon icon icon'
-    'mylist mylist mylist';
+    'save-list save-list save-list';
   border-radius: ${space(2)};
 
   .rating-text {
@@ -150,15 +150,15 @@ const IconContainer = styled.div`
   cursor: pointer;
 `;
 
-const MyListContainer = styled.div`
+const SaveListContainer = styled.div`
   margin-top: ${space(1)};
-  grid-area: mylist;
+  grid-area: save-list;
   ${font('xs', 'regular')}
   display: flex;
   justify-content: center;
 `;
 
-const MyList = styled.button`
+const SaveList = styled.button`
   border-style: none;
   background-color: white;
   cursor: pointer;
@@ -276,9 +276,9 @@ export function CatalogCard(props: CardProps) {
             onKeyDown={handleKeyDown}
           />
         </IconContainer>
-        <MyListContainer>
-          <MyList onClick={() => modalState()}>Add to My List</MyList>
-        </MyListContainer>
+        <SaveListContainer>
+          <SaveList onClick={() => modalState()}>Add to My List</SaveList>
+        </SaveListContainer>
       </Card>
     </CardContainer>
   );

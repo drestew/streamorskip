@@ -4,7 +4,6 @@ import { CatalogCard } from '@features/catalog';
 import { color } from '@styles/theme';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { LoadingSkeleton } from '@features/catalog/components/LoadingSkeleton/LoadingSkeleton';
-import { Session } from '@supabase/gotrue-js';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 
 const List = styled.ul`
@@ -31,7 +30,7 @@ type CatalogListProps = {
       }>
     | undefined;
 
-  session: Session | null;
+  // session: Session | null;
   isFetching: boolean;
   modalState: () => void;
   status: string;
@@ -41,7 +40,7 @@ export function CatalogList({
   catalog,
   isFetching,
   status,
-  session,
+  // session,
   modalState,
 }: CatalogListProps) {
   const user = useUser();
@@ -74,7 +73,7 @@ export function CatalogList({
       }
       setUserRatings(data);
     }
-  }, [queryClient, session, supabase, user]);
+  }, [queryClient, supabase, user]);
 
   function getItemRating(nfid: number) {
     const ratedItem = userRatings?.filter((item) => item.catalog_item === nfid);
@@ -96,7 +95,7 @@ export function CatalogList({
       {status === 'loading' && <List>{loadingSkeletonArr}</List>}
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
-          {group.filteredData?.map((item, index) => {
+          {group?.filteredData?.map((item, index) => {
             const itemRating = getItemRating(item.nfid);
             return (
               <li key={item.nfid}>

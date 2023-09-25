@@ -18,7 +18,6 @@ export function useFilters() {
   function handleFilters(newFilters: ContentFilters) {
     const query = { ...router.query, ...newFilters };
     router.push({ query });
-    return { router };
   }
 
   return { filters, handleFilters };

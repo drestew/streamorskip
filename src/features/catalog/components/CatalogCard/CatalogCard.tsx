@@ -6,6 +6,7 @@ import arrow from '@public/arrow.png';
 import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
 import { deleteUserRating, updateUserRating } from '@features/catalog';
+import { updateSavedList } from '@features/catalog/api/updateSavedList';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 
 type Catalog = {
@@ -35,7 +36,11 @@ type Modal = {
   modalState: () => void;
 };
 
-type CardProps = CardContent & UserRating & ImgPriority & Modal;
+type SavedItem = {
+  savedToList: boolean;
+};
+
+type CardProps = CardContent & UserRating & ImgPriority & Modal & SavedItem;
 
 const CardContainer = styled.div`
   margin: ${space(4)} auto;
@@ -71,16 +76,6 @@ const Poster = styled.div<{ truncateSynopsis: boolean }>`
   width: ${space(20)};
   position: relative;
   margin-right: ${space(3)};
-
-  ${(props) => {
-    if (!props.truncateSynopsis) {
-      return css`
-        & > * {
-          //padding-bottom: 100%;
-        }
-      `;
-    }
-  }};
 `;
 
 const SynopsisContainer = styled.div`
@@ -177,6 +172,7 @@ export function CatalogCard(props: CardProps) {
     nfid,
     priorityImg,
     modalState,
+    savedToList,
   } = props;
   const [streamRating, setStreamRating] = React.useState(stream);
   const ratingFrom100 = convertRating(rating);
@@ -237,8 +233,6 @@ export function CatalogCard(props: CardProps) {
           <Image
             src={img}
             alt="Content Poster"
-            //fill
-            //style={{ objectFit: 'contain' }}
             width="80"
             height="110"
             sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"
@@ -277,7 +271,13 @@ export function CatalogCard(props: CardProps) {
           />
         </IconContainer>
         <SaveListContainer>
-          <SaveList onClick={() => modalState()}>Add to My List</SaveList>
+          <SaveList
+            onClick={() =>
+              user ? updateSavedList(supabaseClient, user.id, nfid) : modalState
+            }
+          >
+            {savedToList ? 'Remove from My List' : 'Add to My List'}
+          </SaveList>
         </SaveListContainer>
       </Card>
     </CardContainer>

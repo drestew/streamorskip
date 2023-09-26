@@ -8,7 +8,6 @@ import { Genre } from '@features/filters';
 import styled from 'styled-components';
 import { space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
-import { useUser } from '@supabase/auth-helpers-react';
 import { Modal } from '@components/Modal/Modal';
 import { Search } from '@features/filters/components/Search/Search';
 
@@ -46,7 +45,6 @@ export default function Home() {
   const [modalOpen, setModalOpen] = React.useState(false);
   let category: string, genre: string, search: string;
   const queryClient = useQueryClient();
-  const user = useUser();
 
   if (filters.category) {
     category = filters.category;
@@ -65,7 +63,6 @@ export default function Home() {
         filters.category,
         filters.genre,
         filters.search,
-        user,
       ],
       queryFn: ({ pageParam }) =>
         getCatalog({ pageParam: pageParam }, category, genre, search),

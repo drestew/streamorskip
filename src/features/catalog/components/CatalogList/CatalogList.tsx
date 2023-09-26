@@ -5,6 +5,7 @@ import { color } from '@styles/theme';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { LoadingSkeleton } from '@features/catalog/components/LoadingSkeleton/LoadingSkeleton';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { Database } from '../../../../types/supabase';
 
 const List = styled.ul`
   background-color: ${color('dark', 300)};
@@ -30,7 +31,6 @@ type CatalogListProps = {
       }>
     | undefined;
 
-  // session: Session | null;
   isFetching: boolean;
   modalState: () => void;
   status: string;
@@ -40,14 +40,14 @@ export function CatalogList({
   catalog,
   isFetching,
   status,
-  // session,
   modalState,
 }: CatalogListProps) {
   const user = useUser();
-  const supabase = useSupabaseClient();
+  const supabase = useSupabaseClient<Database>();
   const [userRatings, setUserRatings] = React.useState<
     { user_id: string; catalog_item: number; stream: boolean }[] | null
   >();
+  const [savedItems, setSavedItems] = React.useState<number[] | null>(null);
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
@@ -75,6 +75,26 @@ export function CatalogList({
     }
   }, [queryClient, supabase, user]);
 
+  React.useEffect(() => {
+    getSavedNfids();
+    async function getSavedNfids() {
+      const { data, error } = await supabase
+        .from('saved_list')
+        .select('catalog_item')
+        .eq('user_id', user?.id);
+
+      if (error) {
+        console.log('Error:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      const nfidList: number[] | null =
+        data && data.map((item) => item.catalog_item);
+      setSavedItems(nfidList);
+    }
+  }, [supabase, user?.id, savedItems]);
   function getItemRating(nfid: number) {
     const ratedItem = userRatings?.filter((item) => item.catalog_item === nfid);
     return ratedItem && ratedItem.length > 0 ? ratedItem[0].stream : null;
@@ -108,6 +128,10 @@ export function CatalogList({
                   nfid={item.nfid}
                   priorityImg={index === 0}
                   modalState={modalState}
+                  savedToList={
+                    savedItems?.some((savedItem) => savedItem === item.nfid) ||
+                    false
+                  }
                 />
               </li>
             );

@@ -8,7 +8,7 @@ import { getUsersList } from '@features/catalog/api/getUserSavedList';
 import styled from 'styled-components';
 import { space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
-import { Database } from '../../types/supabase';
+import { Database } from '@src/types/supabase';
 
 const PageContainer = styled.div`
   max-width: 400px;

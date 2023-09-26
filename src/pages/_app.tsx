@@ -9,7 +9,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
-import { Database } from '../types/supabase';
+import { Database } from '@src/types/supabase';
 
 const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {

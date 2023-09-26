@@ -5,7 +5,7 @@ import { color } from '@styles/theme';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { LoadingSkeleton } from '@features/catalog/components/LoadingSkeleton/LoadingSkeleton';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
-import { Database } from '../../../../types/supabase';
+import { Database } from '@src/types/supabase';
 
 const List = styled.ul`
   background-color: ${color('dark', 300)};

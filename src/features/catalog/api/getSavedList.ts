@@ -1,10 +1,10 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@src/types/supabase';
 
-export async function getUsersList(
+export async function getSavedList(
   { pageParam = 0 },
   supabase: SupabaseClient<Database>,
-  userId: string | undefined
+  userId: string | string[]
 ) {
   const step = pageParam + 10;
   const { data: titles, error: titlesError } = await supabase

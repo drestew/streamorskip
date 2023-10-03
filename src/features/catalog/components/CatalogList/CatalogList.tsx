@@ -44,61 +44,35 @@ export function CatalogList({
 }: CatalogListProps) {
   const user = useUser();
   const supabase = useSupabaseClient<Database>();
-  const [userRatings, setUserRatings] = React.useState<
-    { user_id: string; catalog_item: number; stream: boolean }[] | null
-  >();
-  const [savedItems, setSavedItems] = React.useState<number[] | null>(null);
   const queryClient = useQueryClient();
+  const [savedList, setSavedList] = React.useState<
+    { catalog_item: number }[] | null
+  >(null);
 
   React.useEffect(() => {
     getUserRatings();
 
     async function getUserRatings() {
       if (!user) {
-        setUserRatings(null);
+        //  setUserRatings(null);
         await queryClient.resetQueries(['catalog-default']);
         return null;
       }
 
-      const { data, error } = await supabase
-        .from('rating')
-        .select('user_id, catalog_item, stream')
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.log('Error:', {
-          message: error.message,
-          details: error.details,
-        });
-      }
-      setUserRatings(data);
+      //   const { data, error } = await supabase
+      //     .from('rating')
+      //     .select('user_id, catalog_item, stream')
+      //     .eq('user_id', user.id);
+      //
+      //   if (error) {
+      //     console.log('Error:', {
+      //       message: error.message,
+      //       details: error.details,
+      //     });
+      //   }
+      //   setUserRatings(data);
     }
   }, [queryClient, supabase, user]);
-
-  React.useEffect(() => {
-    getSavedNfids();
-    async function getSavedNfids() {
-      const { data, error } = await supabase
-        .from('saved_list')
-        .select('catalog_item')
-        .eq('user_id', user?.id);
-
-      if (error) {
-        console.log('Error:', {
-          message: error.message,
-          details: error.details,
-        });
-      }
-
-      const nfidList: number[] | null =
-        data && data.map((item) => item.catalog_item);
-      setSavedItems(nfidList);
-    }
-  }, [supabase, user?.id, savedItems]);
-  function getItemRating(nfid: number) {
-    const ratedItem = userRatings?.filter((item) => item.catalog_item === nfid);
-    return ratedItem && ratedItem.length > 0 ? ratedItem[0].stream : null;
-  }
 
   const loadingSkeletonArr: React.ReactNode[] = new Array(10)
     .fill('')
@@ -110,13 +84,27 @@ export function CatalogList({
       );
     });
 
+  React.useEffect(() => {
+    getSavedList();
+    async function getSavedList() {
+      const { data: titles } = await supabase
+        .from('saved_list')
+        .select('catalog_item')
+        .eq('user_id', 'b13d8037-d874-4d84-8aed-317a12fa4829');
+      setSavedList(titles);
+    }
+  }, [supabase]);
+
   return (
     <List role="list">
       {status === 'loading' && <List>{loadingSkeletonArr}</List>}
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
           {group?.filteredData?.map((item, index) => {
-            const itemRating = getItemRating(item.nfid);
+            // const ratingIndex = userRatings?.find(
+            //   (ratingItem) => ratingItem.catalog_item === item.nfid
+            //   // (ratedItem) => ratedItem.catalog_item === item.nfid
+            // );
             return (
               <li key={item.nfid}>
                 <CatalogCard
@@ -124,14 +112,16 @@ export function CatalogList({
                   synopsis={item.synopsis}
                   img={item.img}
                   rating={item.rating === null ? 0 : item.rating}
-                  stream={user ? itemRating : null}
+                  stream={user ? true : null}
+                  // stream={user && ratingIndex ? ratingIndex.stream : null}
                   nfid={item.nfid}
                   priorityImg={index === 0}
                   modalState={modalState}
-                  savedToList={
-                    savedItems?.some((savedItem) => savedItem === item.nfid) ||
-                    false
-                  }
+                  queryClient={queryClient}
+                  supabase={supabase}
+                  user={user}
+                  savedList={savedList}
+                  setSavedList={setSavedList}
                 />
               </li>
             );

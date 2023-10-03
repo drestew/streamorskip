@@ -1,10 +1,9 @@
-import { CatalogList } from '@features/catalog';
+import { CatalogList, getSavedList } from '@features/catalog';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import React from 'react';
-import { getUsersList } from '@features/catalog/api/getUserSavedList';
 import styled from 'styled-components';
 import { space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
@@ -33,26 +32,12 @@ const CatalogContainer = styled.div`
 export default function SavedList() {
   const router = useRouter();
   const supabase = useSupabaseClient<Database>();
-  const [userId, setUserId] = React.useState<string | undefined>('');
-
   const { id } = router.query;
-  React.useEffect(() => {
-    async function getUserId() {
-      if (id) {
-        const user = await supabase.auth.getUser();
-        if (user) {
-          setUserId(user.data.user?.id);
-        }
-      }
-    }
-    getUserId();
-  }, [id, supabase.auth]);
-
   const { data, fetchNextPage, isFetching, hasNextPage, status } =
     useInfiniteQuery({
-      queryKey: ['my-list', userId],
+      queryKey: ['my-list', id],
       queryFn: ({ pageParam }) =>
-        getUsersList({ pageParam: pageParam }, supabase, userId),
+        getSavedList({ pageParam: pageParam }, supabase, id || ''),
       getNextPageParam: (lastPage) => lastPage.step,
       refetchOnWindowFocus: false,
     });

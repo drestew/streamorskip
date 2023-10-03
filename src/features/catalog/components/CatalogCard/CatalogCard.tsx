@@ -6,8 +6,11 @@ import arrow from '@public/arrow.png';
 import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
 import { deleteUserRating, updateUserRating } from '@features/catalog';
+import { SupabaseClient } from '@supabase/auth-helpers-react';
+import { Database } from '@src/types/supabase';
 import { updateSavedList } from '@features/catalog/api/updateSavedList';
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { QueryClient, useMutation } from '@tanstack/react-query';
+import { User } from '@supabase/gotrue-js';
 
 type Catalog = {
   nfid: number;
@@ -20,6 +23,7 @@ type Catalog = {
 };
 
 export type UserRating = {
+  user: User | null;
   stream: boolean | null;
 };
 
@@ -37,10 +41,23 @@ type Modal = {
 };
 
 type SavedItem = {
-  savedToList: boolean;
+  supabase: SupabaseClient<Database>;
+  savedList: { catalog_item: number }[] | null;
+  setSavedList: React.Dispatch<
+    React.SetStateAction<{ catalog_item: number }[] | null>
+  >;
 };
 
-type CardProps = CardContent & UserRating & ImgPriority & Modal & SavedItem;
+type Query = {
+  queryClient: QueryClient;
+};
+
+type CardProps = CardContent &
+  UserRating &
+  ImgPriority &
+  Modal &
+  SavedItem &
+  Query;
 
 const CardContainer = styled.div`
   margin: ${space(4)} auto;
@@ -161,8 +178,6 @@ const SaveList = styled.button`
 
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
-  const supabaseClient = useSupabaseClient();
-  const user = useUser();
   const {
     title,
     synopsis,
@@ -172,30 +187,41 @@ export function CatalogCard(props: CardProps) {
     nfid,
     priorityImg,
     modalState,
-    savedToList,
+    queryClient,
+    supabase,
+    user,
+    savedList,
+    setSavedList,
   } = props;
   const [streamRating, setStreamRating] = React.useState(stream);
   const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
+  const [savedToList, setSavedToList] = React.useState<boolean | null>(null);
 
   function toggleSynopsis() {
     setTruncateSynopsis(!truncateSynopsis);
   }
 
+  React.useEffect(() => {
+    setSavedToList(
+      savedList?.some((item) => item.catalog_item === nfid) || false
+    );
+  }, [savedList]);
+
   function handleClick(thumbIcon: string) {
     if (user) {
       if (thumbIcon === 'skip' && streamRating !== false) {
         setStreamRating(false);
-        updateUserRating(nfid, false, user, supabaseClient);
+        updateUserRating(nfid, false, user, supabase);
       } else if (thumbIcon === 'skip' && streamRating === false) {
         setStreamRating(null);
-        deleteUserRating(nfid, user, supabaseClient);
+        deleteUserRating(nfid, user, supabase);
       } else if (thumbIcon === 'stream' && !streamRating) {
         setStreamRating(true);
-        updateUserRating(nfid, true, user, supabaseClient);
+        updateUserRating(nfid, true, user, supabase);
       } else if (thumbIcon === 'stream' && streamRating) {
         setStreamRating(null);
-        deleteUserRating(nfid, user, supabaseClient);
+        deleteUserRating(nfid, user, supabase);
       }
     } else {
       modalState();
@@ -214,6 +240,23 @@ export function CatalogCard(props: CardProps) {
         toggleSynopsis();
       }
     }
+  }
+
+  const mutation = useMutation({
+    mutationFn: () => updateSavedList(supabase, user?.id, nfid, savedToList),
+    onSuccess: async () => {
+      await queryClient.refetchQueries(['my-list', [user?.id]]);
+
+      const { data: titles } = await supabase
+        .from('saved_list')
+        .select('catalog_item')
+        .eq('user_id', user?.id);
+      setSavedList(titles);
+    },
+  });
+
+  async function handleSave() {
+    mutation.mutate();
   }
 
   return (
@@ -271,11 +314,7 @@ export function CatalogCard(props: CardProps) {
           />
         </IconContainer>
         <SaveListContainer>
-          <SaveList
-            onClick={() =>
-              user ? updateSavedList(supabaseClient, user.id, nfid) : modalState
-            }
-          >
+          <SaveList onClick={user ? handleSave : modalState}>
             {savedToList ? 'Remove from My List' : 'Add to My List'}
           </SaveList>
         </SaveListContainer>

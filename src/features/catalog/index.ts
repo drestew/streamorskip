@@ -1,5 +1,4 @@
 export * from './api/getCatalog';
-export * from './api/getUserRatings';
 export * from './api/updateUserRating';
 export * from './api/getSavedList';
 export * from './api/updateSavedList';

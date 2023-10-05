@@ -45,6 +45,9 @@ export function CatalogList({
   const user = useUser();
   const supabase = useSupabaseClient<Database>();
   const queryClient = useQueryClient();
+  const [userRatings, setUserRatings] = React.useState<
+    { user_id: string; catalog_item: number; stream: boolean }[] | null
+  >(null);
   const [savedList, setSavedList] = React.useState<
     { catalog_item: number }[] | null
   >(null);
@@ -54,25 +57,47 @@ export function CatalogList({
 
     async function getUserRatings() {
       if (!user) {
-        //  setUserRatings(null);
+        setUserRatings(null);
         await queryClient.resetQueries(['catalog-default']);
         return null;
       }
 
-      //   const { data, error } = await supabase
-      //     .from('rating')
-      //     .select('user_id, catalog_item, stream')
-      //     .eq('user_id', user.id);
-      //
-      //   if (error) {
-      //     console.log('Error:', {
-      //       message: error.message,
-      //       details: error.details,
-      //     });
-      //   }
-      //   setUserRatings(data);
+      const { data, error } = await supabase
+        .from('rating')
+        .select('user_id, catalog_item, stream')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.log('Error getting user ratings:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      setUserRatings(data);
     }
   }, [queryClient, supabase, user]);
+
+  React.useEffect(() => {
+    getSavedList();
+    async function getSavedList() {
+      if (user) {
+        const { data, error } = await supabase
+          .from('saved_list')
+          .select('catalog_item')
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.log('Error getting saved list:', {
+            message: error.message,
+            details: error.details,
+          });
+        }
+
+        setSavedList(data);
+      }
+    }
+  }, [supabase, user]);
 
   const loadingSkeletonArr: React.ReactNode[] = new Array(10)
     .fill('')
@@ -84,27 +109,12 @@ export function CatalogList({
       );
     });
 
-  React.useEffect(() => {
-    getSavedList();
-    async function getSavedList() {
-      const { data: titles } = await supabase
-        .from('saved_list')
-        .select('catalog_item')
-        .eq('user_id', 'b13d8037-d874-4d84-8aed-317a12fa4829');
-      setSavedList(titles);
-    }
-  }, [supabase]);
-
   return (
     <List role="list">
       {status === 'loading' && <List>{loadingSkeletonArr}</List>}
       {catalog?.pages.map((group, i) => (
         <React.Fragment key={i}>
           {group?.filteredData?.map((item, index) => {
-            // const ratingIndex = userRatings?.find(
-            //   (ratingItem) => ratingItem.catalog_item === item.nfid
-            //   // (ratedItem) => ratedItem.catalog_item === item.nfid
-            // );
             return (
               <li key={item.nfid}>
                 <CatalogCard
@@ -112,14 +122,14 @@ export function CatalogList({
                   synopsis={item.synopsis}
                   img={item.img}
                   rating={item.rating === null ? 0 : item.rating}
-                  stream={user ? true : null}
-                  // stream={user && ratingIndex ? ratingIndex.stream : null}
                   nfid={item.nfid}
                   priorityImg={index === 0}
                   modalState={modalState}
                   queryClient={queryClient}
                   supabase={supabase}
                   user={user}
+                  userRatings={userRatings}
+                  setUserRatings={setUserRatings}
                   savedList={savedList}
                   setSavedList={setSavedList}
                 />

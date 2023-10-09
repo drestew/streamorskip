@@ -1,17 +1,16 @@
-import { User } from '@supabase/gotrue-js';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@src/types/supabase';
 
 export async function deleteUserRating(
   nfid: number,
-  user: User | null,
+  userId: string | null,
   supabase: SupabaseClient<Database>
 ) {
-  if (user) {
+  if (userId) {
     const { error } = await supabase
       .from('rating')
       .delete()
-      .eq('user_item_key', `${user?.id}-${nfid}`);
+      .eq('user_item_key', `${userId}-${nfid}`);
 
     if (error) {
       console.log('Error deleting rating:', {
@@ -25,14 +24,14 @@ export async function deleteUserRating(
 export async function updateUserRating(
   nfid: number,
   userRating: boolean | null,
-  user: User | null,
+  userId: string | null,
   supabase: SupabaseClient<Database>
 ) {
-  if (user) {
+  if (userId) {
     if (userRating !== null) {
       const { error } = await supabase.from('rating').upsert({
-        user_item_key: `${user.id}-${nfid}`,
-        user_id: user.id,
+        user_item_key: `${userId}-${nfid}`,
+        user_id: userId,
         catalog_item: nfid,
         stream: userRating,
       });
@@ -43,8 +42,8 @@ export async function updateUserRating(
           details: error.details,
         });
       }
-    } else if (userRating === null) {
-      await deleteUserRating(nfid, user, supabase);
+    } else {
+      await deleteUserRating(nfid, userId, supabase);
     }
   }
 }

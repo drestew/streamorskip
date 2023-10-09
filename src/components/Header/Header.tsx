@@ -6,7 +6,6 @@ import { Button } from '../Button/Button';
 import { space } from '@styles/theme';
 import { Menu } from '../Menu/Menu';
 import React from 'react';
-import { useUser } from '@supabase/auth-helpers-react';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -19,9 +18,7 @@ const StyledLink = styled(Link)`
   color: white;
 `;
 
-export function Header() {
-  const user = useUser();
-
+export function Header({ userId }: { userId: string | null }) {
   return (
     <HeaderContainer>
       <Link href="/">
@@ -34,14 +31,14 @@ export function Header() {
           priority
         />
       </Link>
-      {!user ? (
+      {userId === '' ? (
         <StyledLink href="/login">
           <Button color="secondary" shade={300} size="sm" role="link">
             Log In
           </Button>
         </StyledLink>
       ) : (
-        <Menu />
+        <Menu userId={userId} />
       )}
     </HeaderContainer>
   );

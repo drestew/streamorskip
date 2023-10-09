@@ -10,7 +10,6 @@ import { SupabaseClient } from '@supabase/auth-helpers-react';
 import { Database } from '@src/types/supabase';
 import { updateSavedList } from '@features/catalog/api/updateSavedList';
 import { QueryClient, useMutation } from '@tanstack/react-query';
-import { User } from '@supabase/gotrue-js';
 
 type Catalog = {
   nfid: number;
@@ -23,7 +22,7 @@ type Catalog = {
 };
 
 export type UserRating = {
-  user: User | null;
+  userId: string | null;
   userRatings:
     | { user_id: string; catalog_item: number; stream: boolean }[]
     | null;
@@ -195,7 +194,7 @@ export function CatalogCard(props: CardProps) {
     modalState,
     queryClient,
     supabase,
-    user,
+    userId,
     userRatings,
     setUserRatings,
     savedList,
@@ -254,25 +253,26 @@ export function CatalogCard(props: CardProps) {
   }
 
   const mutationUpdateSavedList = useMutation({
-    mutationFn: () => updateSavedList(supabase, user?.id, nfid, savedToList),
+    mutationFn: () => updateSavedList(supabase, userId, nfid, savedToList),
     onSuccess: async () => {
-      await queryClient.refetchQueries(['my-list', [user?.id]]);
+      await queryClient.refetchQueries(['my-list', userId]);
       const { data } = await supabase
         .from('saved_list')
         .select('catalog_item')
-        .eq('user_id', user?.id);
+        .eq('user_id', userId);
       setSavedList(data);
     },
   });
 
   const mutationUpdateUserRating = useMutation({
-    mutationFn: () => updateUserRating(nfid, userRating, user, supabase),
+    mutationFn: () => updateUserRating(nfid, userRating, userId, supabase),
     onSuccess: async () => {
-      // await queryClient.refetchQueries(['my-list', [user?.id]]);
+      await queryClient.refetchQueries(['my-ratings', userId, 'stream']);
+      await queryClient.refetchQueries(['my-ratings', userId, 'skip']);
       const { data } = await supabase
         .from('rating')
         .select('user_id, catalog_item, stream')
-        .eq('user_id', user?.id);
+        .eq('user_id', userId);
       setUserRatings(data);
     },
   });
@@ -332,7 +332,7 @@ export function CatalogCard(props: CardProps) {
           />
         </IconContainer>
         <SaveListContainer>
-          <SaveList onClick={user ? handleSave : modalState}>
+          <SaveList onClick={userId ? handleSave : modalState}>
             {savedToList ? 'Remove from My List' : 'Add to My List'}
           </SaveList>
         </SaveListContainer>

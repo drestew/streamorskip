@@ -1,6 +1,5 @@
 import { CatalogList, getSavedList } from '@features/catalog';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useRouter } from 'next/router';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import React from 'react';
@@ -30,15 +29,23 @@ const CatalogContainer = styled.div`
 `;
 
 export default function SavedList() {
-  const router = useRouter();
   const supabase = useSupabaseClient<Database>();
-  const { id } = router.query;
+  const [userId, setUserId] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    getSession();
+
+    async function getSession() {
+      const session = await supabase.auth.getSession();
+      session.data.session && setUserId(session.data.session.user.id);
+    }
+  }, [supabase.auth]);
+
   const { data, fetchNextPage, isFetching, hasNextPage, status } =
     useInfiniteQuery({
-      queryKey: ['my-list', id],
+      queryKey: ['my-list', userId],
       queryFn: ({ pageParam }) =>
-        getSavedList({ pageParam: pageParam }, supabase, id || ''),
-      getNextPageParam: (lastPage) => lastPage.step,
+        getSavedList({ pageParam: pageParam }, supabase, userId),
+      getNextPageParam: (lastPage) => lastPage?.step,
       refetchOnWindowFocus: false,
     });
 
@@ -52,7 +59,7 @@ export default function SavedList() {
 
   return (
     <PageContainer>
-      <Header />
+      <Header userId={userId} />
       <MainContent>
         <CatalogContainer>
           <CatalogList
@@ -60,6 +67,7 @@ export default function SavedList() {
             isFetching={isFetching}
             modalState={() => false}
             status={status}
+            userId={userId}
           />
         </CatalogContainer>
         <div ref={ref}></div>

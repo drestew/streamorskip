@@ -5,7 +5,7 @@ import React from 'react';
 import { color, space } from '@styles/theme';
 import menu from '@public/menu.png';
 import Link from 'next/link';
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const MenuContainer = styled.div`
   display: flex;
@@ -59,9 +59,8 @@ const StyledLink = styled(Link)`
   }
 `;
 
-export function Menu() {
+export function Menu({ userId }: { userId: string | null }) {
   const supabase = useSupabaseClient();
-  const user = useUser();
   const [menuOpen, setMenuOpen] = React.useState<boolean | undefined>(
     undefined
   );
@@ -89,7 +88,24 @@ export function Menu() {
         <MenuList position="popper" alignOffset={-55}>
           <Select.Viewport>
             <MenuItem value={'my-list'}>
-              <StyledLink href={`user/${user?.id}`}>My List</StyledLink>
+              <StyledLink
+                href={{
+                  pathname: `/user/[id]/my-list`,
+                  query: { id: `${userId}` },
+                }}
+              >
+                My List
+              </StyledLink>
+            </MenuItem>
+            <MenuItem value={'ratings'}>
+              <StyledLink
+                href={{
+                  pathname: `/user/[id]/ratings`,
+                  query: { id: `${userId}` },
+                }}
+              >
+                Ratings
+              </StyledLink>
             </MenuItem>
             {/*<MenuItem value={'settings'}>*/}
             {/*  <StyledLink href="/settings">Settings</StyledLink>*/}

@@ -10,6 +10,8 @@ import { space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
 import { Modal } from '@components/Modal/Modal';
 import { Search } from '@features/filters/components/Search/Search';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { Database } from '@src/types/supabase';
 
 const PageContainer = styled.div`
   max-width: 400px;
@@ -45,6 +47,16 @@ export default function Home() {
   const [modalOpen, setModalOpen] = React.useState(false);
   let category: string, genre: string, search: string;
   const queryClient = useQueryClient();
+  const supabase = useSupabaseClient<Database>();
+  const [userId, setUserId] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    getSession();
+
+    async function getSession() {
+      const session = await supabase.auth.getSession();
+      session.data.session && setUserId(session.data.session.user.id);
+    }
+  }, [supabase.auth]);
 
   if (filters.category) {
     category = filters.category;
@@ -63,6 +75,7 @@ export default function Home() {
         filters.category,
         filters.genre,
         filters.search,
+        userId,
       ],
       queryFn: ({ pageParam }) =>
         getCatalog({ pageParam: pageParam }, category, genre, search),
@@ -99,7 +112,7 @@ export default function Home() {
     //<h1>Site under construction</h1>
     <PageContainer>
       {modalOpen && <Modal modalOpen={modalOpen} />}
-      <Header />
+      <Header userId={userId} />
       <MainContent>
         <SearchContainer>{<Search />}</SearchContainer>
         <Filters>
@@ -112,6 +125,7 @@ export default function Home() {
             isFetching={isFetching}
             status={status}
             modalState={openModal}
+            userId={userId}
           />
         </CatalogContainer>
         <div ref={ref}></div>

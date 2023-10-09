@@ -4,8 +4,9 @@ import { Database } from '@src/types/supabase';
 export async function getSavedList(
   { pageParam = 0 },
   supabase: SupabaseClient<Database>,
-  userId: string | string[]
+  userId: string | null
 ) {
+  if (!userId) return null;
   const step = pageParam + 10;
   const { data: titles, error: titlesError } = await supabase
     .from('saved_list')

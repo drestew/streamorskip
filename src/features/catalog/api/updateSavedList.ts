@@ -3,7 +3,7 @@ import { Database } from '@src/types/supabase';
 
 export async function updateSavedList(
   supabase: SupabaseClient<Database>,
-  userId: string | undefined,
+  userId: string | null,
   nfid: number,
   savedToList: boolean | null
 ) {

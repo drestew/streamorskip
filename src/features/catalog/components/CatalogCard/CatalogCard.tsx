@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import Image from 'next/image';
 import { color, font, space } from '@styles/theme';
 import arrow from '@public/arrow.png';
@@ -10,6 +10,7 @@ import { SupabaseClient } from '@supabase/auth-helpers-react';
 import { Database } from '@src/types/supabase';
 import { updateSavedList } from '@features/catalog/api/updateSavedList';
 import { QueryClient, useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
 
 type Catalog = {
   nfid: number;
@@ -65,8 +66,29 @@ type CardProps = CardContent &
   SavedItem &
   Query;
 
-const CardContainer = styled.div`
+const FadeOut = keyframes`
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+`;
+
+const CardContainer = styled.div<{
+  router: boolean;
+  savedToList: boolean | null;
+}>`
   margin: ${space(4)} auto;
+  opacity: 1;
+
+  ${(props) => {
+    if (props.router && props.savedToList === false) {
+      return css`
+        animation: ${FadeOut} 300ms ease-in-out forwards;
+      `;
+    }
+  }}
 `;
 
 const Card = styled.div`
@@ -204,6 +226,7 @@ export function CatalogCard(props: CardProps) {
   const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
   const [savedToList, setSavedToList] = React.useState<boolean | null>(null);
+  const router = useRouter();
 
   function toggleSynopsis() {
     setTruncateSynopsis(!truncateSynopsis);
@@ -211,7 +234,7 @@ export function CatalogCard(props: CardProps) {
 
   React.useEffect(() => {
     setSavedToList(
-      savedList?.some((item) => item.catalog_item === nfid) || false
+      savedList && savedList.some((item) => item.catalog_item === nfid)
     );
   }, [savedList]);
 
@@ -255,7 +278,11 @@ export function CatalogCard(props: CardProps) {
   const mutationUpdateSavedList = useMutation({
     mutationFn: () => updateSavedList(supabase, userId, nfid, savedToList),
     onSuccess: async () => {
-      await queryClient.refetchQueries(['my-list', userId]);
+      // timeout to delay fade out of card (0 is fine because event loop)
+      setTimeout(
+        async () => await queryClient.refetchQueries(['my-list', userId]),
+        0
+      );
       const { data } = await supabase
         .from('saved_list')
         .select('catalog_item')
@@ -278,7 +305,11 @@ export function CatalogCard(props: CardProps) {
   });
 
   return (
-    <CardContainer tabIndex={0}>
+    <CardContainer
+      tabIndex={0}
+      router={router.pathname.includes('my-list')}
+      savedToList={savedToList}
+    >
       <Card>
         <Title>{title}</Title>
         <SynopsisContainer

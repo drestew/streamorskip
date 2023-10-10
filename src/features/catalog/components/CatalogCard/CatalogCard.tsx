@@ -347,7 +347,7 @@ export function CatalogCard(props: CardProps) {
             width="50"
             height="50"
             style={{ transform: 'rotate(180deg)' }}
-            onClick={() => handleRating('skip')}
+            onClick={userId ? () => handleRating('skip') : modalState}
             tabIndex={0}
             onKeyDown={handleKeyDown}
           />
@@ -357,14 +357,18 @@ export function CatalogCard(props: CardProps) {
             data-rating="stream"
             width="50"
             height="50"
-            onClick={() => handleRating('stream')}
+            onClick={userId ? () => handleRating('stream') : modalState}
             tabIndex={0}
             onKeyDown={handleKeyDown}
           />
         </IconContainer>
         <SaveListContainer>
           <SaveList onClick={userId ? handleSave : modalState}>
-            {savedToList ? 'Remove from My List' : 'Add to My List'}
+            {userId
+              ? savedToList
+                ? 'Remove from My List'
+                : 'Add to My List'
+              : 'Add to My List'}
           </SaveList>
         </SaveListContainer>
       </Card>

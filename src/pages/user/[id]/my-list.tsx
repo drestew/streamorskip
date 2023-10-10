@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
 import { Database } from '@src/types/supabase';
+import { useRouter } from 'next/router';
 
 const PageContainer = styled.div`
   max-width: 400px;
@@ -31,6 +32,8 @@ const CatalogContainer = styled.div`
 export default function SavedList() {
   const supabase = useSupabaseClient<Database>();
   const [userId, setUserId] = React.useState<string | null>(null);
+  const router = useRouter();
+
   React.useEffect(() => {
     getSession();
 
@@ -56,6 +59,12 @@ export default function SavedList() {
       fetchNextPage();
     }
   }, [inView]);
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT') {
+      router.push('/');
+    }
+  });
 
   return (
     <PageContainer>

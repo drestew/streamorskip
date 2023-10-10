@@ -8,6 +8,7 @@ import { color, space } from '@styles/theme';
 import { Header } from '@components/Header/Header';
 import { Database } from '@src/types/supabase';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
+import { useRouter } from 'next/router';
 
 const PageContainer = styled.div`
   max-width: 400px;
@@ -67,6 +68,7 @@ export default function UserRatingsList() {
   const [value, setValue] = React.useState<string>('stream');
   const supabase = useSupabaseClient<Database>();
   const [userId, setUserId] = React.useState<string | null>(null);
+  const router = useRouter();
   const selected = true;
 
   React.useEffect(() => {
@@ -94,6 +96,12 @@ export default function UserRatingsList() {
       fetchNextPage();
     }
   }, [inView]);
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT') {
+      router.push('/');
+    }
+  });
 
   return (
     <PageContainer>

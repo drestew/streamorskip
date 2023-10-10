@@ -61,9 +61,7 @@ const StyledLink = styled(Link)`
 
 export function Menu({ userId }: { userId: string | null }) {
   const supabase = useSupabaseClient();
-  const [menuOpen, setMenuOpen] = React.useState<boolean | undefined>(
-    undefined
-  );
+  const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
   async function handleValueChange(value: string) {
     if (value === 'logout') {
       const { error } = await supabase.auth.signOut();
@@ -74,18 +72,21 @@ export function Menu({ userId }: { userId: string | null }) {
         });
       }
     }
-    setMenuOpen(true);
   }
 
   return (
     <MenuContainer>
       <Select.Root open={menuOpen} value={''} onValueChange={handleValueChange}>
-        <MenuTrigger>
+        <MenuTrigger onClick={() => setMenuOpen(!menuOpen)}>
           <Select.Value>
             <Image src={menu} alt="menu" width={20} height={20} />
           </Select.Value>
         </MenuTrigger>
-        <MenuList position="popper" alignOffset={-55}>
+        <MenuList
+          position="popper"
+          alignOffset={-55}
+          onPointerDownOutside={() => setMenuOpen(false)}
+        >
           <Select.Viewport>
             <MenuItem value={'my-list'}>
               <StyledLink

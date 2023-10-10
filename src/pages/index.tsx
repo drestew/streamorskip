@@ -49,6 +49,7 @@ export default function Home() {
   const queryClient = useQueryClient();
   const supabase = useSupabaseClient<Database>();
   const [userId, setUserId] = React.useState<string | null>(null);
+
   React.useEffect(() => {
     getSession();
 
@@ -107,6 +108,12 @@ export default function Home() {
     }
     setModalOpen(true);
   }
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT') {
+      setUserId(null);
+    }
+  });
 
   return (
     //<h1>Site under construction</h1>

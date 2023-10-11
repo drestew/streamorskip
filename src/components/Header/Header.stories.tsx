@@ -10,5 +10,5 @@ export default meta;
 type Story = StoryObj<typeof Header>;
 
 export const Mobile: Story = {
-  render: () => <Header />,
+  render: () => <Header userId={null} />,
 };

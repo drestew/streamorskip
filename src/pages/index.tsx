@@ -17,7 +17,6 @@ const PageContainer = styled.div`
   max-width: 400px;
   margin: auto;
   padding: ${space(3)} ${space(4)};
-  border: red 1px solid;
 `;
 
 const SearchContainer = styled.div`
@@ -45,10 +44,12 @@ const Filters = styled.div`
 export default function Home() {
   const { filters } = useFilters();
   const [modalOpen, setModalOpen] = React.useState(false);
-  let category: string, genre: string, search: string;
   const queryClient = useQueryClient();
   const supabase = useSupabaseClient<Database>();
   const [userId, setUserId] = React.useState<string | null>(null);
+  const [category, setCategory] = React.useState<string>('');
+  const [genre, setGenre] = React.useState<string>('');
+  const [search, setSearch] = React.useState<string>('');
 
   React.useEffect(() => {
     getSession();
@@ -59,25 +60,21 @@ export default function Home() {
     }
   }, [supabase.auth]);
 
-  if (filters.category) {
-    category = filters.category;
-  }
-  if (filters.genre) {
-    genre = filters.genre;
-  }
-  if (filters.search) {
-    search = filters.search;
-  }
+  React.useEffect(() => {
+    if (filters.category) {
+      setCategory(filters.category);
+    }
+    if (filters.genre) {
+      setGenre(filters.genre);
+    }
+    if (filters.search) {
+      setSearch(filters.search);
+    }
+  }, [filters.category, filters.genre, filters.search]);
 
   const { data, fetchNextPage, isFetching, hasNextPage, status } =
     useInfiniteQuery({
-      queryKey: [
-        'catalog-default',
-        filters.category,
-        filters.genre,
-        filters.search,
-        userId,
-      ],
+      queryKey: ['catalog-default', category, genre, search, userId],
       queryFn: ({ pageParam }) =>
         getCatalog({ pageParam: pageParam }, category, genre, search),
       getNextPageParam: (lastPage) => lastPage.step,
@@ -116,27 +113,27 @@ export default function Home() {
   });
 
   return (
-    //<h1>Site under construction</h1>
-    <PageContainer>
-      {modalOpen && <Modal modalOpen={modalOpen} />}
-      <Header userId={userId} />
-      <MainContent>
-        <SearchContainer>{<Search />}</SearchContainer>
-        <Filters>
-          <Category category={filters.category} />
-          <Genre genre={filters.genre} />
-        </Filters>
-        <CatalogContainer>
-          <CatalogList
-            catalog={data}
-            isFetching={isFetching}
-            status={status}
-            modalState={openModal}
-            userId={userId}
-          />
-        </CatalogContainer>
-        <div ref={ref}></div>
-      </MainContent>
-    </PageContainer>
+    <h2>Site under construction</h2>
+    // <PageContainer>
+    //   {modalOpen && <Modal modalOpen={modalOpen} />}
+    //   <Header userId={userId} />
+    //   <MainContent>
+    //     <SearchContainer>{<Search />}</SearchContainer>
+    //     <Filters>
+    //       <Category category={filters.category} />
+    //       <Genre genre={filters.genre} />
+    //     </Filters>
+    //     <CatalogContainer>
+    //       <CatalogList
+    //         catalog={data}
+    //         isFetching={isFetching}
+    //         status={status}
+    //         modalState={openModal}
+    //         userId={userId}
+    //       />
+    //     </CatalogContainer>
+    //     <div ref={ref}></div>
+    //   </MainContent>
+    // </PageContainer>
   );
 }

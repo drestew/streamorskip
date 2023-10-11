@@ -31,6 +31,7 @@ const GenreList = styled(Select.Content)`
   display: flex;
   justify-content: center;
   border: solid 1px ${color('primary', 100)};
+  max-height: var(--radix-select-content-available-height);
 `;
 
 const GenreScroll = styled(Select.Viewport)`
@@ -99,7 +100,7 @@ export function Genre({ genre }: ContentFilters) {
         </GenreButton>
 
         <Select.Portal>
-          <GenreList>
+          <GenreList position="popper">
             <ScrollUpArrow>
               <Image src={chevron_up} alt="Scroll up" width={15} height={15} />
             </ScrollUpArrow>

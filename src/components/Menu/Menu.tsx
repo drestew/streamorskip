@@ -24,6 +24,7 @@ const MenuTrigger = styled(Select.Trigger)`
 `;
 
 const MenuList = styled(Select.Content)`
+  width: 7rem;
   background-color: #dadcef;
   border-radius: ${space(1)};
   display: flex;
@@ -84,7 +85,7 @@ export function Menu({ userId }: { userId: string | null }) {
         </MenuTrigger>
         <MenuList
           position="popper"
-          alignOffset={-55}
+          alignOffset={-65}
           onPointerDownOutside={() => setMenuOpen(false)}
         >
           <Select.Viewport>

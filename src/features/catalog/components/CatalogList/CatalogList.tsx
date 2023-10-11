@@ -4,8 +4,8 @@ import { CatalogCard } from '@features/catalog';
 import { color } from '@styles/theme';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { LoadingSkeleton } from '@features/catalog/components/LoadingSkeleton/LoadingSkeleton';
-import { Session } from '@supabase/gotrue-js';
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { Database } from '@src/types/supabase';
 
 const List = styled.ul`
   background-color: ${color('dark', 300)};
@@ -28,34 +28,36 @@ type CatalogListProps = {
             }[]
           | null;
         step: number | null;
-      }>
+      } | null>
     | undefined;
 
-  session: Session | null;
   isFetching: boolean;
   modalState: () => void;
   status: string;
+  userId: string | null;
 };
 
 export function CatalogList({
   catalog,
   isFetching,
   status,
-  session,
   modalState,
+  userId,
 }: CatalogListProps) {
-  const user = useUser();
-  const supabase = useSupabaseClient();
+  const supabase = useSupabaseClient<Database>();
+  const queryClient = useQueryClient();
   const [userRatings, setUserRatings] = React.useState<
     { user_id: string; catalog_item: number; stream: boolean }[] | null
-  >();
-  const queryClient = useQueryClient();
+  >(null);
+  const [savedList, setSavedList] = React.useState<
+    { catalog_item: number }[] | null
+  >(null);
 
   React.useEffect(() => {
     getUserRatings();
 
     async function getUserRatings() {
-      if (!user) {
+      if (!userId) {
         setUserRatings(null);
         await queryClient.resetQueries(['catalog-default']);
         return null;
@@ -64,22 +66,39 @@ export function CatalogList({
       const { data, error } = await supabase
         .from('rating')
         .select('user_id, catalog_item, stream')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (error) {
-        console.log('Error:', {
+        console.log('Error getting user ratings:', {
           message: error.message,
           details: error.details,
         });
       }
+
       setUserRatings(data);
     }
-  }, [queryClient, session, supabase, user]);
+  }, [queryClient, supabase, userId]);
 
-  function getItemRating(nfid: number) {
-    const ratedItem = userRatings?.filter((item) => item.catalog_item === nfid);
-    return ratedItem && ratedItem.length > 0 ? ratedItem[0].stream : null;
-  }
+  React.useEffect(() => {
+    getSavedList();
+    async function getSavedList() {
+      if (userId) {
+        const { data, error } = await supabase
+          .from('saved_list')
+          .select('catalog_item')
+          .eq('user_id', userId);
+
+        if (error) {
+          console.log('Error getting saved list:', {
+            message: error.message,
+            details: error.details,
+          });
+        }
+
+        setSavedList(data);
+      }
+    }
+  }, [supabase, userId]);
 
   const loadingSkeletonArr: React.ReactNode[] = new Array(10)
     .fill('')
@@ -94,32 +113,41 @@ export function CatalogList({
   return (
     <List role="list">
       {status === 'loading' && <List>{loadingSkeletonArr}</List>}
-      {catalog?.pages.map((group, i) => (
-        <React.Fragment key={i}>
-          {group.filteredData?.map((item, index) => {
-            const itemRating = getItemRating(item.nfid);
-            return (
-              <li key={item.nfid}>
-                <CatalogCard
-                  title={item.title}
-                  synopsis={item.synopsis}
-                  img={item.img}
-                  rating={item.rating === null ? 0 : item.rating}
-                  stream={user ? itemRating : null}
-                  nfid={item.nfid}
-                  priorityImg={index === 0}
-                  modalState={modalState}
-                />
-              </li>
-            );
-          })}
-          {/* only display loadingSkeleton if at the end of infinite scroll,
+      {catalog ? (
+        catalog.pages.map((group, i) => (
+          <React.Fragment key={i}>
+            {group?.filteredData?.map((item, index) => {
+              return (
+                <li key={item.nfid}>
+                  <CatalogCard
+                    title={item.title}
+                    synopsis={item.synopsis}
+                    img={item.img}
+                    rating={item.rating === null ? 0 : item.rating}
+                    nfid={item.nfid}
+                    priorityImg={index === 0}
+                    modalState={modalState}
+                    queryClient={queryClient}
+                    supabase={supabase}
+                    userId={userId}
+                    userRatings={userRatings}
+                    setUserRatings={setUserRatings}
+                    savedList={savedList}
+                    setSavedList={setSavedList}
+                  />
+                </li>
+              );
+            })}
+            {/* only display loadingSkeleton if at the end of infinite scroll,
           pageParams will be greater than 1 if there is more data to show */}
-          {isFetching && catalog?.pageParams?.length !== 1 && (
-            <List>{loadingSkeletonArr}</List>
-          )}
-        </React.Fragment>
-      ))}
+            {isFetching && catalog?.pageParams?.length !== 1 && (
+              <List>{loadingSkeletonArr}</List>
+            )}
+          </React.Fragment>
+        ))
+      ) : (
+        <h2>No Content!</h2>
+      )}
     </List>
   );
 }

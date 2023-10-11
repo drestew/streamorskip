@@ -6,7 +6,7 @@ import { Button } from '../Button/Button';
 import { space } from '@styles/theme';
 import { Menu } from '../Menu/Menu';
 import React from 'react';
-import { useUser } from '@supabase/auth-helpers-react';
+import { useRouter } from 'next/router';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -19,8 +19,12 @@ const StyledLink = styled(Link)`
   color: white;
 `;
 
-export function Header() {
-  const user = useUser();
+type HeaderProps = {
+  userId: string | null;
+};
+
+export function Header({ userId }: HeaderProps) {
+  const router = useRouter();
 
   return (
     <HeaderContainer>
@@ -34,14 +38,14 @@ export function Header() {
           priority
         />
       </Link>
-      {!user ? (
-        <StyledLink href="/login">
+      {!router.pathname.includes('user') && !userId ? (
+        <StyledLink href="/login" key={'login'}>
           <Button color="secondary" shade={300} size="sm" role="link">
             Log In
           </Button>
         </StyledLink>
       ) : (
-        <Menu />
+        <Menu userId={userId} />
       )}
     </HeaderContainer>
   );

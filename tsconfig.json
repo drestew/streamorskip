@@ -29,7 +29,7 @@
       "@utils/*": [
         "utils/*"
       ],
-      "@types/*": [
+      "@src/types/*": [
         "types/*"
       ],
       "@public/*": [

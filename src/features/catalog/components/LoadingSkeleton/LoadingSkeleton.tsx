@@ -20,10 +20,11 @@ const Card = styled.div`
     'poster stream stream'
     'poster skip skip';
     'icon icon icon'
-    'icon icon icon';
+    'icon icon icon'
+    'save-list save-list save-list';
   border-radius: ${space(2)};
   
-  & > *:not(:last-child), & > :last-child > * {
+  & > * {
     background-color: ${color('gray', 100)};
     animation: skeleton-loading 1s linear infinite alternate;
 
@@ -75,10 +76,23 @@ const ThumbIconContainer = styled.div`
   justify-content: space-around;
   padding: 0 ${space(5)};
   margin-top: ${space(4)};
+  background-color: white;
 `;
+
 const ThumbIcon = styled.div`
+  background-color: ${color('gray', 100)};
   width: 50px;
   height: 50px;
+`;
+
+const SaveListContainer = styled.div`
+  grid-area: 6 / 1 / 7 / 5;
+  margin: ${space(1)} auto auto auto;
+  width: 30%;
+`;
+
+const SaveList = styled.div`
+  height: 20px;
 `;
 
 export function LoadingSkeleton() {
@@ -94,6 +108,9 @@ export function LoadingSkeleton() {
           <ThumbIcon />
           <ThumbIcon />
         </ThumbIconContainer>
+        <SaveListContainer>
+          <SaveList />{' '}
+        </SaveListContainer>
       </Card>
     </CardContainer>
   );

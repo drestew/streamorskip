@@ -1,44 +1,49 @@
-import { User } from '@supabase/gotrue-js';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@src/types/supabase';
 
 export async function deleteUserRating(
   nfid: number,
-  user: User,
-  supabaseClient: SupabaseClient
+  userId: string | null,
+  supabase: SupabaseClient<Database>
 ) {
-  if (user) {
-    const { error } = await supabaseClient
+  if (userId) {
+    const { error } = await supabase
       .from('rating')
       .delete()
-      .eq('user_item_key', `${user?.id}-${nfid}`);
+      .eq('user_item_key', `${userId}-${nfid}`);
 
     if (error) {
-      console.log('Error:', {
+      console.log('Error deleting rating:', {
         message: error.message,
         details: error.details,
       });
     }
   }
 }
+
 export async function updateUserRating(
   nfid: number,
-  stream: boolean,
-  user: User,
-  supabaseClient: SupabaseClient
+  userRating: boolean | null,
+  userId: string | null,
+  supabase: SupabaseClient<Database>
 ) {
-  if (user) {
-    const { error } = await supabaseClient.from('rating').upsert({
-      user_item_key: `${user.id}-${nfid}`,
-      user_id: user.id,
-      catalog_item: nfid,
-      stream: stream,
-    });
-
-    if (error) {
-      console.log('Error:', {
-        message: error.message,
-        details: error.details,
+  if (userId) {
+    if (userRating !== null) {
+      const { error } = await supabase.from('rating').upsert({
+        user_item_key: `${userId}-${nfid}`,
+        user_id: userId,
+        catalog_item: nfid,
+        stream: userRating,
       });
+
+      if (error) {
+        console.log('Error updating rating:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
+    } else {
+      await deleteUserRating(nfid, userId, supabase);
     }
   }
 }

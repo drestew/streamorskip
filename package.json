@@ -9,7 +9,7 @@
     "lint": "next lint",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "jest"
+    "update-types": "npx supabase gen types typescript --project-id \"hcoxdhdqhkhtynyvbdpv\" --schema public > src/types/supabase.ts"
   },
   "dependencies": {
     "@fontsource/poppins": "^4.5.10",

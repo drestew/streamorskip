@@ -1,12 +1,16 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import Image from 'next/image';
 import { color, font, space } from '@styles/theme';
 import arrow from '@public/arrow.png';
 import thumb_outline from '@public/thumb_outline.svg';
 import thumb_solid from '@public/thumb_solid.svg';
-import { deleteUserRating, updateUserRating } from '@features/catalog';
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { updateUserRating } from '@features/catalog';
+import { SupabaseClient } from '@supabase/auth-helpers-react';
+import { Database } from '@src/types/supabase';
+import { updateSavedList } from '@features/catalog/api/updateSavedList';
+import { QueryClient, useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
 
 type Catalog = {
   nfid: number;
@@ -19,7 +23,15 @@ type Catalog = {
 };
 
 export type UserRating = {
-  stream: boolean | null;
+  userId: string | null;
+  userRatings:
+    | { user_id: string; catalog_item: number; stream: boolean }[]
+    | null;
+  setUserRatings: React.Dispatch<
+    React.SetStateAction<
+      { user_id: string; catalog_item: number; stream: boolean }[] | null
+    >
+  >;
 };
 
 type ImgPriority = {
@@ -35,10 +47,48 @@ type Modal = {
   modalState: () => void;
 };
 
-type CardProps = CardContent & UserRating & ImgPriority & Modal;
+type SavedItem = {
+  supabase: SupabaseClient<Database>;
+  savedList: { catalog_item: number }[] | null;
+  setSavedList: React.Dispatch<
+    React.SetStateAction<{ catalog_item: number }[] | null>
+  >;
+};
 
-const CardContainer = styled.div`
+type Query = {
+  queryClient: QueryClient;
+};
+
+type CardProps = CardContent &
+  UserRating &
+  ImgPriority &
+  Modal &
+  SavedItem &
+  Query;
+
+const FadeOut = keyframes`
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+`;
+
+const CardContainer = styled.div<{
+  router: boolean;
+  savedToList: boolean | null;
+}>`
   margin: ${space(4)} auto;
+  opacity: 1;
+
+  ${(props) => {
+    if (props.router && props.savedToList === false) {
+      return css`
+        animation: ${FadeOut} 300ms ease-in-out forwards;
+      `;
+    }
+  }}
 `;
 
 const Card = styled.div`
@@ -50,8 +100,9 @@ const Card = styled.div`
     'poster title title'
     'poster synopsis synopsis '
     'poster stream stream'
-    'poster skip skip';
-    'icon icon icon';
+    'poster skip skip'
+    'icon icon icon'
+    'save-list save-list save-list';
   border-radius: ${space(2)};
 
   .rating-text {
@@ -70,16 +121,6 @@ const Poster = styled.div<{ truncateSynopsis: boolean }>`
   width: ${space(20)};
   position: relative;
   margin-right: ${space(3)};
-
-  ${(props) => {
-    if (!props.truncateSynopsis) {
-      return css`
-        & > * {
-          //padding-bottom: 100%;
-        }
-      `;
-    }
-  }};
 `;
 
 const SynopsisContainer = styled.div`
@@ -149,64 +190,126 @@ const IconContainer = styled.div`
   cursor: pointer;
 `;
 
+const SaveListContainer = styled.div`
+  margin-top: ${space(1)};
+  grid-area: save-list;
+  ${font('xs', 'regular')}
+  display: flex;
+  justify-content: center;
+`;
+
+const SaveList = styled.button`
+  border-style: none;
+  background-color: white;
+  cursor: pointer;
+`;
+
 const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
-  const supabaseClient = useSupabaseClient();
-  const user = useUser();
   const {
     title,
     synopsis,
     rating,
     img,
-    stream,
     nfid,
     priorityImg,
     modalState,
+    queryClient,
+    supabase,
+    userId,
+    userRatings,
+    setUserRatings,
+    savedList,
+    setSavedList,
   } = props;
-  const [streamRating, setStreamRating] = React.useState(stream);
+  const [userRating, setUserRating] = React.useState<boolean | null>(null);
   const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
+  const [savedToList, setSavedToList] = React.useState<boolean | null>(null);
+  const router = useRouter();
 
   function toggleSynopsis() {
     setTruncateSynopsis(!truncateSynopsis);
   }
 
-  function handleClick(thumbIcon: string) {
-    if (user) {
-      if (thumbIcon === 'skip' && streamRating !== false) {
-        setStreamRating(false);
-        updateUserRating(nfid, false, user, supabaseClient);
-      } else if (thumbIcon === 'skip' && streamRating === false) {
-        setStreamRating(null);
-        deleteUserRating(nfid, user, supabaseClient);
-      } else if (thumbIcon === 'stream' && !streamRating) {
-        setStreamRating(true);
-        updateUserRating(nfid, true, user, supabaseClient);
-      } else if (thumbIcon === 'stream' && streamRating) {
-        setStreamRating(null);
-        deleteUserRating(nfid, user, supabaseClient);
-      }
-    } else {
-      modalState();
+  React.useEffect(() => {
+    setSavedToList(
+      savedList && savedList.some((item) => item.catalog_item === nfid)
+    );
+  }, [savedList]);
+
+  React.useEffect(() => {
+    const catalogItem = userRatings?.find((item) => item.catalog_item === nfid);
+    setUserRating(catalogItem ? catalogItem.stream : null);
+  }, [userRatings]);
+
+  function handleRating(thumbIcon: string) {
+    if (thumbIcon === 'skip' && userRating !== false) {
+      setUserRating(false);
+    } else if (thumbIcon === 'skip' && userRating === false) {
+      setUserRating(null);
+    } else if (thumbIcon === 'stream' && !userRating) {
+      setUserRating(true);
+    } else if (thumbIcon === 'stream' && userRating) {
+      setUserRating(null);
     }
+
+    mutationUpdateUserRating.mutate();
   }
 
-  function handleKeyDown(event: React.KeyboardEvent) {
+  async function handleKeyDown(event: React.KeyboardEvent) {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       const key = event.target as HTMLElement;
       if (key.dataset.rating === 'stream') {
-        handleClick('stream');
+        await handleRating('stream');
       } else if (key.dataset.rating === 'skip') {
-        handleClick('skip');
+        await handleRating('skip');
       } else if (key.dataset.synopsis === 'synopsis') {
         toggleSynopsis();
       }
     }
   }
 
+  function handleSave() {
+    mutationUpdateSavedList.mutate();
+  }
+
+  const mutationUpdateSavedList = useMutation({
+    mutationFn: () => updateSavedList(supabase, userId, nfid, savedToList),
+    onSuccess: async () => {
+      // timeout to delay fade out of card (0 is fine because event loop)
+      setTimeout(
+        async () => await queryClient.refetchQueries(['my-list', userId]),
+        0
+      );
+      const { data } = await supabase
+        .from('saved_list')
+        .select('catalog_item')
+        .eq('user_id', userId);
+      setSavedList(data);
+    },
+  });
+
+  const mutationUpdateUserRating = useMutation({
+    mutationFn: () => updateUserRating(nfid, userRating, userId, supabase),
+    onSuccess: async () => {
+      await queryClient.refetchQueries(['my-ratings', userId, 'stream']);
+      await queryClient.refetchQueries(['my-ratings', userId, 'skip']);
+      const { data } = await supabase
+        .from('rating')
+        .select('user_id, catalog_item, stream')
+        .eq('user_id', userId);
+      setUserRatings(data);
+    },
+  });
+
   return (
-    <CardContainer tabIndex={0}>
+    <CardContainer
+      tabIndex={0}
+      router={router.pathname.includes('my-list')}
+      savedToList={savedToList}
+    >
       <Card>
         <Title>{title}</Title>
         <SynopsisContainer
@@ -222,8 +325,6 @@ export function CatalogCard(props: CardProps) {
           <Image
             src={img}
             alt="Content Poster"
-            //fill
-            //style={{ objectFit: 'contain' }}
             width="80"
             height="110"
             sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"
@@ -240,27 +341,36 @@ export function CatalogCard(props: CardProps) {
         </SkipContainer>
         <IconContainer>
           <Image
-            src={streamRating === false ? thumb_solid : thumb_outline}
+            src={userRating === false ? thumb_solid : thumb_outline}
             alt="Thumb down icon"
             data-rating="skip"
             width="50"
             height="50"
             style={{ transform: 'rotate(180deg)' }}
-            onClick={() => handleClick('skip')}
+            onClick={userId ? () => handleRating('skip') : modalState}
             tabIndex={0}
             onKeyDown={handleKeyDown}
           />
           <Image
-            src={streamRating ? thumb_solid : thumb_outline}
+            src={userRating ? thumb_solid : thumb_outline}
             alt="Thumb up icon"
             data-rating="stream"
             width="50"
             height="50"
-            onClick={() => handleClick('stream')}
+            onClick={userId ? () => handleRating('stream') : modalState}
             tabIndex={0}
             onKeyDown={handleKeyDown}
           />
         </IconContainer>
+        <SaveListContainer>
+          <SaveList onClick={userId ? handleSave : modalState}>
+            {userId
+              ? savedToList
+                ? 'Remove from My List'
+                : 'Add to My List'
+              : 'Add to My List'}
+          </SaveList>
+        </SaveListContainer>
       </Card>
     </CardContainer>
   );

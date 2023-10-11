@@ -1,38 +1,45 @@
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
-import { useQuery } from '@tanstack/react-query';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { User } from '@supabase/gotrue-js';
+import { Database } from '@src/types/supabase';
 
-async function getUserRatings(
-  supabaseClient: SupabaseClient,
-  user: User | null
+export async function getUserRatings(
+  { pageParam = 0 },
+  supabase: SupabaseClient<Database>,
+  userId: string | null,
+  value: string
 ) {
-  if (!user) {
-    return null;
-  }
-
-  const { data, error } = await supabaseClient
+  if (!userId) return null;
+  const step = pageParam + 10;
+  const { data, error } = await supabase
     .from('rating')
     .select('user_id, catalog_item, stream')
-    .eq('user_id', user.id);
+    .eq('user_id', userId)
+    .eq('stream', value === 'stream');
 
   if (error) {
-    console.log('Error:', {
+    console.log('Error getting user ratings:', {
       message: error.message,
       details: error.details,
     });
   }
 
-  return data;
-}
+  const titleIds = data?.map((title) => title.catalog_item);
 
-export function useUserRating() {
-  const supabaseClient = useSupabaseClient();
-  const user = useUser();
-  const { data, status } = useQuery({
-    queryKey: ['userRatings'],
-    queryFn: () => getUserRatings(supabaseClient, user),
-  });
+  const { data: userRatingsCatalog, error: userRatingsCatalogError } =
+    await supabase
+      .from('catalog')
+      .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
+      .in('nfid', titleIds || [])
+      .range(pageParam, step);
 
-  return { data, status };
+  if (userRatingsCatalogError) {
+    console.log('Error getting user ratings catalog:', {
+      message: userRatingsCatalogError.message,
+      details: userRatingsCatalogError.details,
+    });
+  }
+
+  return {
+    filteredData: userRatingsCatalog || null,
+    step: userRatingsCatalog && userRatingsCatalog.length > 0 ? step + 1 : null,
+  };
 }

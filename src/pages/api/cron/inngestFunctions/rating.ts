@@ -1,71 +1,43 @@
 import { supabaseService } from '@utils/supabase';
 import { options } from '@utils/imdb';
-import { ImdbIdItem, ImdbRatingItem, ImdbRatingItems } from '../types';
+import { ImdbIdItem, ImdbIdItems } from '../types';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { ValidationError } from 'runtypes';
-import { distance } from 'fastest-levenshtein';
-import Bottleneck from 'bottleneck';
-import { Inngest } from 'inngest';
 
 type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
+type UpdatedRating = {
+  title: string | null;
+  imdbId: string | null;
+};
+export default apiResponse;
+async function apiResponse(req: NextApiRequest, res: NextApiResponse) {
+  const resp = await updateCatalogRatings();
+  res.json(resp);
+}
 
-const limiter = new Bottleneck({ minTime: 300 });
-const limiterImdbId = new Bottleneck({ minTime: 600 });
-const inngest = new Inngest({ name: 'streamorskip' });
+async function updateCatalogRatings() {
+  let updatedCatalogItems: {
+    itemsWithRatingAdded: UpdatedRating[];
+    itemsWithRatingsNotAdded: UpdatedRating[];
+  } = { itemsWithRatingAdded: [], itemsWithRatingsNotAdded: [] };
 
-export default inngest.createFunction(
-  { name: 'Get ratings' },
-  { event: 'cron/rating' },
-  async ({ step }) => {
-    for (let i = 0; i < 100; i += 10) {
-      const nullFromDB = await step.run('null ratings from db', () => {
-        return getNullRatingsFromDB(i);
-      });
-
-      const fetchRatingForDbItem = await step.run(
-        'fetch rating for db item',
-        () => {
-          return getRating(nullFromDB, null);
-        }
-      );
-
-      await step.run('add ratings to db', () => {
-        return addRatingsToDB(fetchRatingForDbItem);
-      });
-
-      const getImdbIds = await step.run(
-        'get imdb ids from title search',
-        () => {
-          return getImdbId(nullFromDB);
-        }
-      );
-
-      await step.run('add imdb ids db', () => {
-        return addImdbIdsToDB(getImdbIds);
-      });
-
-      // Search items ran separately than db items to fix function timeout error in vercel
-      const fetchRatingForTitleSearchItem = await step.run(
-        'fetch rating for title search item',
-        () => {
-          return getRating(null, getImdbIds);
-        }
-      );
-
-      await step.run('add ratings to db', () => {
-        return addRatingsToDB(fetchRatingForTitleSearchItem);
-      });
-    }
+  for (let i = 0; i < 10; i += 2) {
+    const nullRatings = await getNullRatingsFromDB(i);
+    const ratedItems = await getRatings(nullRatings);
+    updatedCatalogItems = await addRatingsToDB(ratedItems);
   }
-);
+  return updatedCatalogItems;
+}
 
-const getNullRatingsFromDB = async (rowStep: number) => {
+async function getNullRatingsFromDB(i: number) {
   const { data, error } = await supabaseService
     .from('catalog')
     .select('title, imdbid, rating, nfid')
     .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
+    .not('imdbid', 'is', null)
     .order('id', { ascending: false })
-    .range(rowStep, rowStep + 10);
+    .range(0, i + 2);
 
   if (error) {
     console.log('Error:', {
@@ -75,200 +47,70 @@ const getNullRatingsFromDB = async (rowStep: number) => {
   }
 
   return data;
-};
+}
 
-const addImdbIdsToDB = async (itemsWithImdbIds: ImdbIdItem[]) => {
-  itemsWithImdbIds.length > 0 &&
-    itemsWithImdbIds.map(async (item) => {
+async function getRatings(catalogFromDB: Awaited<NeedRating>) {
+  let itemsToBeRated: (string | null)[];
+  let itemsWithRatings: ImdbIdItem[] = [];
+
+  if (catalogFromDB && catalogFromDB.length > 0) {
+    itemsToBeRated = catalogFromDB.map((item) => item.imdbid);
+    itemsWithRatings = await Promise.all(
+      itemsToBeRated.map(async (item) => {
+        const url = `https://imdb-api.com/en/API/UserRatings/k_27mlvrca/${item}`;
+        const fetchItemRatings = await fetch(url, options);
+        return fetchItemRatings.json();
+      })
+    );
+  }
+  return itemsWithRatings;
+}
+
+async function addRatingsToDB(ratedItemsPromise: Awaited<ImdbIdItem[]>) {
+  let ratedItems = ratedItemsPromise;
+  const itemsWithAddedRating: UpdatedRating[] = [];
+  const itemsWithNoRating: UpdatedRating[] = [];
+  try {
+    ratedItems = ImdbIdItems.check(ratedItems);
+    ratedItems.map(async (item) => {
+      if (item.totalRatingVotes === '0') {
+        itemsWithNoRating.push({
+          title: item.title,
+          imdbId: item.imDbId,
+        });
+        return;
+      }
+
       const { error } = await supabaseService
         .from('catalog')
         .update({
-          imdbid: item.imdbid,
+          rating: Number(item.totalRating),
         })
-        .eq('nfid', item.nfid);
+        .eq('imdbid', item.imDbId);
 
-      if (error) console.error(error);
-    });
+      if (error) {
+        console.log('Error:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
 
-  return itemsWithImdbIds;
-};
-
-const getImdbId = async (catalogFromDB: Awaited<NeedRating>) => {
-  // need imdb id in order to get rating
-  let itemsNoImdbId: NeedRating;
-  let itemsWithImdbIds: ImdbIdItem[] = [];
-  let dbItem: { title: string; imdbid: string | null; nfid: number };
-  if (catalogFromDB) {
-    itemsNoImdbId = catalogFromDB.filter((item) => !item.imdbid);
-    itemsWithImdbIds = await Promise.all(
-      itemsNoImdbId.map(async (itemsNoImdbId) => {
-        try {
-          const encodedTitle = encodeURI(itemsNoImdbId.title);
-          const url = `https://imdb8.p.rapidapi.com/title/v2/find?title=${encodedTitle}`;
-          const titleSearch = await limiterImdbId.schedule(() =>
-            fetch(url, options)
-          );
-          const { results, totalMatches } = await titleSearch.json();
-          if (totalMatches > 0) {
-            const { title, id } = results[0];
-            const checkTitleMatch = distance(itemsNoImdbId.title, title);
-            const formattedId = id.replace(/\D/g, ''); // '/title/tt12345678/' => '12345678'
-            dbItem =
-              checkTitleMatch <= 1
-                ? {
-                    title: title,
-                    imdbid: `tt${formattedId}`,
-                    nfid: itemsNoImdbId.nfid,
-                  }
-                : { title: title, imdbid: null, nfid: itemsNoImdbId.nfid };
-          } else {
-            dbItem = {
-              title: itemsNoImdbId.title,
-              imdbid: null,
-              nfid: itemsNoImdbId.nfid,
-            };
-          }
-          return dbItem;
-        } catch {
-          console.log('Error: ', itemsNoImdbId);
-          return {
-            title: itemsNoImdbId.title,
-            imdbid: null,
-            nfid: itemsNoImdbId.nfid,
-          };
-        }
-      })
-    ).then((imdbItems) => imdbItems.filter((item) => item.imdbid));
-  }
-
-  return itemsWithImdbIds;
-};
-
-const extractImdbIds = (imdbItem?: ImdbIdItem[], dbItem?: NeedRating) => {
-  let imdbItemsArr: (string | null)[] = [];
-  let dbItemsArr: (string | null)[] = [];
-
-  if (imdbItem) {
-    imdbItemsArr = imdbItem.map((item) => {
-      return item.imdbid;
-    });
-  }
-
-  if (dbItem) {
-    dbItemsArr = dbItem.map((item) => {
-      return item.imdbid;
-    });
-  }
-
-  return [...imdbItemsArr, ...dbItemsArr].filter((item) => item);
-};
-
-const getRating = async (
-  catalogFromDB: Awaited<NeedRating>,
-  newImdbIds: Awaited<ImdbIdItem>[] | null
-) => {
-  let itemsWithNewImdbId: Awaited<ImdbIdItem>[] = [];
-  let itemsNoRatings: NeedRating;
-  let itemsWithRatings: ImdbRatingItem[] = [];
-
-  if (catalogFromDB && catalogFromDB.length > 0) {
-    itemsNoRatings = catalogFromDB.filter((item) => item.imdbid);
-
-    const imdbArr = extractImdbIds(itemsNoRatings);
-
-    itemsWithRatings = await Promise.all(
-      imdbArr.map(async (item) => {
-        if (item) {
-          const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item}`;
-          const fetchItemRatings = await limiter.schedule(() =>
-            fetch(url, options)
-          );
-
-          return fetchItemRatings.json();
-        }
-      })
-    );
-  }
-
-  // duplication necessary to fix function timeout error in vercel
-  if (newImdbIds && newImdbIds.length > 0) {
-    itemsWithNewImdbId = newImdbIds;
-    const imdbArr = extractImdbIds(itemsWithNewImdbId);
-
-    itemsWithRatings = await Promise.all(
-      imdbArr.map(async (item) => {
-        if (item) {
-          const url = `https://imdb8.p.rapidapi.com/title/get-ratings?tconst=${item}`;
-          const fetchItemRatings = await limiter.schedule(() =>
-            fetch(url, options)
-          );
-
-          return fetchItemRatings.json();
-        }
-      })
-    );
-  }
-
-  return itemsWithRatings.filter((item) => item && item.rating);
-};
-
-const addRatingsToDB = async (ratedItemsPromise: Awaited<ImdbRatingItem[]>) => {
-  let ratedItems = ratedItemsPromise;
-  let itemsAddedToDb;
-  let itemsNotAddedToDb;
-
-  try {
-    ratedItems = ImdbRatingItems.check(ratedItems);
-    if (ratedItems?.length > 0) {
-      ratedItems.map(async (item) => {
-        if (item.id) {
-          const id = item.id.replace(/\D/g, '');
-          const { error } = await supabaseService
-            .from('catalog')
-            .update({
-              rating: item.rating,
-            })
-            .eq('imdbid', `tt${id}`);
-
-          if (error) {
-            console.log('Error:', {
-              message: error.message,
-              details: error.details,
-            });
-          }
-        }
-
-        itemsAddedToDb = ratedItems
-          .map((item) => {
-            return {
-              title: item.title,
-              id: item.id,
-              rating: item.rating,
-            };
-          })
-          .filter((item) => item.rating);
-
-        itemsNotAddedToDb = ratedItems
-          .map((item) => {
-            return {
-              title: item.title,
-              id: item.id,
-              rating: item.rating,
-            };
-          })
-          .filter((item) => !item.rating);
+      itemsWithAddedRating.push({
+        title: item.title,
+        imdbId: item.imDbId,
       });
-    }
+    });
   } catch (error) {
+    // console.log(ratedItems);
     if (error instanceof ValidationError)
-      console.error('Error:', {
+      console.error('Error validating imdb api types:', {
         code: error.code,
         details: error.details,
       });
   }
 
   return {
-    ratingsAdded: itemsAddedToDb,
-    ratingsNotAdded: itemsNotAddedToDb,
+    itemsWithRatingAdded: itemsWithAddedRating,
+    itemsWithRatingsNotAdded: itemsWithNoRating,
   };
-};
+}

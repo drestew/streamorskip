@@ -31,19 +31,20 @@ const CatalogItem = Record({
 export const CatalogItems = Array(CatalogItem);
 export type CatalogItem = Static<typeof CatalogItem>;
 
-const ImdbRatingItem = Record({
-  id: String,
-  title: String,
-  rating: Optional(Number),
-});
-
-export const ImdbRatingItems = Array(ImdbRatingItem);
-export type ImdbRatingItem = Static<typeof ImdbRatingItem>;
-
 const ImdbIdItem = Record({
-  imdbid: Union(String, Null),
-  title: String,
-  nfid: Number,
+  imDbId: Union(String, Null),
+  title: Union(String, Null),
+  fullTitle: Union(String, Null),
+  type: Union(String, Null),
+  year: Union(String, Null),
+  totalRating: Union(String, Null),
+  totalRatingVotes: Union(String, Null),
+  ratings: Union(
+    Array(Record({ rating: String, percent: String, votes: String })),
+    Array(Record({})),
+    Null
+  ),
+  errorMessage: String,
 });
 
 export const ImdbIdItems = Array(ImdbIdItem);

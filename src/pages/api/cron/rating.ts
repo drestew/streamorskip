@@ -1,43 +1,28 @@
-import { supabaseService } from '@utils/supabase';
-import { options } from '@utils/imdb';
-import { ImdbIdItem, ImdbIdItems } from '../types';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { ImdbIdItem, ImdbIdItems } from './types';
 import { ValidationError } from 'runtypes';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@src/types/supabase';
 
 type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
 type UpdatedRating = {
   title: string | null;
   imdbId: string | null;
 };
-export default apiResponse;
-async function apiResponse(req: NextApiRequest, res: NextApiResponse) {
-  const resp = await updateCatalogRatings();
-  res.json(resp);
-}
+export type Env = {
+  SUPABASE_URL: string;
+  SUPABASE_KEY: string;
+  IMDB_KEY: string;
+};
 
-async function updateCatalogRatings() {
-  let updatedCatalogItems: {
-    itemsWithRatingAdded: UpdatedRating[];
-    itemsWithRatingsNotAdded: UpdatedRating[];
-  } = { itemsWithRatingAdded: [], itemsWithRatingsNotAdded: [] };
-
-  for (let i = 0; i < 10; i += 2) {
-    const nullRatings = await getNullRatingsFromDB(i);
-    const ratedItems = await getRatings(nullRatings);
-    updatedCatalogItems = await addRatingsToDB(ratedItems);
-  }
-  return updatedCatalogItems;
-}
-
-async function getNullRatingsFromDB(i: number) {
-  const { data, error } = await supabaseService
+async function getNullRatingsFromDB(supabase: SupabaseClient) {
+  const { data, error } = await supabase
     .from('catalog')
     .select('title, imdbid, rating, nfid')
     .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
     .not('imdbid', 'is', null)
     .order('id', { ascending: false })
-    .range(0, i + 2);
+    .range(0, 100);
 
   if (error) {
     console.log('Error:', {
@@ -49,7 +34,10 @@ async function getNullRatingsFromDB(i: number) {
   return data;
 }
 
-async function getRatings(catalogFromDB: Awaited<NeedRating>) {
+async function getRatingsFromImdb(
+  catalogFromDB: Awaited<NeedRating>,
+  imdbKey: string
+) {
   let itemsToBeRated: (string | null)[];
   let itemsWithRatings: ImdbIdItem[] = [];
 
@@ -57,8 +45,8 @@ async function getRatings(catalogFromDB: Awaited<NeedRating>) {
     itemsToBeRated = catalogFromDB.map((item) => item.imdbid);
     itemsWithRatings = await Promise.all(
       itemsToBeRated.map(async (item) => {
-        const url = `https://imdb-api.com/en/API/UserRatings/k_27mlvrca/${item}`;
-        const fetchItemRatings = await fetch(url, options);
+        const url = `https://imdb-api.com/en/API/UserRatings/${imdbKey}/${item}`;
+        const fetchItemRatings = await fetch(url);
         return fetchItemRatings.json();
       })
     );
@@ -66,7 +54,10 @@ async function getRatings(catalogFromDB: Awaited<NeedRating>) {
   return itemsWithRatings;
 }
 
-async function addRatingsToDB(ratedItemsPromise: Awaited<ImdbIdItem[]>) {
+async function addRatingsToDB(
+  supabase: SupabaseClient,
+  ratedItemsPromise: Awaited<ImdbIdItem[]>
+) {
   let ratedItems = ratedItemsPromise;
   const itemsWithAddedRating: UpdatedRating[] = [];
   const itemsWithNoRating: UpdatedRating[] = [];
@@ -81,7 +72,7 @@ async function addRatingsToDB(ratedItemsPromise: Awaited<ImdbIdItem[]>) {
         return;
       }
 
-      const { error } = await supabaseService
+      const { error } = await supabase
         .from('catalog')
         .update({
           rating: Number(item.totalRating),
@@ -101,7 +92,6 @@ async function addRatingsToDB(ratedItemsPromise: Awaited<ImdbIdItem[]>) {
       });
     });
   } catch (error) {
-    // console.log(ratedItems);
     if (error instanceof ValidationError)
       console.error('Error validating imdb api types:', {
         code: error.code,
@@ -114,3 +104,29 @@ async function addRatingsToDB(ratedItemsPromise: Awaited<ImdbIdItem[]>) {
     itemsWithRatingsNotAdded: itemsWithNoRating,
   };
 }
+
+const handleRatingUpdate = {
+  async fetch(request: Request, env: Env) {
+    const supabaseUrl = env.SUPABASE_URL;
+    const supabaseKey = env.SUPABASE_KEY;
+    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+    let updatedCatalogItems: {
+      itemsWithRatingAdded: UpdatedRating[];
+      itemsWithRatingsNotAdded: UpdatedRating[];
+    } = { itemsWithRatingAdded: [], itemsWithRatingsNotAdded: [] };
+
+    // for (let i = 0; i < 100; i += 10) {
+    const nullRatings = await getNullRatingsFromDB(supabase);
+    const ratedItems = await getRatingsFromImdb(nullRatings, env.IMDB_KEY);
+    updatedCatalogItems = await addRatingsToDB(supabase, ratedItems);
+    // }
+
+    return new Response(JSON.stringify(updatedCatalogItems), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  },
+};
+
+export default handleRatingUpdate;

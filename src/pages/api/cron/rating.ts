@@ -2,16 +2,12 @@ import { ImdbIdItem, ImdbIdItems } from './types';
 import { ValidationError } from 'runtypes';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@src/types/supabase';
+import { Env } from './index';
 
 type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
 type UpdatedRating = {
   title: string | null;
   imdbId: string | null;
-};
-export type Env = {
-  SUPABASE_URL: string;
-  SUPABASE_KEY: string;
-  IMDB_KEY: string;
 };
 
 async function getNullRatingsFromDB(supabase: SupabaseClient) {
@@ -22,7 +18,8 @@ async function getNullRatingsFromDB(supabase: SupabaseClient) {
     .or('rating.is.null, rating.eq.0')
     .not('imdbid', 'is', null)
     .order('id', { ascending: false })
-    .range(0, 100);
+    // limit of 15 since worker subrequest has limit of 50 (3 fetches total here)
+    .range(0, 15);
 
   if (error) {
     console.log('Error:', {
@@ -105,8 +102,8 @@ async function addRatingsToDB(
   };
 }
 
-const handleRatingUpdate = {
-  async fetch(request: Request, env: Env) {
+const ratingUpdate = {
+  async fetch(req: Request, env: Env) {
     const supabaseUrl = env.SUPABASE_URL;
     const supabaseKey = env.SUPABASE_KEY;
     const supabase = createClient<Database>(supabaseUrl, supabaseKey);
@@ -115,11 +112,9 @@ const handleRatingUpdate = {
       itemsWithRatingsNotAdded: UpdatedRating[];
     } = { itemsWithRatingAdded: [], itemsWithRatingsNotAdded: [] };
 
-    // for (let i = 0; i < 100; i += 10) {
     const nullRatings = await getNullRatingsFromDB(supabase);
     const ratedItems = await getRatingsFromImdb(nullRatings, env.IMDB_KEY);
     updatedCatalogItems = await addRatingsToDB(supabase, ratedItems);
-    // }
 
     return new Response(JSON.stringify(updatedCatalogItems), {
       headers: {
@@ -129,4 +124,4 @@ const handleRatingUpdate = {
   },
 };
 
-export default handleRatingUpdate;
+export default ratingUpdate;

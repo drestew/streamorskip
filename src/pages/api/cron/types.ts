@@ -83,18 +83,20 @@ export const TrailerUrls = TrailerUrl;
 export type TrailerUrl = Static<typeof TrailerUrl>;
 
 const Genre = Record({
-  nfid: Number,
-  genres: Optional(
-    Array(
-      Record({
-        nfid: Number,
-        genre: String,
-      })
-    )
+  // nfid: Number,
+  // fromApi: Record({
+  elapse: Optional(Number),
+  results: Array(
+    Record({
+      nfid: Number,
+      genre: String,
+    })
   ),
+  total: Optional(Number),
+  // }),
 });
 
-export const Genres = Array(Genre);
+export const UnogsGenres = Genre;
 export type Genre = Static<typeof Genre>;
 
 const DeletedItem = Record({

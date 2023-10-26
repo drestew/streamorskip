@@ -11,7 +11,7 @@ async function getCatalogFromDB(supabase: SupabaseClient<Database>) {
     .from('catalog')
     .select('nfid')
     .eq('genre', 'false')
-    .range(0, 50);
+    .range(0, 20);
 
   if (error) {
     console.log('Error:', {

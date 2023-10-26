@@ -102,12 +102,18 @@ const Genre = Record({
 export const UnogsGenres = Genre;
 export type Genre = Static<typeof Genre>;
 
-const DeletedItem = Record({
-  title: String,
-  deletedate: String,
-  netflixid: Number,
-  countrycode: String,
+const RemovedTitle = Record({
+  elapse: Optional(Number),
+  total: Optional(Number),
+  results: Array(
+    Record({
+      title: String,
+      deletedate: Optional(String),
+      netflixid: Number,
+      countrycode: Optional(String),
+    })
+  ),
 });
 
-export const DeletedItems = Array(DeletedItem);
-export type DeletedItem = Static<typeof DeletedItem>;
+export const RemovedTitles = RemovedTitle;
+export type RemovedTitle = Static<typeof RemovedTitle>;

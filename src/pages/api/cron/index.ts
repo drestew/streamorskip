@@ -1,6 +1,7 @@
 import ratingUpdate from './rating';
 import genreUpdate from './genre';
 import addToCatalog from './addToCatalog';
+import removeFromCatalog from './removeFromCatalog';
 
 export type Env = {
   SUPABASE_URL: string;
@@ -16,14 +17,17 @@ const handleWorker = {
     let resp;
 
     switch (pathname) {
+      case '/addToCatalog':
+        resp = await addToCatalog.fetch(req, env);
+        break;
       case '/updateRatings':
         resp = await ratingUpdate.fetch(req, env);
         break;
       case '/updateGenres':
         resp = await genreUpdate.fetch(req, env);
         break;
-      case '/addToCatalog':
-        resp = await addToCatalog.fetch(req, env);
+      case '/removeFromCatalog':
+        resp = await removeFromCatalog.fetch(req, env);
         break;
       default:
         resp = new Response('404, not found!', { status: 404 });

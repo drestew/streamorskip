@@ -36,7 +36,7 @@ async function getNewTitles(env: Env) {
     if (error instanceof ValidationError)
       console.error('Error validating unogs catalog api types:', {
         code: error.code,
-        details: error.details,
+        stack: error.stack,
       });
   }
 

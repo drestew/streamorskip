@@ -92,7 +92,7 @@ async function addRatingsToDB(
     if (error instanceof ValidationError)
       console.error('Error validating imdb api types:', {
         code: error.code,
-        details: error.details,
+        stack: error.stack,
       });
   }
 

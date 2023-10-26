@@ -10,25 +10,31 @@ import {
 } from 'runtypes';
 
 const CatalogItem = Record({
-  id: Number,
-  title: String,
-  img: String,
-  vtype: String,
-  nfid: Number,
-  synopsis: String,
-  avgrating: Union(Number, Null),
-  year: Number,
-  runtime: Union(Number, Null),
-  imdbid: Union(String, Null),
-  poster: Union(String, Null),
-  imdbrating: Union(Number, Null),
-  top250: Union(Number, Null),
-  top250tv: Union(Number, Null),
-  clist: String,
-  titledate: String,
+  elapse: Optional(Number),
+  total: Optional(Number),
+  results: Array(
+    Record({
+      id: Number,
+      title: String,
+      img: String,
+      vtype: String,
+      nfid: Number,
+      synopsis: String,
+      avgrating: Union(Number, Null),
+      year: Number,
+      runtime: Union(Number, Null),
+      imdbid: Union(String, Null),
+      poster: Union(String, Null),
+      imdbrating: Union(Number, Null),
+      top250: Union(Number, Null),
+      top250tv: Union(Number, Null),
+      clist: String,
+      titledate: String,
+    })
+  ),
 });
 
-export const CatalogItems = Array(CatalogItem);
+export const CatalogItems = CatalogItem;
 export type CatalogItem = Static<typeof CatalogItem>;
 
 const ImdbIdItem = Record({
@@ -83,8 +89,6 @@ export const TrailerUrls = TrailerUrl;
 export type TrailerUrl = Static<typeof TrailerUrl>;
 
 const Genre = Record({
-  // nfid: Number,
-  // fromApi: Record({
   elapse: Optional(Number),
   results: Array(
     Record({
@@ -93,7 +97,6 @@ const Genre = Record({
     })
   ),
   total: Optional(Number),
-  // }),
 });
 
 export const UnogsGenres = Genre;

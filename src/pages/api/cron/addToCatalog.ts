@@ -1,9 +1,9 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseService } from '@utils/supabase';
-import { options } from '@utils/unogs';
 import { decodeHTML } from 'entities';
 import { CatalogItem, CatalogItems } from './types';
 import { ValidationError } from 'runtypes';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@src/types/supabase';
+import { Env } from './index';
 
 export const lookbackDate = () => {
   const dateToday = new Date();
@@ -16,26 +16,46 @@ export const lookbackDate = () => {
   return `${year}-${month}-${day}`;
 };
 
-const fetchNewContent = async () => {
+async function getNewTitles(env: Env) {
+  let apiResults: CatalogItem;
   const url = `https://unogsng.p.rapidapi.com/search?newdate=${lookbackDate()}
   &audiosubtitle_andor=and&subtitle=english&countrylist=78&audio=english&offset=0`;
-  const mediaData = await fetch(url, options);
+  const newTitles = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'X-RapidAPI-Key': env.CATALOG_KEY,
+      'X-RapidAPI-Host': env.CATALOG_HOST,
+    },
+  });
+  apiResults = await newTitles.json();
+  try {
+    // type-check api response
+    console.log(apiResults);
+    apiResults = CatalogItems.check(apiResults);
+  } catch (error) {
+    if (error instanceof ValidationError)
+      console.error('Error validating unogs catalog api types:', {
+        code: error.code,
+        details: error.details,
+      });
+  }
 
-  return mediaData.json();
-};
+  return apiResults;
+}
 
-const addNewContentToDB = async () => {
-  let { results } = await fetchNewContent();
-  type ItemData = Pick<CatalogItem, 'nfid' | 'title'>;
-  const itemsNotAddedToDb: ItemData[] = [];
-  const itemsAddedToDb: ItemData[] = [];
+async function addNewTitlesToDB(
+  fetchedTitles: CatalogItem,
+  env: Env,
+  supabase: SupabaseClient<Database>
+) {
+  type TitleBrief = { nfid: number; title: string };
+  const titlesNotAddedToDb: TitleBrief[] = [];
+  const titlesAddedToDb: TitleBrief[] = [];
 
   try {
-    results = CatalogItems.check(results); // type-check api response
-    const newContent: CatalogItem[] = results;
-    for (let i = 0; i < newContent.length; i++) {
-      const item = newContent[i];
-      const { error } = await supabaseService.from('catalog').insert({
+    for (let i = 0; i < fetchedTitles.results.length; i++) {
+      const item = fetchedTitles.results[i];
+      const { error } = await supabase.from('catalog').insert({
         nfid: item.nfid,
         title: decodeHTML(item.title),
         img: item.img,
@@ -48,13 +68,13 @@ const addNewContentToDB = async () => {
         titledate: item.titledate,
       });
 
-      itemsAddedToDb.push({
+      titlesAddedToDb.push({
         nfid: item.nfid,
         title: decodeHTML(item.title),
       });
 
       if (error) {
-        itemsNotAddedToDb.push({
+        titlesNotAddedToDb.push({
           nfid: item.nfid,
           title: decodeHTML(item.title),
         });
@@ -65,6 +85,7 @@ const addNewContentToDB = async () => {
       }
     }
   } catch (error) {
+    // will throw error if duplicate primary key (nfid) in db
     if (error instanceof ValidationError)
       console.error('Error:', {
         code: error.code,
@@ -72,12 +93,23 @@ const addNewContentToDB = async () => {
       });
   }
 
-  return { contentAdded: [...itemsAddedToDb], Error: [...itemsNotAddedToDb] };
-};
+  return { titlesAdded: [...titlesAddedToDb], Error: [...titlesNotAddedToDb] };
+}
 
-const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const resp = await addNewContentToDB();
-  res.json(resp);
-};
+const addToCatalog = {
+  async fetch(req: Request, env: Env) {
+    const supabaseUrl = env.SUPABASE_URL;
+    const supabaseKey = env.SUPABASE_KEY;
+    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
-export default apiResponse;
+    const fetchedTitles = await getNewTitles(env);
+    const newTitles = await addNewTitlesToDB(fetchedTitles, env, supabase);
+
+    return new Response(JSON.stringify(newTitles), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  },
+};
+export default addToCatalog;

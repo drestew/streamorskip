@@ -1,7 +1,6 @@
 import { ImdbIdItem, ImdbIdItems } from './types';
 import { ValidationError } from 'runtypes';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '@src/types/supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Env } from './index';
 
 type NeedRating = Awaited<ReturnType<typeof getNullRatingsFromDB>>;
@@ -18,7 +17,6 @@ async function getNullRatingsFromDB(supabase: SupabaseClient) {
     .or('rating.is.null, rating.eq.0')
     .not('imdbid', 'is', null)
     .order('id', { ascending: false })
-    // limit of 15 since worker subrequest has limit of 50 (3 fetches total here)
     .range(0, 15);
 
   if (error) {
@@ -103,10 +101,7 @@ async function addRatingsToDB(
 }
 
 const ratingUpdate = {
-  async fetch(req: Request, env: Env) {
-    const supabaseUrl = env.SUPABASE_URL;
-    const supabaseKey = env.SUPABASE_KEY;
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+  async fetch(req: Request, env: Env, supabase: SupabaseClient) {
     let updatedCatalogItems: {
       itemsWithRatingAdded: UpdatedRating[];
       itemsWithRatingsNotAdded: UpdatedRating[];

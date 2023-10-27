@@ -3,8 +3,7 @@ import { RemovedTitles, RemovedTitle } from './types';
 import { ValidationError } from 'runtypes';
 import { lookbackDate } from './addToCatalog';
 import { Env } from './index';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '@src/types/supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 const fetchRemovedTitles = async (env: Env) => {
   let removedTitles: RemovedTitle;
@@ -75,11 +74,7 @@ const markRemovedTitles = async (
 };
 
 const removeFromCatalog = {
-  async fetch(req: Request, env: Env) {
-    const supabaseUrl = env.SUPABASE_URL;
-    const supabaseKey = env.SUPABASE_KEY;
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
-
+  async fetch(req: Request, env: Env, supabase: SupabaseClient) {
     const removedTitles = await fetchRemovedTitles(env);
     const markedTitles = await markRemovedTitles(removedTitles, supabase);
 

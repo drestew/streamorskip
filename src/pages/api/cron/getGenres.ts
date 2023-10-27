@@ -1,5 +1,5 @@
 import { Genre, UnogsGenres } from './types';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@src/types/supabase';
 import { Env } from './index';
 import { ValidationError } from 'runtypes';
@@ -107,11 +107,7 @@ async function addGenresToDb(
 }
 
 const genreUpdate = {
-  async fetch(req: Request, env: Env) {
-    const supabaseUrl = env.SUPABASE_URL;
-    const supabaseKey = env.SUPABASE_KEY;
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
-
+  async fetch(req: Request, env: Env, supabase: SupabaseClient) {
     const catalog = await getCatalogFromDB(supabase);
     const genres = await getGenres(catalog, env);
     const genresAdded = await addGenresToDb(genres, supabase);

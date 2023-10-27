@@ -1,7 +1,7 @@
 import { decodeHTML } from 'entities';
 import { CatalogItem, CatalogItems } from './types';
 import { ValidationError } from 'runtypes';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@src/types/supabase';
 import { Env } from './index';
 
@@ -30,7 +30,6 @@ async function getNewTitles(env: Env) {
   apiResults = await newTitles.json();
   try {
     // type-check api response
-    console.log(apiResults);
     apiResults = CatalogItems.check(apiResults);
   } catch (error) {
     if (error instanceof ValidationError)
@@ -78,7 +77,7 @@ async function addNewTitlesToDB(
           nfid: item.nfid,
           title: decodeHTML(item.title),
         });
-        console.log('Error:', {
+        console.log('Error title not added to db:', {
           message: error.message,
           details: error.details,
         });
@@ -97,11 +96,7 @@ async function addNewTitlesToDB(
 }
 
 const addToCatalog = {
-  async fetch(req: Request, env: Env) {
-    const supabaseUrl = env.SUPABASE_URL;
-    const supabaseKey = env.SUPABASE_KEY;
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
-
+  async fetch(req: Request, env: Env, supabase: SupabaseClient) {
     const fetchedTitles = await getNewTitles(env);
     const newTitles = await addNewTitlesToDB(fetchedTitles, env, supabase);
 

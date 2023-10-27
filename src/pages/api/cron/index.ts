@@ -1,7 +1,10 @@
-import ratingUpdate from './rating';
-import genreUpdate from './genre';
+import ratingUpdate from './getRating';
+import genreUpdate from './getGenres';
 import addToCatalog from './addToCatalog';
 import removeFromCatalog from './removeFromCatalog';
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '@src/types/supabase';
+import getTrailer from './getTrailer';
 
 export type Env = {
   SUPABASE_URL: string;
@@ -13,21 +16,27 @@ export type Env = {
 
 const handleWorker = {
   async fetch(req: Request, env: Env) {
+    const supabaseUrl = env.SUPABASE_URL;
+    const supabaseKey = env.SUPABASE_KEY;
+    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
     const { pathname } = new URL(req.url);
     let resp;
 
     switch (pathname) {
       case '/addToCatalog':
-        resp = await addToCatalog.fetch(req, env);
+        resp = await addToCatalog.fetch(req, env, supabase);
         break;
       case '/updateRatings':
-        resp = await ratingUpdate.fetch(req, env);
+        resp = await ratingUpdate.fetch(req, env, supabase);
         break;
       case '/updateGenres':
-        resp = await genreUpdate.fetch(req, env);
+        resp = await genreUpdate.fetch(req, env, supabase);
         break;
       case '/removeFromCatalog':
-        resp = await removeFromCatalog.fetch(req, env);
+        resp = await removeFromCatalog.fetch(req, env, supabase);
+        break;
+      case '/getTrailer':
+        resp = await getTrailer.fetch(req, env, supabase);
         break;
       default:
         resp = new Response('404, not found!', { status: 404 });

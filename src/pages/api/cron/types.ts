@@ -56,38 +56,6 @@ const ImdbIdItem = Record({
 export const ImdbIdItems = Array(ImdbIdItem);
 export type ImdbIdItem = Static<typeof ImdbIdItem>;
 
-const TrailerItem = Record({
-  resource: Record({
-    id: String,
-    videos: Optional(
-      Array(
-        Record({
-          id: String,
-        })
-      )
-    ),
-  }),
-});
-
-export const TrailerItems = TrailerItem;
-export type TrailerItem = Static<typeof TrailerItem>;
-
-const TrailerUrl = Record({
-  resource: Optional(
-    Record({
-      encodings: Array(
-        Record({
-          mimeType: String,
-          playUrl: String,
-        })
-      ),
-    })
-  ),
-});
-
-export const TrailerUrls = TrailerUrl;
-export type TrailerUrl = Static<typeof TrailerUrl>;
-
 const Genre = Record({
   elapse: Optional(Number),
   results: Array(
@@ -117,3 +85,22 @@ const RemovedTitle = Record({
 
 export const RemovedTitles = RemovedTitle;
 export type RemovedTitle = Static<typeof RemovedTitle>;
+
+const TrailerItem = Record({
+  imDbId: String,
+  title: Union(String, Null),
+  fullTitle: Union(String, Null),
+  type: Union(String, Null),
+  year: Union(String, Null),
+  videoId: Union(String, Null),
+  videoTitle: Union(String, Null),
+  videoDescription: Union(String, Null),
+  thumbnailUrl: Union(String, Null),
+  uploadDate: Union(String, Null),
+  link: Union(String, Null),
+  linkEmbed: Union(String, Null),
+  errorMessage: Union(String, Null),
+});
+
+export const TrailerItems = Array(TrailerItem);
+export type TrailerItem = Static<typeof TrailerItem>;

@@ -14,8 +14,7 @@ async function getNullTrailersFromDB(env: Env, supabase: SupabaseClient) {
     .select('imdbid, trailer')
     .is('trailer', null)
     .not('imdbid', 'is', null)
-    .order('id', { ascending: false })
-    .range(0, 1);
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error getting null trailers:', {

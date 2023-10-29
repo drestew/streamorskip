@@ -16,8 +16,7 @@ async function getNullRatingsFromDB(supabase: SupabaseClient) {
     .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
     .not('imdbid', 'is', null)
-    .order('id', { ascending: false })
-    .range(0, 15);
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.log('Error:', {

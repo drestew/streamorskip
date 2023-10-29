@@ -4,14 +4,19 @@ import { Database } from '@src/types/supabase';
 import { Env } from './index';
 import { ValidationError } from 'runtypes';
 
-type TitleGenres = { catalog_nfid: number; genre: string; genre_nfid: number };
+type TitleGenres =
+  | Awaited<
+      | { genre_nfid: number; genre: string; catalog_nfid: number }[]
+      | { genre_nfid: null; genre: null; catalog_nfid: number }
+    >[]
+  | null;
 
 async function getCatalogFromDB(supabase: SupabaseClient<Database>) {
   const { data, error } = await supabase
     .from('catalog')
     .select('nfid')
     .eq('genre', 'false')
-    .range(0, 20);
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.log('Error:', {
@@ -30,7 +35,7 @@ async function getGenres(catalog: { nfid: number }[] | null, env: Env) {
     return null;
   }
 
-  const titleGenres: TitleGenres[][] = await Promise.all(
+  const titleGenres: TitleGenres = await Promise.all(
     catalog.map(async (item) => {
       const url = `https://unogsng.p.rapidapi.com/titlegenres?netflixid=${item.nfid}`;
       const fetchGenres = await fetch(url, {
@@ -44,6 +49,7 @@ async function getGenres(catalog: { nfid: number }[] | null, env: Env) {
       try {
         apiResults = UnogsGenres.check(apiResults);
       } catch (error) {
+        console.log('item', item);
         if (error instanceof ValidationError)
           console.error('Error validating genre api types:', {
             code: error.code,
@@ -51,13 +57,15 @@ async function getGenres(catalog: { nfid: number }[] | null, env: Env) {
           });
       }
 
-      return apiResults.results.map((genre) => {
-        return {
-          catalog_nfid: item.nfid,
-          genre: genre.genre,
-          genre_nfid: genre.nfid,
-        };
-      });
+      return apiResults.results
+        ? apiResults.results.map((genre) => {
+            return {
+              catalog_nfid: item.nfid,
+              genre: genre.genre,
+              genre_nfid: genre.nfid,
+            };
+          })
+        : { catalog_nfid: item.nfid, genre: null, genre_nfid: null };
     })
   );
 
@@ -65,31 +73,57 @@ async function getGenres(catalog: { nfid: number }[] | null, env: Env) {
 }
 
 async function addGenresToDb(
-  titleGenres: TitleGenres[][] | null,
+  titleGenres:
+    | Awaited<
+        | { genre_nfid: number; genre: string; catalog_nfid: number }[]
+        | { genre_nfid: null; genre: null; catalog_nfid: number }
+      >[]
+    | null,
   supabase: SupabaseClient<Database>
 ) {
   if (!titleGenres) {
     return null;
   }
 
-  const flatTitleGenres = titleGenres.flat();
+  const flatUniqueTitleGenres = titleGenres
+    .flat()
+    .filter((title) => title.genre_nfid)
+    .filter(
+      (genre, index, self) =>
+        index ===
+        self.findIndex(
+          (nfid) =>
+            nfid.catalog_nfid === genre.catalog_nfid &&
+            nfid.genre_nfid === genre.genre_nfid
+        )
+    );
+  const removedDuplicateGenres = [...new Set(flatUniqueTitleGenres)];
   const { error } = await supabase
     .from('catalog_genre')
-    .insert([...flatTitleGenres]);
+    .insert([...removedDuplicateGenres]);
 
   if (error) {
     console.log('Error adding genres to db:', {
       message: error.message,
       details: error.details,
     });
+    return null;
   }
 
-  const titleSet: number[] = Array.from(
-    new Set(flatTitleGenres.map((title) => title.catalog_nfid))
+  return Array.from(
+    new Set(flatUniqueTitleGenres.map((title) => title.catalog_nfid))
   );
+}
 
-  // async map function does not work with db call
-  for (const titleNfid of titleSet) {
+async function markCatalogGenreTrue(
+  titleNfids: number[] | null,
+  supabase: SupabaseClient
+) {
+  if (!titleNfids) {
+    return null;
+  }
+
+  for (const titleNfid of titleNfids) {
     const { error } = await supabase
       .from('catalog')
       .update({ genre: true })
@@ -103,7 +137,7 @@ async function addGenresToDb(
     }
   }
 
-  return { titlesWithGenresAdded: titleSet, genresAdded: titleGenres };
+  return { titlesWithGenresAdded: titleNfids };
 }
 
 const genreUpdate = {
@@ -111,8 +145,16 @@ const genreUpdate = {
     const catalog = await getCatalogFromDB(supabase);
     const genres = await getGenres(catalog, env);
     const genresAdded = await addGenresToDb(genres, supabase);
+    const updatedCatalogTitles = await markCatalogGenreTrue(
+      genresAdded,
+      supabase
+    );
 
-    return new Response(JSON.stringify(genresAdded), {
+    const response = {
+      updatedTitleNfids: updatedCatalogTitles,
+    };
+
+    return new Response(JSON.stringify(response), {
       headers: {
         'Content-Type': 'application/json',
       },

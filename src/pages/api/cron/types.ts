@@ -73,13 +73,15 @@ export type Genre = Static<typeof Genre>;
 const RemovedTitle = Record({
   elapse: Optional(Number),
   total: Optional(Number),
-  results: Array(
-    Record({
-      title: String,
-      deletedate: Optional(String),
-      netflixid: Number,
-      countrycode: Optional(String),
-    })
+  results: Optional(
+    Array(
+      Record({
+        title: String,
+        deletedate: Optional(String),
+        netflixid: Number,
+        countrycode: Optional(String),
+      })
+    )
   ),
 });
 

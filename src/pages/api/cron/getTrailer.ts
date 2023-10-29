@@ -14,7 +14,8 @@ async function getNullTrailersFromDB(env: Env, supabase: SupabaseClient) {
     .select('imdbid, trailer')
     .is('trailer', null)
     .not('imdbid', 'is', null)
-    .range(2, 10);
+    .order('id', { ascending: false })
+    .range(0, 1);
 
   if (error) {
     console.error('Error getting null trailers:', {
@@ -71,11 +72,11 @@ async function addTrailerToDB(
     return null;
   }
 
-  for (let i = 0; i < trailerResults.length; i++) {
+  for (const trailerResult of trailerResults) {
     const { error } = await supabase
       .from('catalog')
-      .update({ trailer: trailerResults[i].trailer })
-      .eq('imdbid', trailerResults[i].imdbid)
+      .update({ trailer: trailerResult.trailer })
+      .eq('imdbid', trailerResult.imdbid)
       .select();
 
     if (error) {
@@ -86,8 +87,8 @@ async function addTrailerToDB(
     }
 
     trailersAdded.push({
-      imdbid: trailerResults[i].imdbid,
-      trailer: trailerResults[i].trailer,
+      imdbid: trailerResult.imdbid,
+      trailer: trailerResult.trailer,
     });
   }
 

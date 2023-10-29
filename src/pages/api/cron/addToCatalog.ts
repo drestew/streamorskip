@@ -52,30 +52,29 @@ async function addNewTitlesToDB(
   const titlesAddedToDb: TitleBrief[] = [];
 
   try {
-    for (let i = 0; i < fetchedTitles.results.length; i++) {
-      const item = fetchedTitles.results[i];
+    for (const title of fetchedTitles.results) {
       const { error } = await supabase.from('catalog').insert({
-        nfid: item.nfid,
-        title: decodeHTML(item.title),
-        img: item.img,
-        vtype: item.vtype,
-        synopsis: decodeHTML(item.synopsis),
-        year: item.year,
-        runtime: item.runtime,
-        imdbid: item.imdbid,
-        rating: item.imdbrating === 0 ? null : item.imdbrating,
-        titledate: item.titledate,
+        nfid: title.nfid,
+        title: decodeHTML(title.title),
+        img: title.img,
+        vtype: title.vtype,
+        synopsis: decodeHTML(title.synopsis),
+        year: title.year,
+        runtime: title.runtime,
+        imdbid: title.imdbid,
+        rating: title.imdbrating === 0 ? null : title.imdbrating,
+        titledate: title.titledate,
       });
 
       titlesAddedToDb.push({
-        nfid: item.nfid,
-        title: decodeHTML(item.title),
+        nfid: title.nfid,
+        title: decodeHTML(title.title),
       });
 
       if (error) {
         titlesNotAddedToDb.push({
-          nfid: item.nfid,
-          title: decodeHTML(item.title),
+          nfid: title.nfid,
+          title: decodeHTML(title.title),
         });
         console.log('Error title not added to db:', {
           message: error.message,

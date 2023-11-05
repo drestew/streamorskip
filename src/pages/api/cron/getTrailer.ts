@@ -4,7 +4,7 @@ import { TrailerItem, TrailerItems } from './types';
 import { ValidationError } from 'runtypes';
 
 type DBItem = {
-  imdbid: string;
+  imdbid: string | null;
   trailer: string | null;
 };
 
@@ -14,7 +14,8 @@ async function getNullTrailersFromDB(env: Env, supabase: SupabaseClient) {
     .select('imdbid, trailer')
     .is('trailer', null)
     .not('imdbid', 'is', null)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(0, 100);
 
   if (error) {
     console.error('Error getting null trailers:', {
@@ -45,6 +46,7 @@ async function fetchTrailer(env: Env, nullTrailers: DBItem[] | null) {
   try {
     trailerItem = TrailerItems.check(trailers);
   } catch (error) {
+    console.log(trailers);
     if (error instanceof ValidationError)
       console.error('Error validating imdb trailer api types:', {
         code: error.code,
@@ -59,7 +61,7 @@ async function fetchTrailer(env: Env, nullTrailers: DBItem[] | null) {
         trailer: item.linkEmbed,
       };
     })
-    .filter((item) => item.trailer);
+    .filter((item) => item.imdbid && item.trailer);
 }
 
 async function addTrailerToDB(

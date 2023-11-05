@@ -89,7 +89,7 @@ export const RemovedTitles = RemovedTitle;
 export type RemovedTitle = Static<typeof RemovedTitle>;
 
 const TrailerItem = Record({
-  imDbId: String,
+  imDbId: Union(String, Null),
   title: Union(String, Null),
   fullTitle: Union(String, Null),
   type: Union(String, Null),

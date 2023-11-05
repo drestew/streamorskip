@@ -1,9 +1,9 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseService } from '@utils/supabase';
-import { options } from '@utils/unogs';
 import { decodeHTML } from 'entities';
 import { CatalogItem, CatalogItems } from './types';
 import { ValidationError } from 'runtypes';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@src/types/supabase';
+import { Env } from './index';
 
 export const lookbackDate = () => {
   const dateToday = new Date();
@@ -16,55 +16,74 @@ export const lookbackDate = () => {
   return `${year}-${month}-${day}`;
 };
 
-const fetchNewContent = async () => {
+async function getNewTitles(env: Env) {
+  let apiResults: CatalogItem;
   const url = `https://unogsng.p.rapidapi.com/search?newdate=${lookbackDate()}
   &audiosubtitle_andor=and&subtitle=english&countrylist=78&audio=english&offset=0`;
-  const mediaData = await fetch(url, options);
+  const newTitles = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'X-RapidAPI-Key': env.CATALOG_KEY,
+      'X-RapidAPI-Host': env.CATALOG_HOST,
+    },
+  });
+  apiResults = await newTitles.json();
+  try {
+    // type-check api response
+    apiResults = CatalogItems.check(apiResults);
+  } catch (error) {
+    if (error instanceof ValidationError)
+      console.error('Error validating unogs catalog api types:', {
+        code: error.code,
+        stack: error.stack,
+      });
+  }
 
-  return mediaData.json();
-};
+  return apiResults;
+}
 
-const addNewContentToDB = async () => {
-  let { results } = await fetchNewContent();
-  type ItemData = Pick<CatalogItem, 'nfid' | 'title'>;
-  const itemsNotAddedToDb: ItemData[] = [];
-  const itemsAddedToDb: ItemData[] = [];
+async function addNewTitlesToDB(
+  fetchedTitles: CatalogItem,
+  env: Env,
+  supabase: SupabaseClient<Database>
+) {
+  type TitleBrief = { nfid: number; title: string };
+  const titlesNotAddedToDb: TitleBrief[] = [];
+  const titlesAddedToDb: TitleBrief[] = [];
 
   try {
-    results = CatalogItems.check(results); // type-check api response
-    const newContent: CatalogItem[] = results;
-    for (let i = 0; i < newContent.length; i++) {
-      const item = newContent[i];
-      const { error } = await supabaseService.from('catalog').insert({
-        nfid: item.nfid,
-        title: decodeHTML(item.title),
-        img: item.img,
-        vtype: item.vtype,
-        synopsis: decodeHTML(item.synopsis),
-        year: item.year,
-        runtime: item.runtime,
-        imdbid: item.imdbid,
-        rating: item.imdbrating === 0 ? null : item.imdbrating,
-        titledate: item.titledate,
+    for (const title of fetchedTitles.results) {
+      const { error } = await supabase.from('catalog').insert({
+        nfid: title.nfid,
+        title: decodeHTML(title.title),
+        img: title.img,
+        vtype: title.vtype,
+        synopsis: decodeHTML(title.synopsis),
+        year: title.year,
+        runtime: title.runtime,
+        imdbid: title.imdbid,
+        rating: title.imdbrating === 0 ? null : title.imdbrating,
+        titledate: title.titledate,
       });
 
-      itemsAddedToDb.push({
-        nfid: item.nfid,
-        title: decodeHTML(item.title),
+      titlesAddedToDb.push({
+        nfid: title.nfid,
+        title: decodeHTML(title.title),
       });
 
       if (error) {
-        itemsNotAddedToDb.push({
-          nfid: item.nfid,
-          title: decodeHTML(item.title),
+        titlesNotAddedToDb.push({
+          nfid: title.nfid,
+          title: decodeHTML(title.title),
         });
-        console.log('Error:', {
+        console.log('Error title not added to db:', {
           message: error.message,
           details: error.details,
         });
       }
     }
   } catch (error) {
+    // will throw error if duplicate primary key (nfid) in db
     if (error instanceof ValidationError)
       console.error('Error:', {
         code: error.code,
@@ -72,12 +91,19 @@ const addNewContentToDB = async () => {
       });
   }
 
-  return { contentAdded: [...itemsAddedToDb], Error: [...itemsNotAddedToDb] };
-};
+  return { titlesAdded: [...titlesAddedToDb], Error: [...titlesNotAddedToDb] };
+}
 
-const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const resp = await addNewContentToDB();
-  res.json(resp);
-};
+const addToCatalog = {
+  async fetch(req: Request, env: Env, supabase: SupabaseClient) {
+    const fetchedTitles = await getNewTitles(env);
+    const newTitles = await addNewTitlesToDB(fetchedTitles, env, supabase);
 
-export default apiResponse;
+    return new Response(JSON.stringify(newTitles), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  },
+};
+export default addToCatalog;

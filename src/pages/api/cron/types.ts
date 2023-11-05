@@ -10,98 +10,99 @@ import {
 } from 'runtypes';
 
 const CatalogItem = Record({
-  id: Number,
-  title: String,
-  img: String,
-  vtype: String,
-  nfid: Number,
-  synopsis: String,
-  avgrating: Union(Number, Null),
-  year: Number,
-  runtime: Union(Number, Null),
-  imdbid: Union(String, Null),
-  poster: Union(String, Null),
-  imdbrating: Union(Number, Null),
-  top250: Union(Number, Null),
-  top250tv: Union(Number, Null),
-  clist: String,
-  titledate: String,
+  elapse: Optional(Number),
+  total: Optional(Number),
+  results: Array(
+    Record({
+      id: Number,
+      title: String,
+      img: String,
+      vtype: String,
+      nfid: Number,
+      synopsis: String,
+      avgrating: Union(Number, Null),
+      year: Number,
+      runtime: Union(Number, Null),
+      imdbid: Union(String, Null),
+      poster: Union(String, Null),
+      imdbrating: Union(Number, Null),
+      top250: Union(Number, Null),
+      top250tv: Union(Number, Null),
+      clist: String,
+      titledate: String,
+    })
+  ),
 });
 
-export const CatalogItems = Array(CatalogItem);
+export const CatalogItems = CatalogItem;
 export type CatalogItem = Static<typeof CatalogItem>;
 
-const ImdbRatingItem = Record({
-  id: String,
-  title: String,
-  rating: Optional(Number),
-});
-
-export const ImdbRatingItems = Array(ImdbRatingItem);
-export type ImdbRatingItem = Static<typeof ImdbRatingItem>;
-
 const ImdbIdItem = Record({
-  imdbid: Union(String, Null),
-  title: String,
-  nfid: Number,
+  imDbId: Union(String, Null),
+  title: Union(String, Null),
+  fullTitle: Union(String, Null),
+  type: Union(String, Null),
+  year: Union(String, Null),
+  totalRating: Union(String, Null),
+  totalRatingVotes: Union(String, Null),
+  ratings: Union(
+    Array(Record({ rating: String, percent: String, votes: String })),
+    Array(Record({})),
+    Null
+  ),
+  errorMessage: String,
 });
 
 export const ImdbIdItems = Array(ImdbIdItem);
 export type ImdbIdItem = Static<typeof ImdbIdItem>;
 
-const TrailerItem = Record({
-  resource: Record({
-    id: String,
-    videos: Optional(
-      Array(
-        Record({
-          id: String,
-        })
-      )
-    ),
-  }),
-});
-
-export const TrailerItems = TrailerItem;
-export type TrailerItem = Static<typeof TrailerItem>;
-
-const TrailerUrl = Record({
-  resource: Optional(
+const Genre = Record({
+  elapse: Optional(Number),
+  results: Array(
     Record({
-      encodings: Array(
-        Record({
-          mimeType: String,
-          playUrl: String,
-        })
-      ),
+      nfid: Number,
+      genre: String,
     })
   ),
+  total: Optional(Number),
 });
 
-export const TrailerUrls = TrailerUrl;
-export type TrailerUrl = Static<typeof TrailerUrl>;
+export const UnogsGenres = Genre;
+export type Genre = Static<typeof Genre>;
 
-const Genre = Record({
-  nfid: Number,
-  genres: Optional(
+const RemovedTitle = Record({
+  elapse: Optional(Number),
+  total: Optional(Number),
+  results: Optional(
     Array(
       Record({
-        nfid: Number,
-        genre: String,
+        title: String,
+        deletedate: Optional(String),
+        netflixid: Number,
+        countrycode: Optional(String),
       })
     )
   ),
 });
 
-export const Genres = Array(Genre);
-export type Genre = Static<typeof Genre>;
+export const RemovedTitles = RemovedTitle;
+export type RemovedTitle = Static<typeof RemovedTitle>;
 
-const DeletedItem = Record({
-  title: String,
-  deletedate: String,
-  netflixid: Number,
-  countrycode: String,
+const TrailerItem = Record({
+  imDbId: String,
+  title: Union(String, Null),
+  fullTitle: Union(String, Null),
+  type: Union(String, Null),
+  year: Union(String, Null),
+  videoId: Union(String, Null),
+  videoTitle: Union(String, Null),
+  videoDescription: Union(String, Null),
+  thumbnailUrl: Union(String, Null),
+  uploadDate: Union(String, Null),
+  link: Union(String, Null),
+  linkEmbed: Union(String, Null),
+  errorMessage: Union(String, Null),
 });
 
-export const DeletedItems = Array(DeletedItem);
-export type DeletedItem = Static<typeof DeletedItem>;
+export const TrailerItems = Array(TrailerItem);
+export type TrailerItem = Static<typeof TrailerItem>;

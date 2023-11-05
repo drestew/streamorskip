@@ -1,73 +1,92 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseService } from '@utils/supabase';
-import { options } from '@utils/unogs';
 import { decodeHTML } from 'entities';
-import { DeletedItem, DeletedItems } from './types';
+import { RemovedTitles, RemovedTitle } from './types';
 import { ValidationError } from 'runtypes';
 import { lookbackDate } from './addToCatalog';
+import { Env } from './index';
+import { SupabaseClient } from '@supabase/supabase-js';
 
-const fetchDeletedContent = async () => {
+const fetchRemovedTitles = async (env: Env) => {
+  let removedTitles: RemovedTitle;
   const url = `https://unogsng.p.rapidapi.com/titlesdel?offset=0&countrylist=78&date=${lookbackDate()}`;
-  const mediaData = await fetch(url, options);
-
-  return mediaData.json();
-};
-
-const markAsRemovedContent = async () => {
-  let { results } = await fetchDeletedContent();
-  type ItemData = Pick<DeletedItem, 'netflixid' | 'title'>;
-  const itemsNotMarkedAsRemoved: ItemData[] = [];
-  const itemsMarkedAsRemoved: ItemData[] = [];
-
+  const mediaData = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'X-RapidAPI-Key': env.CATALOG_KEY,
+      'X-RapidAPI-Host': env.CATALOG_HOST,
+    },
+  });
+  removedTitles = await mediaData.json();
   try {
-    results = DeletedItems.check(results); // type-check api response
-    const deletedContent: DeletedItem[] = results;
-    for (let i = 0; i < deletedContent.length; i++) {
-      const item: Pick<DeletedItem, 'netflixid' | 'title'> = deletedContent[i];
-      const { data, error } = await supabaseService
-        .from('catalog')
-        .update({
-          on_Nflix: false,
-        })
-        .eq('nfid', item.netflixid)
-        .select();
-
-      if (data && data.length > 0) {
-        itemsMarkedAsRemoved.push({
-          netflixid: data[0].nfid,
-          title: data[0].title,
-        });
-      } else {
-        itemsNotMarkedAsRemoved.push({
-          netflixid: item.netflixid,
-          title: decodeHTML(item.title),
-        });
-      }
-
-      if (error) {
-        console.log('Error:', {
-          message: error.message,
-          details: error.details,
-        });
-      }
-    }
+    // type-check api response
+    removedTitles = RemovedTitles.check(removedTitles);
   } catch (error) {
     if (error instanceof ValidationError)
-      console.error('Error:', {
+      console.error('Error validating removed titles from unogs api:', {
         code: error.code,
+        stack: error.stack,
+      });
+  }
+  return removedTitles;
+};
+
+const markRemovedTitles = async (
+  removedTitles: RemovedTitle,
+  supabase: SupabaseClient
+) => {
+  type TitleBrief = { nfid: number; title: string };
+  const itemsNotMarkedAsRemoved: TitleBrief[] = [];
+  const itemsMarkedAsRemoved: TitleBrief[] = [];
+
+  if (!removedTitles.results) {
+    return null;
+  }
+
+  for (const removedTitle of removedTitles.results) {
+    const { data, error } = await supabase
+      .from('catalog')
+      .update({
+        on_Nflix: false,
+      })
+      .eq('nfid', removedTitle.netflixid)
+      .select();
+
+    if (data && data.length > 0) {
+      itemsMarkedAsRemoved.push({
+        nfid: data[0].nfid,
+        title: data[0].title,
+      });
+    } else {
+      itemsNotMarkedAsRemoved.push({
+        nfid: removedTitle.netflixid,
+        title: decodeHTML(removedTitle.title),
+      });
+    }
+
+    if (error) {
+      console.log('Error:', {
+        message: error.message,
         details: error.details,
       });
+    }
   }
 
   return {
-    onNflixFalse: [...itemsMarkedAsRemoved],
+    noLongerOnNflix: [...itemsMarkedAsRemoved],
     Error: [...itemsNotMarkedAsRemoved],
   };
 };
 
-const apiResponse = async (req: NextApiRequest, res: NextApiResponse) => {
-  const resp = await markAsRemovedContent();
-  res.json(resp);
+const removeFromCatalog = {
+  async fetch(req: Request, env: Env, supabase: SupabaseClient) {
+    const removedTitles = await fetchRemovedTitles(env);
+    const markedTitles = await markRemovedTitles(removedTitles, supabase);
+
+    return new Response(JSON.stringify(markedTitles), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  },
 };
 
-export default apiResponse;
+export default removeFromCatalog;

@@ -1,0 +1,12 @@
+name = "streamorskip"
+main = "src/pages/api/cron/index"
+compatibility_date = "2023-10-19"
+routes = [
+    {pattern = "api.streamorskip.com/addToCatalog", zone_id = "7f89f74c8ba156684fcc905ff1a5cd78"},
+    {pattern = "api.streamorskip.com/updateRatings", zone_id = "7f89f74c8ba156684fcc905ff1a5cd78"},
+    {pattern = "api.streamorskip.com/updateGenres", zone_id = "7f89f74c8ba156684fcc905ff1a5cd78"},
+    {pattern = "api.streamorskip.com/removeFromCatalog", zone_id = "7f89f74c8ba156684fcc905ff1a5cd78"},
+    {pattern = "api.streamorskip.com/getTrailer", zone_id = "7f89f74c8ba156684fcc905ff1a5cd78"}
+]
+[placement]
+mode = "smart"

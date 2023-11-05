@@ -12,6 +12,7 @@ export type Env = {
   IMDB_KEY: string;
   CATALOG_HOST: string;
   CATALOG_KEY: string;
+  WORKER_KEY: string;
 };
 
 const handleWorker = {
@@ -21,6 +22,15 @@ const handleWorker = {
     const supabase = createClient<Database>(supabaseUrl, supabaseKey);
     const { pathname } = new URL(req.url);
     let resp;
+
+    const workerKey = env.WORKER_KEY;
+    const headerKey = req.headers.get('WORKER-KEY');
+
+    if (workerKey !== headerKey) {
+      return new Response('Sorry, you have supplied an invalid keys.', {
+        status: 403,
+      });
+    }
 
     switch (pathname) {
       case '/addToCatalog':

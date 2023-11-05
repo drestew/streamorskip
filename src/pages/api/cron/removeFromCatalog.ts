@@ -37,14 +37,17 @@ const markRemovedTitles = async (
   const itemsNotMarkedAsRemoved: TitleBrief[] = [];
   const itemsMarkedAsRemoved: TitleBrief[] = [];
 
-  for (let i = 0; i < removedTitles.results.length; i++) {
-    const item: { netflixid: number; title: string } = removedTitles.results[i];
+  if (!removedTitles.results) {
+    return null;
+  }
+
+  for (const removedTitle of removedTitles.results) {
     const { data, error } = await supabase
       .from('catalog')
       .update({
         on_Nflix: false,
       })
-      .eq('nfid', item.netflixid)
+      .eq('nfid', removedTitle.netflixid)
       .select();
 
     if (data && data.length > 0) {
@@ -54,8 +57,8 @@ const markRemovedTitles = async (
       });
     } else {
       itemsNotMarkedAsRemoved.push({
-        nfid: item.netflixid,
-        title: decodeHTML(item.title),
+        nfid: removedTitle.netflixid,
+        title: decodeHTML(removedTitle.title),
       });
     }
 

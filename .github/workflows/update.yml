@@ -13,25 +13,25 @@ jobs:
       - name: Add new content to catalog
         run: |
           curl --request GET \
-          --url "https://api.streamorskip.com/api/cron/addToCatalog" \
+          --url "https://api.streamorskip.com/addToCatalog" \
           --header "WORKER-KEY: ${{ secrets.WORKER_KEY }}"
       - name: Add ratings
         run: |
           curl --request GET \
-          --url "https://api.streamorskip.com/api/cron/rating" \
+          --url "https://api.streamorskip.com/updateRatings" \
           --header "WORKER-KEY: ${{ secrets.WORKER_KEY }}"
       - name: Add genres
         run: |
           curl --request GET \
-          --url "https://api.streamorskip.com/api/cron/genre" \
+          --url "https://api.streamorskip.com/updateGenres" \
           --header "WORKER-KEY: ${{ secrets.WORKER_KEY }}"
       - name: Add trailers
         run: |
           curl --request GET \
-          --url "https://api.streamorskip.com/api/cron/removeFromCatalog" \
+          --url "https://api.streamorskip.com/getTrailer" \
           --header "WORKER-KEY: ${{ secrets.WORKER_KEY }}"
       - name: Check for deleted content
         run: |
           curl --request GET \
-          --url "https://api.streamorskip.com/api/cron/removeFromCatalog" \
+          --url "https://api.streamorskip.com/removeFromCatalog" \
           --header "WORKER-KEY: ${{ secrets.WORKER_KEY }}"

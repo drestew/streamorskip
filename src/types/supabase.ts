@@ -20,6 +20,8 @@ export interface Database {
           on_Nflix: boolean
           rating: number | null
           runtime: number | null
+          skips: number | null
+          streams: number | null
           synopsis: string
           title: string
           titledate: string
@@ -37,6 +39,8 @@ export interface Database {
           on_Nflix?: boolean
           rating?: number | null
           runtime?: number | null
+          skips?: number | null
+          streams?: number | null
           synopsis: string
           title: string
           titledate: string
@@ -54,6 +58,8 @@ export interface Database {
           on_Nflix?: boolean
           rating?: number | null
           runtime?: number | null
+          skips?: number | null
+          streams?: number | null
           synopsis?: string
           title?: string
           titledate?: string
@@ -65,6 +71,7 @@ export interface Database {
       }
       catalog_genre: {
         Row: {
+          catalog_genre_nfid: string | null
           catalog_nfid: number
           created_at: string | null
           genre: string | null
@@ -72,6 +79,7 @@ export interface Database {
           id: number
         }
         Insert: {
+          catalog_genre_nfid?: string | null
           catalog_nfid: number
           created_at?: string | null
           genre?: string | null
@@ -79,6 +87,7 @@ export interface Database {
           id?: number
         }
         Update: {
+          catalog_genre_nfid?: string | null
           catalog_nfid?: number
           created_at?: string | null
           genre?: string | null
@@ -89,6 +98,7 @@ export interface Database {
           {
             foreignKeyName: "catalog_genre_catalog_nfid_fkey"
             columns: ["catalog_nfid"]
+            isOneToOne: false
             referencedRelation: "catalog"
             referencedColumns: ["nfid"]
           }
@@ -121,21 +131,30 @@ export interface Database {
       profile: {
         Row: {
           avatar_url: string | null
-          email: string | null
+          email: string
+          filter_rated: boolean
+          filter_removed_content: boolean
+          filter_saved: boolean
           id: string
           updated_at: string | null
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
-          email?: string | null
+          email: string
+          filter_rated?: boolean
+          filter_removed_content?: boolean
+          filter_saved?: boolean
           id: string
           updated_at?: string | null
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
-          email?: string | null
+          email?: string
+          filter_rated?: boolean
+          filter_removed_content?: boolean
+          filter_saved?: boolean
           id?: string
           updated_at?: string | null
           username?: string | null
@@ -144,6 +163,7 @@ export interface Database {
           {
             foreignKeyName: "profile_id_fkey"
             columns: ["id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -178,12 +198,14 @@ export interface Database {
           {
             foreignKeyName: "rating_catalog_item_fkey"
             columns: ["catalog_item"]
+            isOneToOne: false
             referencedRelation: "catalog"
             referencedColumns: ["nfid"]
           },
           {
             foreignKeyName: "rating_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profile"
             referencedColumns: ["id"]
           }
@@ -215,12 +237,14 @@ export interface Database {
           {
             foreignKeyName: "saved_list_catalog_item_fkey"
             columns: ["catalog_item"]
+            isOneToOne: false
             referencedRelation: "catalog"
             referencedColumns: ["nfid"]
           },
           {
             foreignKeyName: "saved_list_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profile"
             referencedColumns: ["id"]
           }

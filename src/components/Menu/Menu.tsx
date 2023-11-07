@@ -109,9 +109,16 @@ export function Menu({ userId }: { userId: string | null }) {
                 Ratings
               </StyledLink>
             </MenuItem>
-            {/*<MenuItem value={'settings'}>*/}
-            {/*  <StyledLink href="/settings">Settings</StyledLink>*/}
-            {/*</MenuItem>*/}
+            <MenuItem value={'settings'}>
+              <StyledLink
+                href={{
+                  pathname: `/user/[id]/settings`,
+                  query: { id: `${userId}` },
+                }}
+              >
+                Settings
+              </StyledLink>
+            </MenuItem>
             <MenuItem value={'logout'}>Logout</MenuItem>
           </Select.Viewport>
         </MenuList>

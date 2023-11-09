@@ -81,14 +81,25 @@ const ToggleThumb = styled(Switch.Thumb)`
   }
 `;
 
+const SaveContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const CardSave = styled.p`
+  color: ${color('secondary', 400)};
+  margin-top: ${space(1)};
+`;
+
 export default function Settings() {
-  const [filterRated, setFilterRated] = React.useState<'on' | 'off'>('off');
-  const [filterList, setFilterList] = React.useState<'on' | 'off'>('off');
-  const [filterRemovedContent, setFilterRemovedContent] = React.useState<
-    'on' | 'off'
-  >('off');
+  const [filterRated, setFilterRated] = React.useState<boolean>(false);
+  const [filterSaved, setFilterSaved] = React.useState<boolean>(false);
+  const [filterRemovedContent, setFilterRemovedContent] =
+    React.useState<boolean>(false);
   const [userId, setUserId] = React.useState<string | null>(null);
   const [userEmail, setUserEmail] = React.useState<string | undefined>('');
+  const [settingsSaved, setSettingsSaved] = React.useState(false);
   const supabase = useSupabaseClient<Database>();
 
   React.useEffect(() => {
@@ -101,12 +112,64 @@ export default function Settings() {
         setUserEmail(session.data.session.user.email);
       }
     }
-  }, [supabase.auth]);
+  }, [supabase.auth, userId]);
+
+  React.useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    getSettings();
+
+    async function getSettings() {
+      const { data, error } = await supabase
+        .from('profile')
+        .select('filter_rated, filter_saved, filter_removed_content')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.log('Error getting user settings:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
+
+      if (!data) {
+        return null;
+      }
+
+      setFilterRated(data.filter_rated);
+      setFilterSaved(data.filter_saved);
+      setFilterRemovedContent(data.filter_removed_content);
+    }
+  }, [supabase, userId]);
+
+  async function handleSubmit(event: React.SyntheticEvent) {
+    event.preventDefault();
+    const { error } = await supabase
+      .from('profile')
+      .update({
+        filter_rated: filterRated,
+        filter_saved: filterSaved,
+        filter_removed_content: filterRemovedContent,
+      })
+      .eq('id', userId);
+
+    setSettingsSaved(true);
+
+    if (error) {
+      console.log('Error updating user settings:', {
+        message: error.message,
+        details: error.details,
+      });
+    }
+  }
 
   return (
     <PageContainer>
       <Header userId={userId} />
-      <CardContainer>
+      <CardContainer onSubmit={(event) => handleSubmit(event)}>
         <EmailContainer>
           <CardText htmlFor="email">Email</CardText>
           <Email value={userEmail} disabled={true} id="email" />
@@ -122,10 +185,9 @@ export default function Settings() {
             <ToggleRoot
               id="filter-rated"
               name="filter-rated"
-              value={filterRated}
-              onCheckedChange={() =>
-                setFilterRated((old) => (old === 'on' ? 'off' : 'on'))
-              }
+              checked={filterRated}
+              value={filterRated ? 'on' : 'off'}
+              onCheckedChange={() => setFilterRated(!filterRated)}
             >
               <ToggleThumb />
             </ToggleRoot>
@@ -133,12 +195,11 @@ export default function Settings() {
           <PreferenceItem>
             <CardText htmlFor="filter-list">Filter content on my list</CardText>
             <ToggleRoot
-              id="filter-list"
-              name="filter-list"
-              value={filterList}
-              onCheckedChange={() =>
-                setFilterList((old) => (old === 'on' ? 'off' : 'on'))
-              }
+              id="filter-saved"
+              name="filter-saved"
+              checked={filterSaved}
+              value={filterSaved ? 'on' : 'off'}
+              onCheckedChange={() => setFilterSaved(!filterSaved)}
             >
               <ToggleThumb />
             </ToggleRoot>
@@ -150,18 +211,22 @@ export default function Settings() {
             <ToggleRoot
               id="filter-removed-content"
               name="filter-removed-content"
-              value={filterRemovedContent}
+              checked={filterRemovedContent}
+              value={filterRemovedContent ? 'on' : 'off'}
               onCheckedChange={() =>
-                setFilterRemovedContent((old) => (old === 'on' ? 'off' : 'on'))
+                setFilterRemovedContent(!filterRemovedContent)
               }
             >
               <ToggleThumb />
             </ToggleRoot>
           </PreferenceItem>
         </PreferencesContainer>
-        <Button color="primary" size="md" shade={300}>
-          Save Settings
-        </Button>
+        <SaveContainer>
+          <Button color="primary" size="md" shade={300} type="submit">
+            Save Settings
+          </Button>
+          {settingsSaved && <CardSave>Saved!</CardSave>}
+        </SaveContainer>
       </CardContainer>
     </PageContainer>
   );

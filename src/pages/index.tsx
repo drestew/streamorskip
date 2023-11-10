@@ -12,6 +12,7 @@ import { Modal } from '@components/Modal/Modal';
 import { Search } from '@features/filters/components/Search/Search';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Database } from '@src/types/supabase';
+import { useRouter } from 'next/router';
 
 const PageContainer = styled.div`
   max-width: 400px;
@@ -50,6 +51,7 @@ export default function Home() {
   const [category, setCategory] = React.useState<string>('');
   const [genre, setGenre] = React.useState<string>('');
   const [search, setSearch] = React.useState<string>('');
+  const router = useRouter();
 
   React.useEffect(() => {
     getSession();
@@ -69,6 +71,10 @@ export default function Home() {
     }
     if (filters.search) {
       setSearch(filters.search);
+    } else {
+      // need to reset state so that default catalog will be re-fetched
+      setSearch('');
+      delete router.query.search;
     }
   }, [filters.category, filters.genre, filters.search]);
 
@@ -76,7 +82,14 @@ export default function Home() {
     useInfiniteQuery({
       queryKey: ['catalog-default', category, genre, search, userId],
       queryFn: ({ pageParam }) =>
-        getCatalog({ pageParam: pageParam }, category, genre, search),
+        getCatalog(
+          { pageParam: pageParam },
+          category,
+          genre,
+          search,
+          userId,
+          supabase
+        ),
       getNextPageParam: (lastPage) => lastPage.step,
       refetchOnWindowFocus: false,
     });

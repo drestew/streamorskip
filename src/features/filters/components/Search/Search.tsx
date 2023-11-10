@@ -162,7 +162,8 @@ export function Search() {
   React.useEffect(() => {
     if (!router.query.search) {
       selectItem(null);
-      delete router.query.search;
+      const query = { ...router.query };
+      router.push({ pathname: router.pathname, query });
     }
   }, [router.query.search]);
 

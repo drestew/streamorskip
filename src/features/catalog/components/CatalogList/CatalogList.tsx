@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { CatalogCard } from '@features/catalog';
-import { color } from '@styles/theme';
+import { color, space } from '@styles/theme';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { LoadingSkeleton } from '@features/catalog/components/LoadingSkeleton/LoadingSkeleton';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
@@ -11,6 +11,12 @@ const List = styled.ul`
   background-color: ${color('dark', 300)};
   list-style: none;
   padding: 0;
+`;
+
+const NoContent = styled.h2`
+  color: white;
+  text-align: center;
+  margin-top: ${space(10)};
 `;
 
 type CatalogListProps = {
@@ -146,7 +152,7 @@ export function CatalogList({
           </React.Fragment>
         ))
       ) : (
-        <h2>No Content!</h2>
+        <NoContent>Empty!</NoContent>
       )}
     </List>
   );

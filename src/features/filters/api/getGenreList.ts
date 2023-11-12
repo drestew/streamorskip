@@ -1,10 +1,11 @@
 import { supabaseClient } from '@utils/supabase-client';
 import { useQuery } from '@tanstack/react-query';
+import { useFilters } from '@features/filters';
 
 async function getGenreList() {
   const { data, error } = await supabaseClient
     .from('genre')
-    .select('genre, id');
+    .select('genre, id, movie, series');
 
   if (error) {
     console.log('Error:', {
@@ -17,10 +18,15 @@ async function getGenreList() {
 }
 
 export function useGenreList() {
+  const { filters } = useFilters();
   const { data } = useQuery({
     queryKey: ['genreList'],
     queryFn: getGenreList,
   });
 
-  return { data };
+  const filteredGenre = data?.filter((genre) =>
+    filters.category === 'movie' ? genre.movie : genre.series
+  );
+
+  return { filteredGenre };
 }

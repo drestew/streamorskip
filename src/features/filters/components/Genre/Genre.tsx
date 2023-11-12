@@ -81,7 +81,7 @@ const GenreItem = React.forwardRef(
   }
 );
 export function Genre({ genre }: ContentFilters) {
-  const { data } = useGenreList();
+  const { filteredGenre } = useGenreList();
   const { handleFilters } = useFilters();
   const genreTextOnly = genre?.replace(/%/g, '');
   GenreItem.displayName = 'GenreItem';
@@ -108,7 +108,7 @@ export function Genre({ genre }: ContentFilters) {
               <GenreItem key={'000'} value={'All Genres'}>
                 All Genres
               </GenreItem>
-              {data?.map((genre) => {
+              {filteredGenre?.map((genre) => {
                 return (
                   <GenreItem key={genre.id} value={genre.genre}>
                     {genre.genre}

@@ -37,7 +37,7 @@ const CatalogItem = Record({
 export const CatalogItems = CatalogItem;
 export type CatalogItem = Static<typeof CatalogItem>;
 
-const ImdbIdItem = Record({
+export const ImdbIdItem = Record({
   imDbId: Union(String, Null),
   title: Union(String, Null),
   fullTitle: Union(String, Null),

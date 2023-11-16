@@ -13,7 +13,6 @@ async function getNullRatingsFromDB(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('catalog')
     .select('title, imdbid, rating, nfid')
-    .eq('on_Nflix', true)
     .or('rating.is.null, rating.eq.0')
     .not('imdbid', 'is', null)
     .order('created_at', { ascending: false });

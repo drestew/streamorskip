@@ -11,15 +11,22 @@ type VoteCount = Awaited<{
   newVoteCount: number | null;
 }>;
 
+type VoteCountPredicate = {
+  imdbid: string;
+  rating: number;
+  voteCount: number;
+  newVoteCount: number;
+};
+
 async function getRatingsFromDB(supabase: SupabaseClient<Database>) {
   const { data, error } = await supabase
     .from('catalog')
     .select('imdbid, rating')
-    .eq('on_Nflix', true)
     .not('imdbid', 'is', null)
     .gt('rating', 0)
+    .match({ stream_count: 0, skip_count: 0 })
     .order('created_at', { ascending: false })
-    .range(0, 2);
+    .range(0, 20);
 
   if (error) {
     console.log('Error getting ratings from DB:', {
@@ -56,6 +63,8 @@ async function getRatingCountsFromImdb(
           ...item,
           voteCount: Number(imdbItem.totalRatingVotes) || null,
           newVoteCount: null,
+          stream: 0,
+          skip: 0,
         };
       })
     );
@@ -75,12 +84,11 @@ function modifyVoteCount(voteCount: number | null) {
   let newVoteCount = null;
 
   if (voteCountStr.length === 5) {
-    const firstNumber = getRandomIntInclusive(7, 9);
-    newVoteCount = voteCountStr.substring(0, voteCountStr.length - 2);
-    newVoteCount = `${firstNumber}${newVoteCount}`;
+    const firstNumber = getRandomIntInclusive(8, 10);
+    newVoteCount = `${firstNumber}${voteCountStr.substring(1, 4)}`;
   } else if (voteCountStr.length === 6 && voteCount < 500000) {
     newVoteCount = `1${voteCountStr.substring(1, 5)}`;
-  } else if (voteCountStr.length === 6 && voteCount < 999999) {
+  } else if (voteCountStr.length === 6 && voteCount > 500000) {
     newVoteCount = `2${voteCountStr.substring(1, 5)}`;
   } else if (voteCountStr.length > 6) {
     newVoteCount = `3${voteCountStr.substring(1, 5)}`;
@@ -102,12 +110,63 @@ function updateVoteCount(voteCounts: VoteCount[]) {
   });
 }
 
+async function addVoteCountToDB(
+  updatedCounts: VoteCount[],
+  supabase: SupabaseClient<Database>
+) {
+  const nonNullItemValues = updatedCounts.filter(
+    (item): item is VoteCountPredicate =>
+      Object.values(item).every((value) => value !== null)
+  );
+  const updatedDBItems: { imdbid: string; streams: number; skips: number }[] =
+    [];
+
+  for (const nonNullItemValue of nonNullItemValues) {
+    const streams = Math.round(
+      (nonNullItemValue.rating / 10) * nonNullItemValue.newVoteCount
+    );
+    const skips = Math.round(nonNullItemValue.newVoteCount - streams);
+    const { data, error } = await supabase
+      .from('catalog')
+      .update({
+        stream_count: streams,
+        skip_count: skips,
+      })
+      .eq('imdbid', nonNullItemValue.imdbid)
+      .select()
+      .limit(1)
+      // db response requires 'order' when 'limit' is used
+      .order('created_at', { ascending: false })
+      .single();
+
+    data &&
+      updatedDBItems.push({
+        imdbid: data.imdbid as string,
+        streams: data.stream_count,
+        skips: data.skip_count,
+      });
+
+    if (error) {
+      console.log('Error adding updated vote count to db:', {
+        message: error.message,
+        details: error.details,
+      });
+    }
+  }
+
+  return updatedDBItems;
+}
+
+// }
+
 const getVoteCount = {
   async fetch(req: Request, env: Env, supabase: SupabaseClient<Database>) {
     const ratings = await getRatingsFromDB(supabase);
     const ratingCounts = await getRatingCountsFromImdb(ratings, env.IMDB_KEY);
     const updatedCounts = updateVoteCount(ratingCounts);
-    return new Response(JSON.stringify(updatedCounts), {
+    const updatedDBItems = await addVoteCountToDB(updatedCounts, supabase);
+
+    return new Response(JSON.stringify(updatedDBItems), {
       headers: {
         'Content-Type': 'application/json',
       },

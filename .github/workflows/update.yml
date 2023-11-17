@@ -20,6 +20,11 @@ jobs:
           curl --request GET \
           --url "https://api.streamorskip.com/updateRatings" \
           --header "WORKER-KEY: ${{ secrets.WORKER_KEY }}"
+      - name: Update votes
+        run: |
+          curl --request GET \
+          --url "https://api.streamorskip.com/getVoteCount" \
+          --header "WORKER-KEY: ${{ secrets.WORKER_KEY }}"
       - name: Add genres
         run: |
           curl --request GET \

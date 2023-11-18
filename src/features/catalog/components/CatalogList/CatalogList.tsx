@@ -60,6 +60,9 @@ export function CatalogList({
   const [savedList, setSavedList] = React.useState<
     { catalog_item: number }[] | null
   >(null);
+  const [votedNfids, setVotedNfids] = React.useState<
+    { catalog_item: number; stream: boolean }[] | null
+  >(null);
 
   React.useEffect(() => {
     getUserRatings();
@@ -108,6 +111,28 @@ export function CatalogList({
     }
   }, [supabase, userId]);
 
+  React.useEffect(() => {
+    const nfids = catalog?.pages
+      .map((item) => item?.filteredData?.map((item) => item.nfid))
+      .flat();
+
+    getVotesAllUsers();
+    async function getVotesAllUsers() {
+      const { data, error } = await supabase
+        .from('rating')
+        .select('catalog_item, stream')
+        .in('catalog_item', nfids || []);
+
+      if (error) {
+        console.log('Error getting vote count from all users:', {
+          message: error.message,
+          details: error.details,
+        });
+      }
+      setVotedNfids(data);
+    }
+  }, [catalog?.pages, userRatings]);
+
   const loadingSkeletonArr: React.ReactNode[] = new Array(10)
     .fill('')
     .map((item, index) => {
@@ -131,7 +156,6 @@ export function CatalogList({
                     title={item.title}
                     synopsis={item.synopsis}
                     img={item.img}
-                    rating={item.rating === null ? 0 : item.rating}
                     nfid={item.nfid}
                     streamCount={item.stream_count}
                     skipCount={item.skip_count}
@@ -141,6 +165,7 @@ export function CatalogList({
                     supabase={supabase}
                     userId={userId}
                     userRatings={userRatings}
+                    votedNfids={votedNfids}
                     setUserRatings={setUserRatings}
                     savedList={savedList}
                     setSavedList={setSavedList}

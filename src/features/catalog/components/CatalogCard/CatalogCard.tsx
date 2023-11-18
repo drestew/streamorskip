@@ -18,7 +18,6 @@ type Catalog = {
   synopsis: string;
   img: string;
   on_Nflix: boolean;
-  rating: number;
   vtype: 'movie' | 'series';
   streamCount: number;
   skipCount: number;
@@ -34,6 +33,7 @@ export type UserRating = {
       { user_id: string; catalog_item: number; stream: boolean }[] | null
     >
   >;
+  votedNfids: { catalog_item: number; stream: boolean }[] | null;
 };
 
 type ImgPriority = {
@@ -42,7 +42,7 @@ type ImgPriority = {
 
 type CardContent = Pick<
   Catalog,
-  'title' | 'synopsis' | 'rating' | 'img' | 'nfid' | 'streamCount' | 'skipCount'
+  'title' | 'synopsis' | 'img' | 'nfid' | 'streamCount' | 'skipCount'
 >;
 
 type Modal = {
@@ -183,12 +183,13 @@ const StreamPercent = styled.span`
   ${font('xs', 'regular')};
 `;
 
-const StreamBar = styled.div<{ rating: number }>`
+const StreamBar = styled.div<{ width: number }>`
   grid-column: 3 / 4;
   grid-row: 1 / 2;
   height: ${space(2)};
   background-color: ${color('primary', 300)};
-  width: ${(props) => props.rating}%;
+  width: ${(props) => props.width}%;
+
   border-radius: ${space(2)};
 `;
 
@@ -204,12 +205,12 @@ const SkipPercent = styled.span`
   ${font('xs', 'regular')};
 `;
 
-const SkipBar = styled.div<{ rating: number }>`
+const SkipBar = styled.div<{ width: number }>`
   grid-column: 3 / 4;
   grid-row: 2 / 3;
   height: ${space(2)};
   background-color: ${color('primary', 300)};
-  width: ${(props) => 100 - props.rating}%;
+  width: ${(props) => props.width}%;
   border-radius: ${space(2)};
 `;
 
@@ -245,12 +246,10 @@ const SaveList = styled.button`
   cursor: pointer;
 `;
 
-const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
   const {
     title,
     synopsis,
-    rating,
     img,
     nfid,
     streamCount,
@@ -261,16 +260,23 @@ export function CatalogCard(props: CardProps) {
     supabase,
     userId,
     userRatings,
+    votedNfids,
     setUserRatings,
     savedList,
     setSavedList,
   } = props;
   const [userRating, setUserRating] = React.useState<boolean | null>(null);
-  const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
   const [savedToList, setSavedToList] = React.useState<boolean | null>(null);
+  const [dynamicVoteCount, setDynamicVoteCount] = React.useState<{
+    stream: number;
+    skip: number;
+  }>({ stream: 0, skip: 0 });
+  const [totalVotes, setTotalVotes] = React.useState<number>(
+    streamCount + skipCount
+  );
   const router = useRouter();
-  const voteCount = streamCount + skipCount;
+  const staticVoteCount = streamCount + skipCount;
 
   function toggleSynopsis() {
     setTruncateSynopsis(!truncateSynopsis);
@@ -286,6 +292,19 @@ export function CatalogCard(props: CardProps) {
     const catalogItem = userRatings?.find((item) => item.catalog_item === nfid);
     setUserRating(catalogItem ? catalogItem.stream : null);
   }, [userRatings]);
+
+  React.useEffect(() => {
+    if (!votedNfids) {
+      setDynamicVoteCount({ stream: 0, skip: 0 });
+      return;
+    }
+
+    const cardItem = votedNfids.filter((item) => item.catalog_item === nfid);
+    const streamCount = cardItem.filter((item) => item.stream).length;
+    const skipCount = cardItem.filter((item) => !item.stream).length;
+    setDynamicVoteCount({ stream: streamCount, skip: skipCount });
+    setTotalVotes(staticVoteCount + streamCount + skipCount);
+  }, [nfid, votedNfids]);
 
   function handleRating(thumbIcon: string) {
     if (thumbIcon === 'skip' && userRating !== false) {
@@ -348,6 +367,17 @@ export function CatalogCard(props: CardProps) {
     },
   });
 
+  function voteCountTotal() {
+    const totalVotes =
+      staticVoteCount + dynamicVoteCount.stream + dynamicVoteCount.skip;
+    const streamPercent =
+      ((streamCount + dynamicVoteCount.stream) / totalVotes) * 100;
+    const skipPercent =
+      ((skipCount + dynamicVoteCount.skip) / totalVotes) * 100;
+
+    return { totalVotes, streamPercent, skipPercent };
+  }
+
   return (
     <CardContainer
       tabIndex={0}
@@ -378,15 +408,15 @@ export function CatalogCard(props: CardProps) {
         <RatingContainer>
           <StreamText>Stream it</StreamText>
           <StreamPercent>
-            {Math.round((streamCount / voteCount) * 100) || 0}%
+            {Math.round(voteCountTotal().streamPercent) || 0}%
           </StreamPercent>
-          <StreamBar rating={ratingFrom100} />
+          <StreamBar width={Math.round(voteCountTotal().streamPercent || 0)} />
           <SkipText>Skip it</SkipText>
           <SkipPercent>
-            {Math.round((skipCount / voteCount) * 100) || 0}%
+            {Math.round(voteCountTotal().skipPercent) || 0}%
           </SkipPercent>
-          <SkipBar rating={ratingFrom100} />
-          <VoteTotal>Votes - {voteCount}</VoteTotal>
+          <SkipBar width={Math.round(voteCountTotal().skipPercent) || 0} />
+          <VoteTotal>Votes: {totalVotes || 0}</VoteTotal>
         </RatingContainer>
         <IconContainer>
           <Image

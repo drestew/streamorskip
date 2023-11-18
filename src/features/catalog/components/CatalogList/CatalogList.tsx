@@ -31,6 +31,8 @@ type CatalogListProps = {
               rating: number | null;
               vtype: string;
               on_Nflix: boolean;
+              stream_count: number;
+              skip_count: number;
             }[]
           | null;
         step: number | null;
@@ -131,6 +133,8 @@ export function CatalogList({
                     img={item.img}
                     rating={item.rating === null ? 0 : item.rating}
                     nfid={item.nfid}
+                    streamCount={item.stream_count}
+                    skipCount={item.skip_count}
                     priorityImg={index === 0}
                     modalState={modalState}
                     queryClient={queryClient}

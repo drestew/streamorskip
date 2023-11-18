@@ -130,7 +130,7 @@ export const theme = {
           font-weight: 400;
         `,
       bold: `
-          font-size: 0.1rem;
+          font-size: 1rem;
           font-weight: 700;
         `,
     },

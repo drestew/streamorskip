@@ -27,7 +27,9 @@ export async function getUserRatings(
   const { data: userRatingsCatalog, error: userRatingsCatalogError } =
     await supabase
       .from('catalog')
-      .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
+      .select(
+        'nfid, title, img, synopsis, rating, vtype, on_Nflix, stream_count, skip_count'
+      )
       .in('nfid', titleIds || [])
       .range(pageParam, step);
 

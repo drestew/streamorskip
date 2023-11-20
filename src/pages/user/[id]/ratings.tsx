@@ -64,6 +64,7 @@ const ContentToggle = styled(ToggleGroup.Item)<{ ['data-state']: boolean }>`
     }
   }}
 `;
+
 export default function UserRatingsList() {
   const [value, setValue] = React.useState<string>('stream');
   const supabase = useSupabaseClient<Database>();

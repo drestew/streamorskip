@@ -63,7 +63,7 @@ export async function getCatalog(
     .select(
       'nfid, title, img, synopsis, rating, vtype, on_Nflix, stream_count, skip_count'
     )
-    .neq('rating', 0)
+    .gt('rating', 0)
     .eq('vtype', category)
     .order('created_at', { ascending: false })
     .range(pageParam, step);

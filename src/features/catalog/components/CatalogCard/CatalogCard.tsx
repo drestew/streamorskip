@@ -398,7 +398,7 @@ export function CatalogCard(props: CardProps) {
         <Poster truncateSynopsis={truncateSynopsis}>
           <Image
             src={img}
-            alt="Content Poster"
+            alt={title}
             width="80"
             height="120"
             sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"

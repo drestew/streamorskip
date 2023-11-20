@@ -20,8 +20,8 @@ export interface Database {
           on_Nflix: boolean
           rating: number | null
           runtime: number | null
-          skips: number | null
-          streams: number | null
+          skip_count: number
+          stream_count: number
           synopsis: string
           title: string
           titledate: string
@@ -39,8 +39,8 @@ export interface Database {
           on_Nflix?: boolean
           rating?: number | null
           runtime?: number | null
-          skips?: number | null
-          streams?: number | null
+          skip_count?: number
+          stream_count?: number
           synopsis: string
           title: string
           titledate: string
@@ -58,8 +58,8 @@ export interface Database {
           on_Nflix?: boolean
           rating?: number | null
           runtime?: number | null
-          skips?: number | null
-          streams?: number | null
+          skip_count?: number
+          stream_count?: number
           synopsis?: string
           title?: string
           titledate?: string

@@ -5,6 +5,7 @@ import removeFromCatalog from './removeFromCatalog';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@src/types/supabase';
 import getTrailer from './getTrailer';
+import getVoteCount from './getVoteCount';
 
 export type Env = {
   SUPABASE_URL: string;
@@ -47,6 +48,9 @@ const handleWorker = {
         break;
       case '/getTrailer':
         resp = await getTrailer.fetch(req, env, supabase);
+        break;
+      case '/getVoteCount':
+        resp = await getVoteCount.fetch(req, env, supabase);
         break;
       default:
         resp = new Response('404, not found!', { status: 404 });

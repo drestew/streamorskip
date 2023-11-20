@@ -60,8 +60,10 @@ export async function getCatalog(
 
   let query = supabaseClient
     .from('catalog')
-    .select('nfid, title, img, synopsis, rating, vtype, on_Nflix')
-    .neq('rating', 0)
+    .select(
+      'nfid, title, img, synopsis, rating, vtype, on_Nflix, stream_count, skip_count'
+    )
+    .gt('rating', 0)
     .eq('vtype', category)
     .order('created_at', { ascending: false })
     .range(pageParam, step);

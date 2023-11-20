@@ -126,7 +126,7 @@ export default function Home() {
   });
 
   return (
-    <h2>Site under construction</h2>
+    <h2>Site under construction.</h2>
     // <PageContainer>
     //   {modalOpen && <Modal modalOpen={modalOpen} />}
     //   <Header userId={userId} />

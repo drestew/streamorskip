@@ -18,8 +18,9 @@ type Catalog = {
   synopsis: string;
   img: string;
   on_Nflix: boolean;
-  rating: number;
   vtype: 'movie' | 'series';
+  streamCount: number;
+  skipCount: number;
 };
 
 export type UserRating = {
@@ -32,6 +33,7 @@ export type UserRating = {
       { user_id: string; catalog_item: number; stream: boolean }[] | null
     >
   >;
+  votedNfids: { catalog_item: number; stream: boolean }[] | null;
 };
 
 type ImgPriority = {
@@ -40,7 +42,7 @@ type ImgPriority = {
 
 type CardContent = Pick<
   Catalog,
-  'title' | 'synopsis' | 'rating' | 'img' | 'nfid'
+  'title' | 'synopsis' | 'img' | 'nfid' | 'streamCount' | 'skipCount'
 >;
 
 type Modal = {
@@ -99,8 +101,8 @@ const Card = styled.div`
   grid-template-areas:
     'poster title title'
     'poster synopsis synopsis '
-    'poster stream stream'
-    'poster skip skip'
+    'poster rating rating'
+    'poster rating rating'
     'icon icon icon'
     'save-list save-list save-list';
   border-radius: ${space(2)};
@@ -110,7 +112,8 @@ const Card = styled.div`
   }
 `;
 
-const Title = styled.h4`
+const Title = styled.p`
+  ${font('md', 'bold')};
   grid-area: title;
   text-decoration: underline;
   margin: ${space(0)};
@@ -158,26 +161,65 @@ const Synopsis = styled.p<{ truncateSynopsis: boolean }>`
   }}
 `;
 
-const StreamContainer = styled.div`
-  grid-area: stream;
+const RatingContainer = styled.div`
+  grid-area: rating;
+  display: grid;
+  grid-template-columns: 0.8fr 0.3fr 2fr;
+  grid-template-rows: 1fr 1fr 0.5fr;
+  grid-row-gap: ${space(1)};
+  grid-column-gap: ${space(2)};
+  align-items: center;
 `;
 
-const StreamFill = styled.div<{ rating: number }>`
+const StreamText = styled.span`
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+  ${font('xs', 'regular')};
+`;
+
+const StreamPercent = styled.span`
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  ${font('xs', 'regular')};
+`;
+
+const StreamBar = styled.div<{ width: number }>`
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
   height: ${space(2)};
   background-color: ${color('primary', 300)};
-  width: ${(props) => props.rating}%;
+  width: ${(props) => props.width}%;
+
   border-radius: ${space(2)};
 `;
 
-const SkipContainer = styled.div`
-  grid-area: skip;
+const SkipText = styled.span`
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  ${font('xs', 'regular')};
 `;
 
-const SkipFill = styled.div<{ rating: number }>`
+const SkipPercent = styled.span`
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  ${font('xs', 'regular')};
+`;
+
+const SkipBar = styled.div<{ width: number }>`
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
   height: ${space(2)};
   background-color: ${color('primary', 300)};
-  width: ${(props) => 100 - props.rating}%;
+  width: ${(props) => props.width}%;
   border-radius: ${space(2)};
+`;
+
+const VoteTotal = styled.span`
+  ${font('xs', 'regular')};
+  color: ${color('gray', 200)};
+  font-style: italic;
+  grid-column: 1 / 3;
+  grid-row: 3 / 4;
 `;
 
 const IconContainer = styled.div`
@@ -204,29 +246,37 @@ const SaveList = styled.button`
   cursor: pointer;
 `;
 
-const convertRating = (rating: number) => rating * 10;
 export function CatalogCard(props: CardProps) {
   const {
     title,
     synopsis,
-    rating,
     img,
     nfid,
+    streamCount,
+    skipCount,
     priorityImg,
     modalState,
     queryClient,
     supabase,
     userId,
     userRatings,
+    votedNfids,
     setUserRatings,
     savedList,
     setSavedList,
   } = props;
   const [userRating, setUserRating] = React.useState<boolean | null>(null);
-  const ratingFrom100 = convertRating(rating);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
   const [savedToList, setSavedToList] = React.useState<boolean | null>(null);
+  const [dynamicVoteCount, setDynamicVoteCount] = React.useState<{
+    stream: number;
+    skip: number;
+  }>({ stream: 0, skip: 0 });
+  const [totalVotes, setTotalVotes] = React.useState<number>(
+    streamCount + skipCount
+  );
   const router = useRouter();
+  const staticVoteCount = streamCount + skipCount;
 
   function toggleSynopsis() {
     setTruncateSynopsis(!truncateSynopsis);
@@ -242,6 +292,19 @@ export function CatalogCard(props: CardProps) {
     const catalogItem = userRatings?.find((item) => item.catalog_item === nfid);
     setUserRating(catalogItem ? catalogItem.stream : null);
   }, [userRatings]);
+
+  React.useEffect(() => {
+    if (!votedNfids) {
+      setDynamicVoteCount({ stream: 0, skip: 0 });
+      return;
+    }
+
+    const cardItem = votedNfids.filter((item) => item.catalog_item === nfid);
+    const streamCount = cardItem.filter((item) => item.stream).length;
+    const skipCount = cardItem.filter((item) => !item.stream).length;
+    setDynamicVoteCount({ stream: streamCount, skip: skipCount });
+    setTotalVotes(staticVoteCount + streamCount + skipCount);
+  }, [nfid, votedNfids]);
 
   function handleRating(thumbIcon: string) {
     if (thumbIcon === 'skip' && userRating !== false) {
@@ -304,6 +367,17 @@ export function CatalogCard(props: CardProps) {
     },
   });
 
+  function voteCountTotal() {
+    const totalVotes =
+      staticVoteCount + dynamicVoteCount.stream + dynamicVoteCount.skip;
+    const streamPercent =
+      ((streamCount + dynamicVoteCount.stream) / totalVotes) * 100;
+    const skipPercent =
+      ((skipCount + dynamicVoteCount.skip) / totalVotes) * 100;
+
+    return { totalVotes, streamPercent, skipPercent };
+  }
+
   return (
     <CardContainer
       tabIndex={0}
@@ -324,21 +398,26 @@ export function CatalogCard(props: CardProps) {
         <Poster truncateSynopsis={truncateSynopsis}>
           <Image
             src={img}
-            alt="Content Poster"
+            alt={title}
             width="80"
-            height="110"
+            height="120"
             sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"
             priority={priorityImg}
           />
         </Poster>
-        <StreamContainer>
-          <span className="rating-text">Stream - {ratingFrom100}%</span>
-          <StreamFill rating={ratingFrom100} />
-        </StreamContainer>
-        <SkipContainer>
-          <span className="rating-text">Skip - {100 - ratingFrom100}% </span>
-          <SkipFill rating={ratingFrom100} />
-        </SkipContainer>
+        <RatingContainer>
+          <StreamText>Stream it</StreamText>
+          <StreamPercent>
+            {Math.round(voteCountTotal().streamPercent) || 0}%
+          </StreamPercent>
+          <StreamBar width={Math.round(voteCountTotal().streamPercent || 0)} />
+          <SkipText>Skip it</SkipText>
+          <SkipPercent>
+            {Math.round(voteCountTotal().skipPercent) || 0}%
+          </SkipPercent>
+          <SkipBar width={Math.round(voteCountTotal().skipPercent) || 0} />
+          <VoteTotal>Votes: {totalVotes || 0}</VoteTotal>
+        </RatingContainer>
         <IconContainer>
           <Image
             src={userRating === false ? thumb_solid : thumb_outline}

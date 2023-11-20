@@ -15,7 +15,8 @@ async function getNullRatingsFromDB(supabase: SupabaseClient) {
     .select('title, imdbid, rating, nfid')
     .or('rating.is.null, rating.eq.0')
     .not('imdbid', 'is', null)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(0, 20);
 
   if (error) {
     console.log('Error:', {
@@ -56,40 +57,40 @@ async function addRatingsToDB(
   const itemsWithNoRating: UpdatedRating[] = [];
   try {
     ratedItems = ImdbIdItems.check(ratedItems);
-    ratedItems.map(async (item) => {
-      if (item.totalRatingVotes === '0') {
+    for (const item of ratedItems) {
+      if (!item.totalRating || item.totalRating === '0') {
         itemsWithNoRating.push({
           title: item.title,
           imdbId: item.imDbId,
         });
-        return;
-      }
+      } else {
+        const { error } = await supabase
+          .from('catalog')
+          .update({
+            rating: Number(item.totalRating),
+          })
+          .eq('imdbid', item.imDbId);
 
-      const { error } = await supabase
-        .from('catalog')
-        .update({
-          rating: Number(item.totalRating),
-        })
-        .eq('imdbid', item.imDbId);
+        if (error) {
+          console.log('Error updating rating in db:', {
+            message: error.message,
+            details: error.details,
+          });
+        }
 
-      if (error) {
-        console.log('Error:', {
-          message: error.message,
-          details: error.details,
+        itemsWithAddedRating.push({
+          title: item.title,
+          imdbId: item.imDbId,
         });
       }
-
-      itemsWithAddedRating.push({
-        title: item.title,
-        imdbId: item.imDbId,
-      });
-    });
+    }
   } catch (error) {
-    if (error instanceof ValidationError)
+    if (error instanceof ValidationError) {
       console.error('Error validating imdb api types:', {
         code: error.code,
         stack: error.stack,
       });
+    }
   }
 
   return {
@@ -103,7 +104,7 @@ const ratingUpdate = {
     let updatedCatalogItems: {
       itemsWithRatingAdded: UpdatedRating[];
       itemsWithRatingsNotAdded: UpdatedRating[];
-    } = { itemsWithRatingAdded: [], itemsWithRatingsNotAdded: [] };
+    } | null = { itemsWithRatingAdded: [], itemsWithRatingsNotAdded: [] };
 
     const nullRatings = await getNullRatingsFromDB(supabase);
     const ratedItems = await getRatingsFromImdb(nullRatings, env.IMDB_KEY);

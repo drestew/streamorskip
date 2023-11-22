@@ -127,29 +127,29 @@ export default function Home() {
   });
 
   return (
-    // <h2>Site under construction.</h2>
-    <PageContainer>
-      <Modal modalOpen={signupModalOpen} openChange={openSignupModal}>
-        <SignupForm />
-      </Modal>
-      <Header userId={userId} />
-      <MainContent>
-        <SearchContainer>{<Search />}</SearchContainer>
-        <Filters>
-          <Category category={filters.category} />
-          <Genre genre={filters.genre} />
-        </Filters>
-        <CatalogContainer>
-          <CatalogList
-            catalog={data}
-            isFetching={isFetching}
-            status={status}
-            signupModalOpen={openSignupModal}
-            userId={userId}
-          />
-        </CatalogContainer>
-        <div ref={ref}></div>
-      </MainContent>
-    </PageContainer>
+    <h2>Site under construction.</h2>
+    // <PageContainer>
+    //   <Modal modalOpen={signupModalOpen} openChange={openSignupModal}>
+    //     <SignupForm />
+    //   </Modal>
+    //   <Header userId={userId} />
+    //   <MainContent>
+    //     <SearchContainer>{<Search />}</SearchContainer>
+    //     <Filters>
+    //       <Category category={filters.category} />
+    //       <Genre genre={filters.genre} />
+    //     </Filters>
+    //     <CatalogContainer>
+    //       <CatalogList
+    //         catalog={data}
+    //         isFetching={isFetching}
+    //         status={status}
+    //         signupModalOpen={openSignupModal}
+    //         userId={userId}
+    //       />
+    //     </CatalogContainer>
+    //     <div ref={ref}></div>
+    //   </MainContent>
+    // </PageContainer>
   );
 }

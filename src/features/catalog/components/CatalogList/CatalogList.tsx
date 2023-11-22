@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { CatalogCard } from '@features/catalog';
+import { CatalogCard, LoadingSkeleton } from '@features/catalog';
 import { color, space } from '@styles/theme';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
-import { LoadingSkeleton } from '@features/catalog/components/LoadingSkeleton/LoadingSkeleton';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Database } from '@src/types/supabase';
 

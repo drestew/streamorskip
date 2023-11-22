@@ -1,6 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import styled, { keyframes } from 'styled-components';
-import { SignupForm } from '@features/auth';
 import React from 'react';
 
 const contentShow = keyframes`
@@ -30,20 +29,20 @@ const Content = styled(Dialog.DialogContent)`
   border-radius: 5px;
   animation: ${contentShow} 0.3s ease-in-out;
 `;
-export function Modal({ modalOpen }: { modalOpen: boolean }) {
-  const [open, setOpen] = React.useState(modalOpen);
-
-  function openChange() {
-    setOpen(false);
-  }
-
+export function Modal({
+  modalOpen,
+  children,
+  openChange,
+}: {
+  modalOpen: boolean;
+  children: React.ReactElement;
+  openChange: () => void;
+}) {
   return (
-    <Dialog.Root open={open} onOpenChange={openChange}>
+    <Dialog.Root open={modalOpen} onOpenChange={openChange}>
       <Dialog.Portal>
         <DialogOverlay>
-          <Content>
-            <SignupForm />
-          </Content>
+          <Content>{children}</Content>
         </DialogOverlay>
       </Dialog.Portal>
     </Dialog.Root>

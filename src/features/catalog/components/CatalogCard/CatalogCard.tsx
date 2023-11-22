@@ -12,6 +12,7 @@ import { updateSavedList } from '@features/catalog/api/updateSavedList';
 import { QueryClient, useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import { Modal } from '@components/Modal/Modal';
+import { Trailer } from '@features/catalog/components/Trailer/Trailer';
 
 type Catalog = {
   nfid: number;
@@ -417,13 +418,7 @@ export function CatalogCard(props: CardProps) {
       savedToList={savedToList}
     >
       <Modal modalOpen={trailerModalOpen} openChange={openTrailerModal}>
-        <iframe
-          id="trailer"
-          title="trailerTitle"
-          width="300"
-          height="200"
-          src={trailer || ''}
-        ></iframe>
+        <Trailer trailer={trailer} title={title} />
       </Modal>
       <Card>
         <Title>{title}</Title>

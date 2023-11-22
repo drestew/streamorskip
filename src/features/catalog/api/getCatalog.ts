@@ -61,7 +61,7 @@ export async function getCatalog(
   let query = supabaseClient
     .from('catalog')
     .select(
-      'nfid, title, img, synopsis, rating, vtype, on_Nflix, stream_count, skip_count'
+      'nfid, title, img, synopsis, rating, vtype, on_Nflix, stream_count, skip_count, trailer'
     )
     .gt('rating', 0)
     .eq('vtype', category)

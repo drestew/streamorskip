@@ -13,6 +13,7 @@ import { Search } from '@features/filters/components/Search/Search';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Database } from '@src/types/supabase';
 import { useRouter } from 'next/router';
+import { SignupForm } from '@features/auth';
 
 const PageContainer = styled.div`
   max-width: 400px;
@@ -44,7 +45,7 @@ const Filters = styled.div`
 
 export default function Home() {
   const { filters } = useFilters();
-  const [modalOpen, setModalOpen] = React.useState(false);
+  const [signupModalOpen, setSignupModalOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const supabase = useSupabaseClient<Database>();
   const [userId, setUserId] = React.useState<string | null>(null);
@@ -112,11 +113,11 @@ export default function Home() {
     ]);
   }, [filters.search]);
 
-  function openModal() {
-    if (modalOpen) {
-      return setModalOpen(false);
+  function openSignupModal() {
+    if (signupModalOpen) {
+      return setSignupModalOpen(false);
     }
-    setModalOpen(true);
+    setSignupModalOpen(true);
   }
 
   supabase.auth.onAuthStateChange((event) => {
@@ -126,27 +127,29 @@ export default function Home() {
   });
 
   return (
-    <h2>Site under construction.</h2>
-    // <PageContainer>
-    //   {modalOpen && <Modal modalOpen={modalOpen} />}
-    //   <Header userId={userId} />
-    //   <MainContent>
-    //     <SearchContainer>{<Search />}</SearchContainer>
-    //     <Filters>
-    //       <Category category={filters.category} />
-    //       <Genre genre={filters.genre} />
-    //     </Filters>
-    //     <CatalogContainer>
-    //       <CatalogList
-    //         catalog={data}
-    //         isFetching={isFetching}
-    //         status={status}
-    //         modalState={openModal}
-    //         userId={userId}
-    //       />
-    //     </CatalogContainer>
-    //     <div ref={ref}></div>
-    //   </MainContent>
-    // </PageContainer>
+    // <h2>Site under construction.</h2>
+    <PageContainer>
+      <Modal modalOpen={signupModalOpen} openChange={openSignupModal}>
+        <SignupForm />
+      </Modal>
+      <Header userId={userId} />
+      <MainContent>
+        <SearchContainer>{<Search />}</SearchContainer>
+        <Filters>
+          <Category category={filters.category} />
+          <Genre genre={filters.genre} />
+        </Filters>
+        <CatalogContainer>
+          <CatalogList
+            catalog={data}
+            isFetching={isFetching}
+            status={status}
+            signupModalOpen={openSignupModal}
+            userId={userId}
+          />
+        </CatalogContainer>
+        <div ref={ref}></div>
+      </MainContent>
+    </PageContainer>
   );
 }

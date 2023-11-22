@@ -11,16 +11,18 @@ import { Database } from '@src/types/supabase';
 import { updateSavedList } from '@features/catalog/api/updateSavedList';
 import { QueryClient, useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
+import { Modal } from '@components/Modal/Modal';
 
 type Catalog = {
   nfid: number;
   title: string;
   synopsis: string;
   img: string;
-  on_Nflix: boolean;
-  vtype: 'movie' | 'series';
+  on_Nflix?: boolean;
+  vtype?: 'movie' | 'series';
   streamCount: number;
   skipCount: number;
+  trailer: string | null;
 };
 
 export type UserRating = {
@@ -40,13 +42,8 @@ type ImgPriority = {
   priorityImg: boolean;
 };
 
-type CardContent = Pick<
-  Catalog,
-  'title' | 'synopsis' | 'img' | 'nfid' | 'streamCount' | 'skipCount'
->;
-
 type Modal = {
-  modalState: () => void;
+  signupModalOpen?: () => void;
 };
 
 type SavedItem = {
@@ -61,12 +58,8 @@ type Query = {
   queryClient: QueryClient;
 };
 
-type CardProps = CardContent &
-  UserRating &
-  ImgPriority &
-  Modal &
-  SavedItem &
-  Query;
+// type CardProps = CardContent &
+type CardProps = Catalog & UserRating & ImgPriority & Modal & SavedItem & Query;
 
 const FadeOut = keyframes`
   from {
@@ -83,7 +76,7 @@ const CardContainer = styled.div<{
 }>`
   margin: ${space(4)} auto;
   opacity: 1;
-
+  max-width: 400px;
   ${(props) => {
     if (props.router && props.savedToList === false) {
       return css`
@@ -124,6 +117,32 @@ const Poster = styled.div<{ truncateSynopsis: boolean }>`
   width: ${space(20)};
   position: relative;
   margin-right: ${space(3)};
+`;
+
+const TrailerContainer = styled.div<{ trailer: string | null }>`
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  align-items: flex-end;
+
+  ${(props) => {
+    if (props.trailer) {
+      return css`
+        cursor: pointer;
+      `;
+    }
+  }}
+`;
+
+const TrailerText = styled.p`
+  background-color: ${color('primary', 300)};
+  color: white;
+  ${font('xs', 'regular')};
+  width: 100%;
+  padding: 2px;
 `;
 
 const SynopsisContainer = styled.div`
@@ -229,9 +248,11 @@ const IconContainer = styled.div`
   align-items: center;
   padding: 0 ${space(5)};
   margin-top: ${space(4)};
-  cursor: pointer;
 `;
 
+const StreamSkipIcon = styled.div`
+  cursor: pointer;
+`;
 const SaveListContainer = styled.div`
   margin-top: ${space(1)};
   grid-area: save-list;
@@ -255,7 +276,7 @@ export function CatalogCard(props: CardProps) {
     streamCount,
     skipCount,
     priorityImg,
-    modalState,
+    signupModalOpen,
     queryClient,
     supabase,
     userId,
@@ -264,10 +285,13 @@ export function CatalogCard(props: CardProps) {
     setUserRatings,
     savedList,
     setSavedList,
+    trailer,
   } = props;
   const [userRating, setUserRating] = React.useState<boolean | null>(null);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
   const [savedToList, setSavedToList] = React.useState<boolean | null>(null);
+  const [trailerModalOpen, setTrailerModalOpen] =
+    React.useState<boolean>(false);
   const [dynamicVoteCount, setDynamicVoteCount] = React.useState<{
     stream: number;
     skip: number;
@@ -378,12 +402,29 @@ export function CatalogCard(props: CardProps) {
     return { totalVotes, streamPercent, skipPercent };
   }
 
+  function openTrailerModal() {
+    if (trailerModalOpen) {
+      return setTrailerModalOpen(false);
+    }
+
+    setTrailerModalOpen(true);
+  }
+
   return (
     <CardContainer
       tabIndex={0}
       router={router.pathname.includes('my-list')}
       savedToList={savedToList}
     >
+      <Modal modalOpen={trailerModalOpen} openChange={openTrailerModal}>
+        <iframe
+          id="trailer"
+          title="trailerTitle"
+          width="300"
+          height="200"
+          src={trailer || ''}
+        ></iframe>
+      </Modal>
       <Card>
         <Title>{title}</Title>
         <SynopsisContainer
@@ -404,6 +445,11 @@ export function CatalogCard(props: CardProps) {
             sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"
             priority={priorityImg}
           />
+          {trailer && (
+            <TrailerContainer trailer={trailer} onClick={openTrailerModal}>
+              <TrailerText>Play Trailer</TrailerText>
+            </TrailerContainer>
+          )}
         </Poster>
         <RatingContainer>
           <StreamText>Stream it</StreamText>
@@ -419,30 +465,34 @@ export function CatalogCard(props: CardProps) {
           <VoteTotal>Votes: {totalVotes || 0}</VoteTotal>
         </RatingContainer>
         <IconContainer>
-          <Image
-            src={userRating === false ? thumb_solid : thumb_outline}
-            alt="Thumb down icon"
-            data-rating="skip"
-            width="50"
-            height="50"
-            style={{ transform: 'rotate(180deg)' }}
-            onClick={userId ? () => handleRating('skip') : modalState}
-            tabIndex={0}
-            onKeyDown={handleKeyDown}
-          />
-          <Image
-            src={userRating ? thumb_solid : thumb_outline}
-            alt="Thumb up icon"
-            data-rating="stream"
-            width="50"
-            height="50"
-            onClick={userId ? () => handleRating('stream') : modalState}
-            tabIndex={0}
-            onKeyDown={handleKeyDown}
-          />
+          <StreamSkipIcon>
+            <Image
+              src={userRating === false ? thumb_solid : thumb_outline}
+              alt="Thumb down icon"
+              data-rating="skip"
+              width="50"
+              height="50"
+              style={{ transform: 'rotate(180deg)' }}
+              onClick={userId ? () => handleRating('skip') : signupModalOpen}
+              tabIndex={0}
+              onKeyDown={handleKeyDown}
+            />
+          </StreamSkipIcon>
+          <StreamSkipIcon>
+            <Image
+              src={userRating ? thumb_solid : thumb_outline}
+              alt="Thumb up icon"
+              data-rating="stream"
+              width="50"
+              height="50"
+              onClick={userId ? () => handleRating('stream') : signupModalOpen}
+              tabIndex={0}
+              onKeyDown={handleKeyDown}
+            />
+          </StreamSkipIcon>
         </IconContainer>
         <SaveListContainer>
-          <SaveList onClick={userId ? handleSave : modalState}>
+          <SaveList onClick={userId ? handleSave : signupModalOpen}>
             {userId
               ? savedToList
                 ? 'Remove from My List'

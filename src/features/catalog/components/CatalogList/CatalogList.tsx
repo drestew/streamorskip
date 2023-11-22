@@ -29,10 +29,11 @@ type CatalogListProps = {
               img: string;
               synopsis: string;
               rating: number | null;
-              vtype: string;
-              on_Nflix: boolean;
+              vtype?: string;
+              on_Nflix?: boolean;
               stream_count: number;
               skip_count: number;
+              trailer: string | null;
             }[]
           | null;
         step: number | null;
@@ -40,7 +41,7 @@ type CatalogListProps = {
     | undefined;
 
   isFetching: boolean;
-  modalState: () => void;
+  signupModalOpen?: () => void;
   status: string;
   userId: string | null;
 };
@@ -49,7 +50,7 @@ export function CatalogList({
   catalog,
   isFetching,
   status,
-  modalState,
+  signupModalOpen,
   userId,
 }: CatalogListProps) {
   const supabase = useSupabaseClient<Database>();
@@ -160,7 +161,7 @@ export function CatalogList({
                     streamCount={item.stream_count}
                     skipCount={item.skip_count}
                     priorityImg={index === 0}
-                    modalState={modalState}
+                    signupModalOpen={signupModalOpen}
                     queryClient={queryClient}
                     supabase={supabase}
                     userId={userId}
@@ -169,6 +170,7 @@ export function CatalogList({
                     setUserRatings={setUserRatings}
                     savedList={savedList}
                     setSavedList={setSavedList}
+                    trailer={item.trailer}
                   />
                 </li>
               );

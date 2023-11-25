@@ -5,3 +5,5 @@ export * from './api/getSavedList';
 export * from './api/updateSavedList';
 export * from './components/CatalogList/CatalogList';
 export * from './components/CatalogCard/CatalogCard';
+export * from './components/LoadingSkeleton/LoadingSkeleton';
+export * from './components/Trailer/Trailer';

@@ -26,11 +26,12 @@ export const Default: Story = {
     savedList: [],
     priorityImg: true,
     userId: '123',
-    modalState: undefined,
+    signupModalOpen: undefined,
     userRatings: [],
     nfid: 70184128,
     streamCount: 523,
     skipCount: 182,
+    trailer: 'https://www.imdb.com/video/imdb/vi2601165849/imdb/embed',
   },
 };
 

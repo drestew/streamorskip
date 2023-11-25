@@ -74,7 +74,6 @@ export default function SavedList() {
           <CatalogList
             catalog={data}
             isFetching={isFetching}
-            modalState={() => false}
             status={status}
             userId={userId}
           />

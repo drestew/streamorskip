@@ -59,7 +59,6 @@ type Query = {
   queryClient: QueryClient;
 };
 
-// type CardProps = CardContent &
 type CardProps = Catalog & UserRating & ImgPriority & Modal & SavedItem & Query;
 
 const FadeOut = keyframes`
@@ -77,7 +76,7 @@ const CardContainer = styled.div<{
 }>`
   margin: ${space(4)} auto;
   opacity: 1;
-  max-width: 400px;
+
   ${(props) => {
     if (props.router && props.savedToList === false) {
       return css`
@@ -189,18 +188,31 @@ const RatingContainer = styled.div`
   grid-row-gap: ${space(1)};
   grid-column-gap: ${space(2)};
   align-items: center;
+
+  @media (min-width: 550px) {
+    grid-template-columns: 1fr 0.8fr 3fr;
+  }
+
+  @media (min-width: 800px) {
+    grid-template-columns: 1fr 0.8fr 5fr;
+  }
+
+  @media (min-width: 1100px) {
+    grid-column-gap: ${space(1)};
+    grid-template-columns: 1.2fr 0.8fr 8fr;
+  }
 `;
 
 const StreamText = styled.span`
   grid-column: 1 / 2;
   grid-row: 1 / 2;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const StreamPercent = styled.span`
   grid-column: 2 / 3;
   grid-row: 1 / 2;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const StreamBar = styled.div<{ width: number }>`
@@ -216,13 +228,13 @@ const StreamBar = styled.div<{ width: number }>`
 const SkipText = styled.span`
   grid-column: 1 / 2;
   grid-row: 2 / 3;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const SkipPercent = styled.span`
   grid-column: 2 / 3;
   grid-row: 2 / 3;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const SkipBar = styled.div<{ width: number }>`

@@ -112,7 +112,7 @@ export default function UserRatingsList() {
 
   return (
     <PageContainer>
-      <Header userId={userId} />
+      <Header userId={userId} supabase={supabase} />
       <MainContent>
         <ToggleGroup.Root
           type="single"

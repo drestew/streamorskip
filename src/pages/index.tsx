@@ -169,18 +169,16 @@ export default function Home() {
       <Modal modalOpen={signupModalOpen} openChange={openSignupModal}>
         <SignupForm />
       </Modal>
-      <Header userId={userId} />
+      <Header userId={userId} supabase={supabase} />
       <MainContent>
         <Filters>
           <SearchBox>{<Search />}</SearchBox>
-          {/*<NonSearchFilters>*/}
           <Categories>
             <Category category={filters.category} />
           </Categories>
           <Genres>
             <Genre genre={filters.genre} />
           </Genres>
-          {/*</NonSearchFilters>*/}
         </Filters>
         <CatalogContainer>
           <CatalogList

@@ -74,7 +74,7 @@ export default function SavedList() {
 
   return (
     <PageContainer>
-      <Header userId={userId} />
+      <Header userId={userId} supabase={supabase} />
       <MainContent>
         <CatalogContainer>
           <CatalogList

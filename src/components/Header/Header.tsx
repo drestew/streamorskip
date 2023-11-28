@@ -3,10 +3,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import logo from '@public/logo.png';
 import { Button } from '../Button/Button';
-import { space } from '@styles/theme';
+import { font, space } from '@styles/theme';
 import { Menu } from '../Menu/Menu';
 import React from 'react';
 import { useRouter } from 'next/router';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+type HeaderProps = {
+  userId: string | null;
+  supabase: SupabaseClient;
+};
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -14,17 +20,47 @@ const HeaderContainer = styled.header`
   margin-bottom: ${space(8)};
 `;
 
-const StyledLink = styled(Link)`
+const Navigation = styled.nav``;
+
+const HeaderList = styled.u`
+  display: flex;
+  gap: ${space(8)};
+  list-style: none;
   text-decoration: none;
-  color: white;
 `;
 
-type HeaderProps = {
-  userId: string | null;
-};
+const HeaderText = styled.li`
+  color: white;
+  text-decoration: none;
+  ${font('md', 'bold')};
+`;
 
-export function Header({ userId }: HeaderProps) {
+export function Header({ userId, supabase }: HeaderProps) {
   const router = useRouter();
+  const [windowWidth, setWindowWidth] = React.useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+
+    return 0;
+  });
+
+  React.useEffect(() => {
+    const handleWindowResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
+
+  async function handleLogOut() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.log('Error logging out:', {
+        message: error?.message,
+      });
+    }
+  }
 
   return (
     <HeaderContainer>
@@ -39,13 +75,51 @@ export function Header({ userId }: HeaderProps) {
         />
       </Link>
       {!router.pathname.includes('user') && !userId ? (
-        <StyledLink href="/login" key={'login'}>
+        <Link href="/login" key={'login'}>
           <Button color="secondary" shade={300} size="sm" role="link">
             Log In
           </Button>
-        </StyledLink>
-      ) : (
+        </Link>
+      ) : windowWidth < 750 ? (
         <Menu userId={userId} />
+      ) : (
+        <Navigation>
+          <HeaderList>
+            <Link
+              href={{
+                pathname: `/user/[id]/my-list`,
+                query: { id: `${userId}` },
+              }}
+              style={{ textDecoration: 'none' }}
+            >
+              <HeaderText>My List</HeaderText>
+            </Link>
+            <Link
+              href={{
+                pathname: `/user/[id]/ratings`,
+                query: { id: `${userId}` },
+              }}
+              style={{ textDecoration: 'none' }}
+            >
+              <HeaderText>Ratings</HeaderText>
+            </Link>
+            <Link
+              href={{
+                pathname: `/user/[id]/settings`,
+                query: { id: `${userId}` },
+              }}
+              style={{ textDecoration: 'none' }}
+            >
+              <HeaderText>Settings</HeaderText>
+            </Link>
+            <HeaderText
+              onClick={handleLogOut}
+              style={{ textDecoration: 'none' }}
+            >
+              Log Out
+            </HeaderText>
+          </HeaderList>
+        </Navigation>
       )}
     </HeaderContainer>
   );

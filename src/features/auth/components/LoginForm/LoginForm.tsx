@@ -7,6 +7,10 @@ import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
 import { supabaseClient } from '@utils/supabase-client';
 
+type Input = {
+  handleMobileKeyboard: (inputFocused: boolean) => void;
+};
+
 const FormContainer = styled(Form.Root)`
   width: 100%;
   background-color: white;
@@ -55,11 +59,32 @@ const ValidationError = styled(Form.Message)`
   color: ${color('error', 300)};
 `;
 
-export function LogInForm() {
+export function LogInForm({ handleMobileKeyboard }: Input) {
   const supabase = createPagesBrowserClient();
   const [email, setEmail] = React.useState('');
   const [sendEmail, setSendEmail] = React.useState(false);
   const [noEmail, setNoEmail] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!ref.current) {
+      return;
+    }
+
+    const input: HTMLInputElement = ref.current;
+
+    function inputFocused() {
+      document.activeElement === input
+        ? handleMobileKeyboard(true)
+        : handleMobileKeyboard(false);
+    }
+
+    window.addEventListener('click', inputFocused);
+
+    return () => {
+      window.removeEventListener('click', inputFocused);
+    };
+  }, [handleMobileKeyboard]);
 
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
@@ -132,6 +157,7 @@ export function LogInForm() {
               placeholder="you@example.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              ref={ref}
             />
           </FormField>
           <SupportText>

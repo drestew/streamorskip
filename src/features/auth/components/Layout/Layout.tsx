@@ -1,13 +1,12 @@
 import styled from 'styled-components';
-import React, { ReactNode } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { color, space } from '@styles/theme';
 import logo from '@public/logo.png';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { LogInForm, SignupForm } from '@features/auth';
 
-type LayoutProps = {
-  children: ReactNode;
-};
 const Page = styled.div`
   height: 100vh;
   position: relative;
@@ -103,7 +102,21 @@ const SupportingText = styled.h2`
   text-shadow: ${color('primary', 300)} 2px 2px 2px;
 `;
 
-export function Layout({ children }: LayoutProps) {
+export function Layout() {
+  const [mobileScreen, setMobileScreen] = React.useState<boolean>(false);
+  const [collapseText, setCollapsedText] = React.useState<boolean>(false);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    window.innerWidth < 550 ? setMobileScreen(true) : setMobileScreen(false);
+  }, []);
+
+  function handleMobileKeyboard(inputFocused: boolean) {
+    inputFocused && mobileScreen
+      ? setCollapsedText(true)
+      : setCollapsedText(false);
+  }
+
   return (
     <Page>
       <Logo>
@@ -121,9 +134,26 @@ export function Layout({ children }: LayoutProps) {
       <BgImgAndContentContainer>
         <BackgroundImg></BackgroundImg>
         <ContentContainer>
-          <Title>Tired of the endless scrolling through Netflix?</Title>
-          <SupportingText>Search Less. Stream More.</SupportingText>
-          {children}
+          {collapseText ? (
+            <>
+              <Title hidden={true}>
+                Tired of the endless scrolling through Netflix?
+              </Title>
+              <SupportingText hidden={true}>
+                Search Less. Stream More.
+              </SupportingText>
+            </>
+          ) : (
+            <>
+              <Title>Tired of the endless scrolling through Netflix?</Title>
+              <SupportingText>Search Less. Stream More.</SupportingText>
+            </>
+          )}
+          {router.pathname.includes('signup') ? (
+            <SignupForm />
+          ) : (
+            <LogInForm handleMobileKeyboard={handleMobileKeyboard} />
+          )}
         </ContentContainer>
       </BgImgAndContentContainer>
     </Page>

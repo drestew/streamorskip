@@ -8,6 +8,7 @@ import { Menu } from '../Menu/Menu';
 import React from 'react';
 import { useRouter } from 'next/router';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { useQuery } from '@tanstack/react-query';
 
 type HeaderProps = {
   userId: string | null;
@@ -46,6 +47,7 @@ export function Header({ userId, supabase }: HeaderProps) {
   });
 
   React.useEffect(() => {
+    // to not show the hamburger menu on larger screens
     const handleWindowResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleWindowResize);
 
@@ -62,6 +64,14 @@ export function Header({ userId, supabase }: HeaderProps) {
     }
   }
 
+  const { data } = useQuery({
+    queryKey: ['auth', userId],
+    queryFn: async () => {
+      const session = await supabase.auth.getSession();
+      return { userId: session.data.session?.user.id || null };
+    },
+  });
+
   return (
     <HeaderContainer>
       <Link href="/">
@@ -74,21 +84,21 @@ export function Header({ userId, supabase }: HeaderProps) {
           priority
         />
       </Link>
-      {!router.pathname.includes('user') && !userId ? (
+      {!router.pathname.includes('user') && !data?.userId ? (
         <Link href="/login" key={'login'}>
           <Button color="secondary" shade={300} size="sm" role="link">
             Log In
           </Button>
         </Link>
       ) : windowWidth < 750 ? (
-        <Menu userId={userId} />
+        <Menu userId={data ? data.userId : null} />
       ) : (
         <Navigation>
           <HeaderList>
             <Link
               href={{
                 pathname: `/user/[id]/my-list`,
-                query: { id: `${userId}` },
+                query: { id: `${data?.userId}` },
               }}
               style={{ textDecoration: 'none' }}
             >
@@ -97,7 +107,7 @@ export function Header({ userId, supabase }: HeaderProps) {
             <Link
               href={{
                 pathname: `/user/[id]/ratings`,
-                query: { id: `${userId}` },
+                query: { id: `${data?.userId}` },
               }}
               style={{ textDecoration: 'none' }}
             >
@@ -106,7 +116,7 @@ export function Header({ userId, supabase }: HeaderProps) {
             <Link
               href={{
                 pathname: `/user/[id]/settings`,
-                query: { id: `${userId}` },
+                query: { id: `${data?.userId}` },
               }}
               style={{ textDecoration: 'none' }}
             >

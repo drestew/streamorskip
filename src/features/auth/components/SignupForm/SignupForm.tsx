@@ -73,7 +73,7 @@ export function SignupForm() {
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-          emailRedirectTo: 'http://localhost:3000/api/auth/callback',
+          emailRedirectTo: 'https://streamorskip.com/api/auth/callback',
         },
       });
 

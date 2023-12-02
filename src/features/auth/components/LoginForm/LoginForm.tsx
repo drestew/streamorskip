@@ -108,7 +108,7 @@ export function LogInForm({ handleMobileKeyboard }: Input) {
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-          emailRedirectTo: 'http://localhost:3000/',
+          emailRedirectTo: 'https://streamorskip.com',
           shouldCreateUser: false,
         },
       });

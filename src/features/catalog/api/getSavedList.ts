@@ -28,6 +28,7 @@ export async function getSavedList(
       'nfid, title, img, synopsis, rating, vtype, on_Nflix, stream_count, skip_count, trailer'
     )
     .in('nfid', titleIds || [])
+    .order('created_at', { ascending: false })
     .range(pageParam, step);
 
   if (userListError) {

@@ -19,6 +19,10 @@ const HeaderContainer = styled.header`
   display: flex;
   justify-content: space-between;
   margin-bottom: ${space(8)};
+
+  @media (min-width: 1100px) {
+    padding: 0 ${space(4)};
+  }
 `;
 
 const Navigation = styled.nav``;

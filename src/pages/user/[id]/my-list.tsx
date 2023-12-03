@@ -10,15 +10,22 @@ import { Database } from '@src/types/supabase';
 import { useRouter } from 'next/router';
 
 const PageContainer = styled.div`
-  max-width: 400px;
   margin: auto;
   padding: ${space(3)} ${space(4)};
-  border: red 1px solid;
 `;
 
 const MainContent = styled.main`
   display: flex;
   flex-direction: column;
+  margin: auto;
+
+  @media (min-width: 550px) {
+    width: 80%;
+  }
+
+  @media (min-width: 1100px) {
+    width: 60%;
+  }
 `;
 
 const CatalogContainer = styled.div`
@@ -26,7 +33,6 @@ const CatalogContainer = styled.div`
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  margin: auto;
 `;
 
 export default function SavedList() {
@@ -68,7 +74,7 @@ export default function SavedList() {
 
   return (
     <PageContainer>
-      <Header userId={userId} />
+      <Header userId={userId} supabase={supabase} />
       <MainContent>
         <CatalogContainer>
           <CatalogList

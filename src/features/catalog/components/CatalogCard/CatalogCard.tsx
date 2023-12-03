@@ -59,7 +59,6 @@ type Query = {
   queryClient: QueryClient;
 };
 
-// type CardProps = CardContent &
 type CardProps = Catalog & UserRating & ImgPriority & Modal & SavedItem & Query;
 
 const FadeOut = keyframes`
@@ -77,7 +76,7 @@ const CardContainer = styled.div<{
 }>`
   margin: ${space(4)} auto;
   opacity: 1;
-  max-width: 400px;
+
   ${(props) => {
     if (props.router && props.savedToList === false) {
       return css`
@@ -87,8 +86,9 @@ const CardContainer = styled.div<{
   }}
 `;
 
-const Card = styled.div`
+const Card = styled.div<{ truncateSynopsis: boolean }>`
   display: grid;
+  position: relative;
   width: 100%;
   background-color: white;
   padding: ${space(3)};
@@ -100,10 +100,30 @@ const Card = styled.div`
     'icon icon icon'
     'save-list save-list save-list';
   border-radius: ${space(2)};
+  // to no resize the columns when synopsis not truncated
+  grid-template-columns: 1fr 1.5fr 1.5fr;
 
   .rating-text {
     ${font('xs', 'regular')};
   }
+
+  @media (min-width: 550px) {
+    grid-template-columns: auto;
+  }
+
+  ${(props) => {
+    if (!props.truncateSynopsis) {
+      return css`
+        @media (min-width: 800px) {
+          grid-template-columns: 0.5fr 2fr 2fr;
+        }
+
+        @media (min-width: 1100px) {
+          grid-template-columns: auto;
+        }
+      `;
+    }
+  }}
 `;
 
 const Title = styled.p`
@@ -146,13 +166,34 @@ const TrailerText = styled.p`
   padding: 2px;
 `;
 
-const SynopsisContainer = styled.div`
+const SynopsisContainer = styled.div<{ truncateSynopsis: boolean }>`
   grid-area: synopsis;
   overflow: hidden;
   display: flex;
-  align-items: flex-start;
   cursor: pointer;
   margin-bottom: ${space(2)};
+
+  ${(props) => {
+    if (!props.truncateSynopsis) {
+      return css`
+        grid-row: 2 / 5;
+        grid-column: 1 / 4;
+        padding: ${space(1)};
+        gap: ${space(1)};
+        z-index: 1;
+        border-radius: 5px;
+        border: solid 1px #eeeefa;
+        background: #f7f7fd;
+
+        @media (min-width: 850px) {
+          grid-area: synopsis;
+          border: none;
+          background: white;
+          padding: 0;
+        }
+      `;
+    }
+  }}
 `;
 
 const Synopsis = styled.p<{ truncateSynopsis: boolean }>`
@@ -189,18 +230,31 @@ const RatingContainer = styled.div`
   grid-row-gap: ${space(1)};
   grid-column-gap: ${space(2)};
   align-items: center;
+
+  @media (min-width: 550px) {
+    grid-template-columns: 1fr 0.8fr 3fr;
+  }
+
+  @media (min-width: 800px) {
+    grid-template-columns: 1fr 0.8fr 5fr;
+  }
+
+  @media (min-width: 1100px) {
+    grid-column-gap: ${space(1)};
+    grid-template-columns: 1.2fr 0.8fr 8fr;
+  }
 `;
 
 const StreamText = styled.span`
   grid-column: 1 / 2;
   grid-row: 1 / 2;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const StreamPercent = styled.span`
   grid-column: 2 / 3;
   grid-row: 1 / 2;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const StreamBar = styled.div<{ width: number }>`
@@ -216,13 +270,13 @@ const StreamBar = styled.div<{ width: number }>`
 const SkipText = styled.span`
   grid-column: 1 / 2;
   grid-row: 2 / 3;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const SkipPercent = styled.span`
   grid-column: 2 / 3;
   grid-row: 2 / 3;
-  ${font('xs', 'regular')};
+  ${font('xs', 'bold')};
 `;
 
 const SkipBar = styled.div<{ width: number }>`
@@ -420,17 +474,20 @@ export function CatalogCard(props: CardProps) {
       <Modal modalOpen={trailerModalOpen} openChange={openTrailerModal}>
         <Trailer trailer={trailer} title={title} />
       </Modal>
-      <Card>
+      <Card truncateSynopsis={truncateSynopsis}>
         <Title>{title}</Title>
+        {/*<SynopsisAbsContainer>*/}
         <SynopsisContainer
           onClick={toggleSynopsis}
           tabIndex={0}
           onKeyDown={handleKeyDown}
           data-synopsis="synopsis"
+          truncateSynopsis={truncateSynopsis}
         >
           <Synopsis truncateSynopsis={truncateSynopsis}>{synopsis}</Synopsis>
           <Image src={arrow} alt="Open details icon" width={15} height={15} />
         </SynopsisContainer>
+        {/*</SynopsisAbsContainer>*/}
         <Poster truncateSynopsis={truncateSynopsis}>
           <Image
             src={img}

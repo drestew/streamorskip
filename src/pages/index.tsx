@@ -16,18 +16,60 @@ import { useRouter } from 'next/router';
 import { SignupForm } from '@features/auth';
 
 const PageContainer = styled.div`
-  max-width: 400px;
   margin: auto;
   padding: ${space(3)} ${space(4)};
-`;
-
-const SearchContainer = styled.div`
-  margin-bottom: ${space(6)};
 `;
 
 const MainContent = styled.main`
   display: flex;
   flex-direction: column;
+  margin: auto;
+
+  @media (min-width: 550px) {
+    width: 80%;
+  }
+
+  @media (min-width: 1100px) {
+    width: 60%;
+  }
+`;
+
+const Filters = styled.div`
+  width: 100%;
+  margin: auto auto -${space(3)} auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const SearchBox = styled.div`
+  width: 100%;
+  margin-bottom: ${space(6)};
+
+  @media (min-width: 1100px) {
+    order: 2;
+    margin-bottom: 0;
+    width: 50%;
+  }
+`;
+
+const Categories = styled.div`
+  justify-self: center;
+  align-self: flex-start;
+
+  @media (min-width: 1100px) {
+    order: 1;
+  }
+`;
+
+const Genres = styled.div`
+  justify-self: center;
+  align-self: flex-end;
+
+  @media (min-width: 1100px) {
+    order: 3;
+  }
 `;
 
 const CatalogContainer = styled.div`
@@ -36,11 +78,7 @@ const CatalogContainer = styled.div`
   justify-content: center;
   width: 100%;
   margin: auto;
-`;
-
-const Filters = styled.div`
-  display: flex;
-  justify-content: space-between;
+  padding: ${space(3)} 0;
 `;
 
 export default function Home() {
@@ -127,29 +165,32 @@ export default function Home() {
   });
 
   return (
-    <h2>Site under construction.</h2>
-    // <PageContainer>
-    //   <Modal modalOpen={signupModalOpen} openChange={openSignupModal}>
-    //     <SignupForm />
-    //   </Modal>
-    //   <Header userId={userId} />
-    //   <MainContent>
-    //     <SearchContainer>{<Search />}</SearchContainer>
-    //     <Filters>
-    //       <Category category={filters.category} />
-    //       <Genre genre={filters.genre} />
-    //     </Filters>
-    //     <CatalogContainer>
-    //       <CatalogList
-    //         catalog={data}
-    //         isFetching={isFetching}
-    //         status={status}
-    //         signupModalOpen={openSignupModal}
-    //         userId={userId}
-    //       />
-    //     </CatalogContainer>
-    //     <div ref={ref}></div>
-    //   </MainContent>
-    // </PageContainer>
+    <PageContainer>
+      <Modal modalOpen={signupModalOpen} openChange={openSignupModal}>
+        <SignupForm />
+      </Modal>
+      <Header userId={userId} supabase={supabase} />
+      <MainContent>
+        <Filters>
+          <SearchBox>{<Search />}</SearchBox>
+          <Categories>
+            <Category category={filters.category} />
+          </Categories>
+          <Genres>
+            <Genre genre={filters.genre} />
+          </Genres>
+        </Filters>
+        <CatalogContainer>
+          <CatalogList
+            catalog={data}
+            isFetching={isFetching}
+            status={status}
+            signupModalOpen={openSignupModal}
+            userId={userId}
+          />
+        </CatalogContainer>
+        <div ref={ref}></div>
+      </MainContent>
+    </PageContainer>
   );
 }

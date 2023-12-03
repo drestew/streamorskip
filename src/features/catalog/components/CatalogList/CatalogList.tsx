@@ -112,7 +112,11 @@ export function CatalogList({
   }, [supabase, userId]);
 
   React.useEffect(() => {
-    const nfids = catalog?.pages
+    if (!catalog?.pages[0]) {
+      return;
+    }
+
+    const nfids = catalog.pages
       .map((item) => item?.filteredData?.map((item) => item.nfid))
       .flat();
 
@@ -131,7 +135,7 @@ export function CatalogList({
       }
       setVotedNfids(data);
     }
-  }, [catalog?.pages, userRatings]);
+  }, [catalog?.pages, supabase, userRatings]);
 
   const loadingSkeletonArr: React.ReactNode[] = new Array(10)
     .fill('')

@@ -1,16 +1,13 @@
 import styled from 'styled-components';
-import React, { ReactNode } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import popcorn_background from '@public/popcorn_background.png';
 import { color, space } from '@styles/theme';
 import logo from '@public/logo.png';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { LogInForm, SignupForm } from '@features/auth';
 
-type LayoutProps = {
-  children: ReactNode;
-};
 const Page = styled.div`
-  max-width: 400px;
   height: 100vh;
   position: relative;
   margin: auto;
@@ -26,15 +23,58 @@ const Logo = styled.div`
   margin: 0;
   padding: ${space(4)} 0;
 `;
-const ImageCover = styled.div`
-  background-color: ${color('dark', 300)};
-  opacity: 30%;
+
+const BgImgAndContentContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: 1100px) {
+    padding: 0 ${space(4)};
+    width: 100vw;
+    align-self: flex-end;
+  }
+`;
+
+const BackgroundImg = styled.div`
+  height: 100vh;
+  width: 100vw;
+  background-image: url('/popcorn_background.png');
+  background-size: 100% 100%;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
   z-index: -1;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 101%; // to cover the pseudo-element
+    height: 100%;
+    background: ${color('dark', 300)};
+    opacity: 85%;
+  }
+
+  @media (min-width: 1100px) {
+    width: 60%;
+    opacity: 100%;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 101%;
+      height: 100%;
+      opacity: 100%;
+      background: linear-gradient(
+        to right,
+        rgba(30, 33, 43, 0.75),
+        rgba(30, 33, 43, 1)
+      );
+    }
+  }
 `;
 
 const ContentContainer = styled.div`
@@ -42,6 +82,12 @@ const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  @media (min-width: 1100px) {
+    width: 35%;
+    align-self: flex-end;
+    margin-right: ${space(4)};
+  }
 `;
 
 const Title = styled.h1`
@@ -56,7 +102,21 @@ const SupportingText = styled.h2`
   text-shadow: ${color('primary', 300)} 2px 2px 2px;
 `;
 
-export function Layout({ children }: LayoutProps) {
+export function Layout() {
+  const [mobileScreen, setMobileScreen] = React.useState<boolean>(false);
+  const [collapseText, setCollapsedText] = React.useState<boolean>(false);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    window.innerWidth < 550 ? setMobileScreen(true) : setMobileScreen(false);
+  }, []);
+
+  function handleMobileKeyboard(inputFocused: boolean) {
+    inputFocused && mobileScreen
+      ? setCollapsedText(true)
+      : setCollapsedText(false);
+  }
+
   return (
     <Page>
       <Logo>
@@ -71,20 +131,31 @@ export function Layout({ children }: LayoutProps) {
           />
         </Link>
       </Logo>
-      <Image
-        alt="popcorn"
-        src={popcorn_background}
-        fill
-        sizes="100vw"
-        style={{ objectFit: 'cover', zIndex: -1, objectPosition: '-150px' }}
-        priority
-      />
-      <ImageCover />
-      <ContentContainer>
-        <Title>Tired of the endless scrolling through Netflix?</Title>
-        <SupportingText>Search Less. Stream More.</SupportingText>
-        {children}
-      </ContentContainer>
+      <BgImgAndContentContainer>
+        <BackgroundImg></BackgroundImg>
+        <ContentContainer>
+          {collapseText ? (
+            <>
+              <Title hidden={true}>
+                Tired of the endless scrolling through Netflix?
+              </Title>
+              <SupportingText hidden={true}>
+                Search Less. Stream More.
+              </SupportingText>
+            </>
+          ) : (
+            <>
+              <Title>Tired of the endless scrolling through Netflix?</Title>
+              <SupportingText>Search Less. Stream More.</SupportingText>
+            </>
+          )}
+          {router.pathname.includes('signup') ? (
+            <SignupForm />
+          ) : (
+            <LogInForm handleMobileKeyboard={handleMobileKeyboard} />
+          )}
+        </ContentContainer>
+      </BgImgAndContentContainer>
     </Page>
   );
 }

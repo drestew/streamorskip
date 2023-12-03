@@ -64,7 +64,6 @@ export async function getCatalog(
       'nfid, title, img, synopsis, rating, vtype, on_Nflix, stream_count, skip_count, trailer'
     )
     .gt('rating', 0)
-    .eq('vtype', category)
     .order('created_at', { ascending: false })
     .range(pageParam, step);
 
@@ -97,6 +96,7 @@ export async function getCatalog(
 
   // default, also to not add unfiltered catalog at the end of the filtered results
   if (!search && genreNfids.length === 0) {
+    query = query.eq('vtype', category);
     // removed content is not shown by default unless set by user
     if (!userSettings || userSettings.filter_removed_content) {
       query = query.is('on_Nflix', true);
@@ -114,6 +114,7 @@ export async function getCatalog(
   }
 
   if (userSettings && !search) {
+    query = query.eq('vtype', category);
     if (userSettings.filter_rated) {
       const { data: ratedItems } = await supabase
         .from('rating')

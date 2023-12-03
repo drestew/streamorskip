@@ -8,7 +8,6 @@ import * as Switch from '@radix-ui/react-switch';
 import { Button } from '@components/Button/Button';
 
 const PageContainer = styled.div`
-  max-width: 400px;
   margin: auto;
   padding: ${space(3)} ${space(4)};
 `;
@@ -22,6 +21,15 @@ const CardContainer = styled.form`
   justify-content: flex-start;
   gap: ${space(4)};
   ${font('sm', 'regular')};
+  margin: auto;
+
+  @media (min-width: 550px) {
+    width: 80%;
+  }
+
+  @media (min-width: 1100px) {
+    width: 60%;
+  }
 `;
 
 const CardText = styled.label``;
@@ -168,7 +176,7 @@ export default function Settings() {
 
   return (
     <PageContainer>
-      <Header userId={userId} />
+      <Header userId={userId} supabase={supabase} />
       <CardContainer onSubmit={(event) => handleSubmit(event)}>
         <EmailContainer>
           <CardText htmlFor="email">Email</CardText>

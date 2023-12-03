@@ -24,7 +24,6 @@ const DialogOverlay = styled(Dialog.Overlay)`
 `;
 
 const Content = styled(Dialog.DialogContent)`
-  max-width: 360px;
   border-radius: 5px;
   animation: ${contentShow} 0.3s ease-in-out;
 `;

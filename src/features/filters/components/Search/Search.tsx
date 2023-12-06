@@ -57,6 +57,7 @@ const SearchIcon = styled.button`
   align-self: center;
   cursor: pointer;
   position: relative;
+  padding: 0;
 `;
 
 const CloseIcon = styled.button`

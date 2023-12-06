@@ -231,6 +231,10 @@ const RatingContainer = styled.div`
   grid-column-gap: ${space(2)};
   align-items: center;
 
+  @media (min-width: 350px) {
+    grid-template-columns: 1fr 0.4fr 2fr;
+  }
+
   @media (min-width: 550px) {
     grid-template-columns: 1fr 0.8fr 3fr;
   }
@@ -320,6 +324,7 @@ const SaveList = styled.button`
   border-style: none;
   background-color: white;
   cursor: pointer;
+  color: ${color('gray', 500)};
 `;
 
 export function CatalogCard(props: CardProps) {
@@ -476,7 +481,6 @@ export function CatalogCard(props: CardProps) {
       </Modal>
       <Card truncateSynopsis={truncateSynopsis}>
         <Title>{title}</Title>
-        {/*<SynopsisAbsContainer>*/}
         <SynopsisContainer
           onClick={toggleSynopsis}
           tabIndex={0}
@@ -487,7 +491,6 @@ export function CatalogCard(props: CardProps) {
           <Synopsis truncateSynopsis={truncateSynopsis}>{synopsis}</Synopsis>
           <Image src={arrow} alt="Open details icon" width={15} height={15} />
         </SynopsisContainer>
-        {/*</SynopsisAbsContainer>*/}
         <Poster truncateSynopsis={truncateSynopsis}>
           <Image
             src={img}

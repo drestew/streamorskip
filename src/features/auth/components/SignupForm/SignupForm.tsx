@@ -121,6 +121,7 @@ export function SignupForm() {
               placeholder="you@example.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              onFocus={() => duplicateEmail && setDuplicateEmail(false)}
             />
           </FormField>
           <Form.Submit asChild>

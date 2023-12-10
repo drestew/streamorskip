@@ -19,7 +19,7 @@ const GenreButton = styled(Select.Trigger)`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 25px;
+  padding: ${space(1)} ${space(5)};
   gap: ${space(2)};
   border: none;
   border-bottom: white 1px solid;
@@ -80,6 +80,7 @@ const GenreItem = React.forwardRef(
     );
   }
 );
+
 export function Genre({ genre }: ContentFilters) {
   const { filteredGenre } = useGenreList();
   const { handleFilters } = useFilters();

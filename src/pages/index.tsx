@@ -36,7 +36,6 @@ const MainContent = styled.main`
 
 const Filters = styled.div`
   width: 100%;
-  margin: auto auto -${space(3)} auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -77,8 +76,6 @@ const CatalogContainer = styled.div`
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  margin: auto;
-  padding: ${space(3)} 0;
 `;
 
 export default function Home() {

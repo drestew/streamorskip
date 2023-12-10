@@ -63,6 +63,13 @@ export function CatalogList({
   const [votedNfids, setVotedNfids] = React.useState<
     { catalog_item: number; stream: boolean }[] | null
   >(null);
+  const [windowWidth, setWindowWidth] = React.useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+
+    return 0;
+  });
 
   React.useEffect(() => {
     getUserRatings();
@@ -147,6 +154,14 @@ export function CatalogList({
       );
     });
 
+  React.useEffect(() => {
+    // prop from this effect is passed to Card for responsiveness
+    const handleWindowResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
+
   return (
     <List role="list">
       {status === 'loading' && <List>{loadingSkeletonArr}</List>}
@@ -174,6 +189,7 @@ export function CatalogList({
                     savedList={savedList}
                     setSavedList={setSavedList}
                     trailer={item.trailer}
+                    windowWidth={windowWidth}
                   />
                 </li>
               );

@@ -158,6 +158,7 @@ export function LogInForm({ handleMobileKeyboard }: Input) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               ref={ref}
+              onFocus={() => noEmail && setNoEmail(false)}
             />
           </FormField>
           <SupportText>

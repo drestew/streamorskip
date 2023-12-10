@@ -2,8 +2,12 @@ import { LogInForm } from '@features/auth/components/LoginForm/LoginForm';
 import user from '@fixtures/user.json';
 
 describe('<LogInForm />', () => {
+  function handleMobileKeyboard() {
+    return false;
+  }
+
   beforeEach(() => {
-    cy.mount(<LogInForm />);
+    cy.mount(<LogInForm handleMobileKeyboard={handleMobileKeyboard} />);
   });
 
   it('displays error for invalid input', () => {

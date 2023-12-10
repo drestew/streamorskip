@@ -59,7 +59,17 @@ type Query = {
   queryClient: QueryClient;
 };
 
-type CardProps = Catalog & UserRating & ImgPriority & Modal & SavedItem & Query;
+type Window = {
+  windowWidth: number;
+};
+
+type CardProps = Catalog &
+  UserRating &
+  ImgPriority &
+  Modal &
+  SavedItem &
+  Query &
+  Window;
 
 const FadeOut = keyframes`
   from {
@@ -86,7 +96,7 @@ const CardContainer = styled.div<{
   }}
 `;
 
-const Card = styled.div<{ truncateSynopsis: boolean }>`
+const Card = styled.div`
   display: grid;
   position: relative;
   width: 100%;
@@ -111,19 +121,14 @@ const Card = styled.div<{ truncateSynopsis: boolean }>`
     grid-template-columns: auto;
   }
 
-  ${(props) => {
-    if (!props.truncateSynopsis) {
-      return css`
-        @media (min-width: 800px) {
-          grid-template-columns: 0.5fr 2fr 2fr;
-        }
-
-        @media (min-width: 1100px) {
-          grid-template-columns: auto;
-        }
-      `;
-    }
-  }}
+  @media (min-width: 800px) {
+    grid-template-areas:
+      'poster poster title title title'
+      'poster poster synopsis synopsis synopsis '
+      'poster poster rating rating rating'
+      'poster poster rating rating rating'
+      'poster poster icon icon icon'
+      'poster poster save-list save-list save-list';
 `;
 
 const Title = styled.p`
@@ -138,9 +143,18 @@ const Poster = styled.div<{ truncateSynopsis: boolean }>`
   width: ${space(20)};
   position: relative;
   margin-right: ${space(3)};
+
+  @media (min-width: 800px) {
+    margin-right: ${space(4)};
+    width: 100%;
+    grid-area: 1 / 1 / 6 / 3;
+  }
 `;
 
-const TrailerContainer = styled.div<{ trailer: string | null }>`
+const TrailerContainer = styled.div<{
+  trailer: string | null;
+  truncateSynopsis: boolean;
+}>`
   position: absolute;
   top: 0;
   width: 100%;
@@ -148,6 +162,28 @@ const TrailerContainer = styled.div<{ trailer: string | null }>`
   text-align: center;
   display: flex;
   align-items: flex-end;
+
+  @media (min-width: 800px) {
+    position: static;
+    width: auto;
+    height: auto;
+    align-items: center;
+    grid-area: 6 / 1 / 7 / 3;
+    margin-right: ${space(4)};
+
+    ${(props) => {
+      if (!props.truncateSynopsis) {
+        return css`
+          grid-area: auto;
+          position: absolute;
+          // positioned to not move when row stretched from synopsis
+          top: calc(180px + ${space(3)});
+          left: ${space(3)};
+          width: 120px;
+        `;
+      }
+    }}
+  }
 
   ${(props) => {
     if (props.trailer) {
@@ -163,7 +199,11 @@ const TrailerText = styled.p`
   color: white;
   ${font('xs', 'regular')};
   width: 100%;
-  padding: 2px;
+
+  @media (min-width: 800px) {
+    height: 100%;
+    padding: ${space(1)};
+  }
 `;
 
 const SynopsisContainer = styled.div<{ truncateSynopsis: boolean }>`
@@ -177,7 +217,7 @@ const SynopsisContainer = styled.div<{ truncateSynopsis: boolean }>`
     if (!props.truncateSynopsis) {
       return css`
         grid-row: 2 / 5;
-        grid-column: 1 / 4;
+        grid-column: 1 / 5;
         padding: ${space(1)};
         gap: ${space(1)};
         z-index: 1;
@@ -185,7 +225,7 @@ const SynopsisContainer = styled.div<{ truncateSynopsis: boolean }>`
         border: solid 1px #eeeefa;
         background: #f7f7fd;
 
-        @media (min-width: 850px) {
+        @media (min-width: 800px) {
           grid-area: synopsis;
           border: none;
           background: white;
@@ -230,6 +270,10 @@ const RatingContainer = styled.div`
   grid-row-gap: ${space(1)};
   grid-column-gap: ${space(2)};
   align-items: center;
+
+  @media (min-width: 350px) {
+    grid-template-columns: 1fr 0.4fr 2fr;
+  }
 
   @media (min-width: 550px) {
     grid-template-columns: 1fr 0.8fr 3fr;
@@ -303,23 +347,49 @@ const IconContainer = styled.div`
   align-items: center;
   padding: 0 ${space(5)};
   margin-top: ${space(4)};
+
+  @media (min-width: 800px) {
+    grid-area: 5 / 3 / 6 / 6;
+  }
 `;
 
 const StreamSkipIcon = styled.div`
   cursor: pointer;
 `;
-const SaveListContainer = styled.div`
+
+const SaveListContainer = styled.div<{ truncateSynopsis: boolean }>`
   margin-top: ${space(1)};
   grid-area: save-list;
   ${font('xs', 'regular')}
   display: flex;
   justify-content: center;
+
+  @media (min-width: 550px) {
+    ${(props) => {
+      if (!props.truncateSynopsis) {
+        return css`
+          grid-area: 6 / 1 / 7 / 5;
+        `;
+      }
+    }}
+  }
+
+  @media (min-width: 800px) {
+    ${(props) => {
+      if (!props.truncateSynopsis) {
+        return css`
+          grid-area: 6 / 3 / 7 / 6;
+        `;
+      }
+    }}
+  }
 `;
 
 const SaveList = styled.button`
   border-style: none;
   background-color: white;
   cursor: pointer;
+  color: ${color('gray', 500)};
 `;
 
 export function CatalogCard(props: CardProps) {
@@ -341,6 +411,7 @@ export function CatalogCard(props: CardProps) {
     savedList,
     setSavedList,
     trailer,
+    windowWidth,
   } = props;
   const [userRating, setUserRating] = React.useState<boolean | null>(null);
   const [truncateSynopsis, setTruncateSynopsis] = React.useState(true);
@@ -474,9 +545,8 @@ export function CatalogCard(props: CardProps) {
       <Modal modalOpen={trailerModalOpen} openChange={openTrailerModal}>
         <Trailer trailer={trailer} title={title} />
       </Modal>
-      <Card truncateSynopsis={truncateSynopsis}>
+      <Card>
         <Title>{title}</Title>
-        {/*<SynopsisAbsContainer>*/}
         <SynopsisContainer
           onClick={toggleSynopsis}
           tabIndex={0}
@@ -487,22 +557,47 @@ export function CatalogCard(props: CardProps) {
           <Synopsis truncateSynopsis={truncateSynopsis}>{synopsis}</Synopsis>
           <Image src={arrow} alt="Open details icon" width={15} height={15} />
         </SynopsisContainer>
-        {/*</SynopsisAbsContainer>*/}
-        <Poster truncateSynopsis={truncateSynopsis}>
-          <Image
-            src={img}
-            alt={title}
-            width="80"
-            height="120"
-            sizes="(max-width: 1200px) 120px, (max-width: 768) 80px"
-            priority={priorityImg}
-          />
-          {trailer && (
-            <TrailerContainer trailer={trailer} onClick={openTrailerModal}>
-              <TrailerText>Play Trailer</TrailerText>
-            </TrailerContainer>
-          )}
-        </Poster>
+        {windowWidth < 800 ? (
+          <Poster truncateSynopsis={truncateSynopsis}>
+            <Image
+              src={img}
+              alt={title}
+              width={80}
+              height={120}
+              priority={priorityImg}
+            />
+            {trailer && (
+              <TrailerContainer
+                trailer={trailer}
+                truncateSynopsis={truncateSynopsis}
+                onClick={openTrailerModal}
+              >
+                <TrailerText>Play Trailer</TrailerText>
+              </TrailerContainer>
+            )}
+          </Poster>
+        ) : (
+          <>
+            <Poster truncateSynopsis={truncateSynopsis}>
+              <Image
+                src={img}
+                alt={title}
+                width={120}
+                height={180}
+                priority={priorityImg}
+              />
+            </Poster>
+            {trailer && (
+              <TrailerContainer
+                trailer={trailer}
+                truncateSynopsis={truncateSynopsis}
+                onClick={openTrailerModal}
+              >
+                <TrailerText>Play Trailer</TrailerText>
+              </TrailerContainer>
+            )}
+          </>
+        )}
         <RatingContainer>
           <StreamText>Stream it</StreamText>
           <StreamPercent>
@@ -543,7 +638,7 @@ export function CatalogCard(props: CardProps) {
             />
           </StreamSkipIcon>
         </IconContainer>
-        <SaveListContainer>
+        <SaveListContainer truncateSynopsis={truncateSynopsis}>
           <SaveList onClick={userId ? handleSave : signupModalOpen}>
             {userId
               ? savedToList

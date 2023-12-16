@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { Database } from '@src/types/supabase';
+import Head from 'next/head';
 
 const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {
@@ -23,6 +24,14 @@ export default function App({ Component, pageProps }: AppProps) {
       <ThemeProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
           <GlobalStyle />
+          <Head>
+            <title>Stream or Skip</title>
+            <link rel="preconnect" href="https://supabase.co" />
+            <meta
+              name="description"
+              content="StreamOrSkip.com is a community of people who just want to find what to watch next on Netflix, as well as help others do the same."
+            />
+          </Head>
           <Component {...pageProps} />
           <ReactQueryDevtools initialIsOpen />
         </QueryClientProvider>

@@ -15,6 +15,23 @@ import Head from 'next/head';
 const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {
   const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const cspHeader = `
+    default-src 'self' https://hcoxdhdqhkhtynyvbdpv.supabase.co;
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    style-src 'self' 'nonce-${nonce}';
+    img-src 'self' blob: data:;
+    font-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    block-all-mixed-content;
+    upgrade-insecure-requests;
+`;
+  const contentSecurityPolicyHeaderValue = cspHeader
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 
   return (
     <SessionContextProvider
@@ -30,6 +47,10 @@ export default function App({ Component, pageProps }: AppProps) {
             <meta
               name="description"
               content="StreamOrSkip.com is a community of people who just want to find what to watch next on Netflix, as well as help others do the same."
+            />
+            <meta
+              httpEquiv="Content-Security-Policy"
+              content={contentSecurityPolicyHeaderValue}
             />
           </Head>
           <Component {...pageProps} />

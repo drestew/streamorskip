@@ -37,7 +37,7 @@
     "eslint-config-next": "13.1.1",
     "fastest-levenshtein": "^1.0.16",
     "inngest": "^1.2.0",
-    "next": "^13.5.5",
+    "next": "^13.1.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-intersection-observer": "^9.4.3",

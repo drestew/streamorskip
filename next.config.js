@@ -11,7 +11,7 @@ const cspHeader = `
     frame-ancestors 'none';
     block-all-mixed-content;
     upgrade-insecure-requests;
-    connect-src 'self' https://hcoxdhdqhkhtynyvbdpv.supabase.co/;
+    connect-src 'self' https://hcoxdhdqhkhtynyvbdpv.supabase.co/ https://static.cloudflareinsights.com/;
 `;
 
 const nextConfig = {

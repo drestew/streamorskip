@@ -37,7 +37,7 @@ async function fetchTrailer(env: Env, nullTrailers: DBItem[] | null) {
   const trailers: TrailerItem[] = await Promise.all(
     nullTrailers.map(async (title) => {
       const trailerResponse = await fetch(
-        `https://imdb-api.com/en/API/Trailer/${env.IMDB_KEY}/${title.imdbid}`
+        `https://tv-api.com/en/API/Trailer/${env.IMDB_KEY}/${title.imdbid}`
       );
       return trailerResponse.json();
     })

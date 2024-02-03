@@ -39,7 +39,7 @@ async function getRatingsFromImdb(
     itemsToBeRated = catalogFromDB.map((item) => item.imdbid);
     itemsWithRatings = await Promise.all(
       itemsToBeRated.map(async (item) => {
-        const url = `https://imdb-api.com/en/API/UserRatings/${imdbKey}/${item}`;
+        const url = `https://tv-api.com/en/API/UserRatings/${imdbKey}/${item}`;
         const fetchItemRatings = await fetch(url);
         return fetchItemRatings.json();
       })

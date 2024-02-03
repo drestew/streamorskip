@@ -47,7 +47,7 @@ async function getRatingCountsFromImdb(
   if (catalogFromDB && catalogFromDB.length > 0) {
     itemsWithVoteCount = await Promise.all(
       catalogFromDB.map(async (item) => {
-        const url = `https://imdb-api.com/en/API/UserRatings/${imdbKey}/${item.imdbid}`;
+        const url = `https://tv-api.com/en/API/UserRatings/${imdbKey}/${item.imdbid}`;
         const fetchItemRatingCount = await fetch(url);
         let imdbItem: Awaited<ImdbIdItem> = await fetchItemRatingCount.json();
         try {
@@ -156,8 +156,6 @@ async function addVoteCountToDB(
 
   return updatedDBItems;
 }
-
-// }
 
 const getVoteCount = {
   async fetch(req: Request, env: Env, supabase: SupabaseClient<Database>) {

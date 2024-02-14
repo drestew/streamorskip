@@ -9,7 +9,11 @@ const meta: Meta<typeof CatalogCard> = {
   component: CatalogCard,
   decorators: [
     (Story) => (
-      <QueryClientProvider client={queryClient}>{Story()}</QueryClientProvider>
+      <div style={{ width: 600 }}>
+        <QueryClientProvider client={queryClient}>
+          {Story()}
+        </QueryClientProvider>
+      </div>
     ),
   ],
 };

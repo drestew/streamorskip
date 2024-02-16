@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://static.cloudflareinsights.com;
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://m.media-amazon.com https://static.cloudflareinsights.com;
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data:;
     font-src 'self';
@@ -9,9 +9,10 @@ const cspHeader = `
     base-uri 'self';
     form-action 'self';
     frame-ancestors 'none';
+    frame-src https://www.imdb.com;
     block-all-mixed-content;
     upgrade-insecure-requests;
-    connect-src 'self' https://hcoxdhdqhkhtynyvbdpv.supabase.co https://static.cloudflareinsights.com;
+    connect-src 'self' https://hcoxdhdqhkhtynyvbdpv.supabase.co;
 `;
 
 const nextConfig = {

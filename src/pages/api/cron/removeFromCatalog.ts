@@ -1,13 +1,13 @@
 import { decodeHTML } from 'entities';
 import { RemovedTitles, RemovedTitle } from './types';
 import { ValidationError } from 'runtypes';
-import { lookbackDate } from './addToCatalog';
+import { date3DaysAgo } from './addToCatalog';
 import { Env } from './index';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 const fetchRemovedTitles = async (env: Env) => {
   let removedTitles: RemovedTitle;
-  const url = `https://unogsng.p.rapidapi.com/titlesdel?offset=0&countrylist=78&date=${lookbackDate()}`;
+  const url = `https://unogsng.p.rapidapi.com/titlesdel?offset=0&countrylist=78&date=${date3DaysAgo()}`;
   const mediaData = await fetch(url, {
     method: 'GET',
     headers: {

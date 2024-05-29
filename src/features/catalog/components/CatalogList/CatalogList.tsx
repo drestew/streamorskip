@@ -87,7 +87,7 @@ export function CatalogList({
         .eq('user_id', userId);
 
       if (error) {
-        console.log('Error getting user ratings:', {
+        console.error('Error getting user ratings:', {
           message: error.message,
           details: error.details,
         });
@@ -107,7 +107,7 @@ export function CatalogList({
           .eq('user_id', userId);
 
         if (error) {
-          console.log('Error getting saved list:', {
+          console.error('Error getting saved list:', {
             message: error.message,
             details: error.details,
           });
@@ -135,7 +135,7 @@ export function CatalogList({
         .in('catalog_item', nfids || []);
 
       if (error) {
-        console.log('Error getting vote count from all users:', {
+        console.error('Error getting vote count from all users:', {
           message: error.message,
           details: error.details,
         });

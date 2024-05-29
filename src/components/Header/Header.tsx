@@ -62,7 +62,7 @@ export function Header({ userId, supabase }: HeaderProps) {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      console.log('Error logging out:', {
+      console.error('Error logging out:', {
         message: error?.message,
       });
     }

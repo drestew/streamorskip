@@ -46,7 +46,6 @@ async function fetchTrailer(env: Env, nullTrailers: DBItem[] | null) {
   try {
     trailerItem = TrailerItems.check(trailers);
   } catch (error) {
-    console.log(trailers);
     if (error instanceof ValidationError)
       console.error('Error validating imdb trailer api types:', {
         code: error.code,
@@ -81,7 +80,7 @@ async function addTrailerToDB(
       .select();
 
     if (error) {
-      console.log('Error adding trailer to db:', {
+      console.error('Error adding trailer to db:', {
         message: error.message,
         details: error.details,
       });

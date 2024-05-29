@@ -112,7 +112,7 @@ export function Search() {
         .select('title', { count: 'exact', head: true });
 
       if (error) {
-        console.log('Error getting titles: ', {
+        console.error('Error getting titles: ', {
           message: error.message,
           details: error.details,
         });
@@ -135,7 +135,7 @@ export function Search() {
             .order('rating', { ascending: false });
 
           if (error) {
-            console.log('Error getting titles: ', {
+            console.error('Error getting titles: ', {
               message: error.message,
               details: error.details,
             });

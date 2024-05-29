@@ -63,7 +63,7 @@ const markRemovedTitles = async (
     }
 
     if (error) {
-      console.log('Error:', {
+      console.error('Error:', {
         message: error.message,
         details: error.details,
       });

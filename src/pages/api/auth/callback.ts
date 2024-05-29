@@ -17,7 +17,7 @@ async function addProfile(supabaseClient: SupabaseClient<Database>) {
     .insert({ id: user.id, email: user.email });
 
   if (error) {
-    console.log('Error adding user profile:', {
+    console.error('Error adding user profile:', {
       message: error.message,
       details: error.details,
     });

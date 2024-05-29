@@ -19,7 +19,7 @@ async function getNullRatingsFromDB(supabase: SupabaseClient) {
     .range(0, 20);
 
   if (error) {
-    console.log('Error:', {
+    console.error('Error:', {
       message: error.message,
       details: error.details,
     });
@@ -72,7 +72,7 @@ async function addRatingsToDB(
           .eq('imdbid', item.imDbId);
 
         if (error) {
-          console.log('Error updating rating in db:', {
+          console.error('Error updating rating in db:', {
             message: error.message,
             details: error.details,
           });

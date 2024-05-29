@@ -68,7 +68,7 @@ export function Menu({ userId }: { userId: string | null }) {
       const { error } = await supabase.auth.signOut();
 
       if (error) {
-        console.log('Error:', {
+        console.error('Error:', {
           message: error?.message,
         });
       }

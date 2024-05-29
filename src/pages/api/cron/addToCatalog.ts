@@ -76,7 +76,7 @@ async function addNewTitlesToDB(
           nfid: title.nfid,
           title: decodeHTML(title.title),
         });
-        console.log('Error title not added to db:', {
+        console.error('Error title not added to db:', {
           message: error.message,
           details: error.details,
         });

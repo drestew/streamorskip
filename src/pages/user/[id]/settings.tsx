@@ -137,7 +137,7 @@ export default function Settings() {
         .single();
 
       if (error) {
-        console.log('Error getting user settings:', {
+        console.error('Error getting user settings:', {
           message: error.message,
           details: error.details,
         });
@@ -167,7 +167,7 @@ export default function Settings() {
     setSettingsSaved(true);
 
     if (error) {
-      console.log('Error updating user settings:', {
+      console.error('Error updating user settings:', {
         message: error.message,
         details: error.details,
       });

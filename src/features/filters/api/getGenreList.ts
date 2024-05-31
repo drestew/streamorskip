@@ -8,7 +8,7 @@ async function getGenreList() {
     .select('genre, id, movie, series');
 
   if (error) {
-    console.log('Error:', {
+    console.error('Error:', {
       message: error.message,
       details: error.details,
     });

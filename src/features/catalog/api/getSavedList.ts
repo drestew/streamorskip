@@ -14,7 +14,7 @@ export async function getSavedList(
     .eq('user_id', userId);
 
   if (titlesError) {
-    console.log('Error getting saved list nfids:', {
+    console.error('Error getting saved list nfids:', {
       message: titlesError.message,
       details: titlesError.details,
     });
@@ -32,7 +32,7 @@ export async function getSavedList(
     .range(pageParam, step);
 
   if (userListError) {
-    console.log('Error getting saved list catalog:', {
+    console.error('Error getting saved list catalog:', {
       message: userListError.message,
       details: userListError.details,
     });

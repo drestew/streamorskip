@@ -13,7 +13,7 @@ export async function deleteUserRating(
       .eq('user_item_key', `${userId}-${nfid}`);
 
     if (error) {
-      console.log('Error deleting rating:', {
+      console.error('Error deleting rating:', {
         message: error.message,
         details: error.details,
       });
@@ -37,7 +37,7 @@ export async function updateUserRating(
       });
 
       if (error) {
-        console.log('Error updating rating:', {
+        console.error('Error updating rating:', {
           message: error.message,
           details: error.details,
         });

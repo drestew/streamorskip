@@ -62,7 +62,7 @@ export function SignupForm() {
       .single();
 
     if (error) {
-      console.log('Error: Duplicate email', {
+      console.error('Error: Duplicate email', {
         message: error.message,
       });
     }
@@ -80,7 +80,7 @@ export function SignupForm() {
       setSignupComplete(true);
 
       if (error) {
-        console.log('Error: OTP Signup', {
+        console.error('Error: OTP Signup', {
           message: error.message,
           details: error.cause,
         });

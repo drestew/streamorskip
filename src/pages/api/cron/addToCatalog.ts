@@ -5,7 +5,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@src/types/supabase';
 import { Env } from './index';
 
-export const lookbackDate = () => {
+export const date3DaysAgo = () => {
   const dateToday = new Date();
   const fromDate = dateToday.setDate(dateToday.getDate() - 3);
   const fromDateInMS = new Date(fromDate);
@@ -18,7 +18,7 @@ export const lookbackDate = () => {
 
 async function getNewTitles(env: Env) {
   let apiResults: CatalogItem;
-  const url = `https://unogsng.p.rapidapi.com/search?newdate=${lookbackDate()}
+  const url = `https://unogsng.p.rapidapi.com/search?newdate=${date3DaysAgo()}
   &audiosubtitle_andor=and&subtitle=english&countrylist=78&audio=english&offset=0`;
   const newTitles = await fetch(url, {
     method: 'GET',
@@ -76,7 +76,7 @@ async function addNewTitlesToDB(
           nfid: title.nfid,
           title: decodeHTML(title.title),
         });
-        console.log('Error title not added to db:', {
+        console.error('Error title not added to db:', {
           message: error.message,
           details: error.details,
         });
@@ -91,7 +91,10 @@ async function addNewTitlesToDB(
       });
   }
 
-  return { titlesAdded: [...titlesAddedToDb], Error: [...titlesNotAddedToDb] };
+  return {
+    titlesAdded: [...titlesAddedToDb],
+    titlesNotAdded: [...titlesNotAddedToDb],
+  };
 }
 
 const addToCatalog = {

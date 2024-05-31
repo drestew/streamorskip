@@ -97,7 +97,7 @@ export function LogInForm({ handleMobileKeyboard }: Input) {
       .single();
 
     if (error) {
-      console.log("Error: Email doesn't exist", {
+      console.error("Error: Email doesn't exist", {
         message: error.message,
       });
     }
@@ -116,7 +116,7 @@ export function LogInForm({ handleMobileKeyboard }: Input) {
       setSendEmail(true);
 
       if (error) {
-        console.log('Error: LoginForm', {
+        console.error('Error: LoginForm', {
           message: error.message,
           details: error.cause,
         });

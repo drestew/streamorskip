@@ -16,7 +16,7 @@ export async function getUserRatings(
     .eq('stream', value === 'stream');
 
   if (error) {
-    console.log('Error getting user ratings:', {
+    console.error('Error getting user ratings:', {
       message: error.message,
       details: error.details,
     });
@@ -36,7 +36,7 @@ export async function getUserRatings(
       .range(pageParam, step);
 
   if (userRatingsCatalogError) {
-    console.log('Error getting user ratings catalog:', {
+    console.error('Error getting user ratings catalog:', {
       message: userRatingsCatalogError.message,
       details: userRatingsCatalogError.details,
     });

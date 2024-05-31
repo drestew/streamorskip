@@ -29,7 +29,7 @@ async function getRatingsFromDB(supabase: SupabaseClient<Database>) {
     .range(0, 20);
 
   if (error) {
-    console.log('Error getting ratings from DB:', {
+    console.error('Error getting ratings from DB:', {
       message: error.message,
       details: error.details,
     });
@@ -147,7 +147,7 @@ async function addVoteCountToDB(
       });
 
     if (error) {
-      console.log('Error adding updated vote count to db:', {
+      console.error('Error adding updated vote count to db:', {
         message: error.message,
         details: error.details,
       });

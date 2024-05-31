@@ -16,7 +16,7 @@ export async function updateSavedList(
       });
 
       if (addError) {
-        console.log('Error adding to saved list:', {
+        console.error('Error adding to saved list:', {
           message: addError.message,
           details: addError.details,
         });
@@ -30,7 +30,7 @@ export async function updateSavedList(
         .eq('user_item_key', `${userId}-${nfid}`);
 
       if (deleteError) {
-        console.log('Error deleting from saved list:', {
+        console.error('Error deleting from saved list:', {
           message: deleteError.message,
           details: deleteError.details,
         });

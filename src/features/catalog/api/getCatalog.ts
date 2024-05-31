@@ -12,7 +12,7 @@ async function searchGenre(genre: string) {
     });
 
   if (error) {
-    console.log('Error: searchGenre()', {
+    console.error('Error: searchGenre()', {
       message: error.message,
       details: error.details,
     });
@@ -36,7 +36,7 @@ async function getProfileSettings(
     .single();
 
   if (error) {
-    console.log('Error getting profile settings:', {
+    console.error('Error getting profile settings:', {
       message: error.message,
       details: error.details,
     });
@@ -73,7 +73,7 @@ export async function getCatalog(
     filteredData = data;
 
     if (error) {
-      console.log('Error getting searched content:', {
+      console.error('Error getting searched content:', {
         message: error.message,
         details: error.details,
       });
@@ -87,7 +87,7 @@ export async function getCatalog(
     filteredData = data;
 
     if (error) {
-      console.log('Error getting default catalog', {
+      console.error('Error getting default catalog', {
         message: error.message,
         details: error.details,
       });
@@ -106,7 +106,7 @@ export async function getCatalog(
     filteredData = data;
 
     if (error) {
-      console.log('Error ending catalog after filtered results', {
+      console.error('Error ending catalog after filtered results', {
         message: error.message,
         details: error.details,
       });
@@ -127,7 +127,7 @@ export async function getCatalog(
       filteredData = data;
 
       if (error) {
-        console.log('Error filtering user rated items', {
+        console.error('Error filtering user rated items', {
           message: error.message,
           details: error.details,
         });
@@ -146,7 +146,7 @@ export async function getCatalog(
       filteredData = data;
 
       if (error) {
-        console.log('Error filtering user saved items', {
+        console.error('Error filtering user saved items', {
           message: error.message,
           details: error.details,
         });

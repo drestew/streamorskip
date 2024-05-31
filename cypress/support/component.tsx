@@ -26,7 +26,7 @@ import { mount } from 'cypress/react18';
 import React from 'react';
 import { MountReturn } from 'cypress/react';
 import { createMockRouter } from '../../src/test/createMockRouter';
-import { RouterContext } from 'next/dist/shared/lib/router-context';
+import { RouterContext } from 'next/dist/shared/lib/router-context.shared-runtime';
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.

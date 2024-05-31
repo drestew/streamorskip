@@ -19,7 +19,7 @@ async function getCatalogFromDB(supabase: SupabaseClient<Database>) {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.log('Error:', {
+    console.error('Error:', {
       message: error.message,
       details: error.details,
     });
@@ -49,7 +49,7 @@ async function getGenres(catalog: { nfid: number }[] | null, env: Env) {
       try {
         apiResults = UnogsGenres.check(apiResults);
       } catch (error) {
-        console.log('item', item);
+        console.error('item', item);
         if (error instanceof ValidationError)
           console.error('Error validating genre api types:', {
             code: error.code,
@@ -103,7 +103,7 @@ async function addGenresToDb(
     .insert([...removedDuplicateGenres]);
 
   if (error) {
-    console.log('Error adding genres to db:', {
+    console.error('Error adding genres to db:', {
       message: error.message,
       details: error.details,
     });
@@ -130,7 +130,7 @@ async function markCatalogGenreTrue(
       .eq('nfid', titleNfid);
 
     if (error) {
-      console.log('Error updating catalog title genre column:', {
+      console.error('Error updating catalog title genre column:', {
         message: error.message,
         details: error.details,
       });
